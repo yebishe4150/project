@@ -36,12 +36,12 @@ public class UserClientService {
             }
 
         } catch (RetryableException ex) {
-            log.error("user-service недоступен (timeout) при создании пользователя: userId={}", user.getUserId(), ex);
+            log.warn("user-service недоступен (timeout) при создании пользователя: userId={}", user.getUserId());
             throw new ExternalServiceException("user-service недоступен (timeout)", ex);
 
         } catch (FeignException ex) {
-            log.error("Ошибка user-service при создании пользователя: status={}, userId={}",
-                    ex.status(), user.getUserId(), ex);
+            log.warn("Ошибка user-service при создании пользователя: status={}, userId={}",
+                    ex.status(), user.getUserId());
             throw new ExternalServiceException(
                     "user-service вернул ошибку при создании пользователя: status=" + ex.status(), ex
             );
@@ -61,12 +61,12 @@ public class UserClientService {
             return response.getData();
 
         } catch (RetryableException ex) {
-            log.error("user-service недоступен (timeout) при получении пользователя: userId={}", userId, ex);
+            log.warn("user-service недоступен (timeout) при получении пользователя: userId={}", userId);
             throw new ExternalServiceException("user-service недоступен (timeout)", ex);
 
         } catch (FeignException ex) {
-            log.error("Ошибка user-service при получении пользователя: status={}, userId={}",
-                    ex.status(), userId, ex);
+            log.warn("Ошибка user-service при получении пользователя: status={}, userId={}",
+                    ex.status(), userId);
             throw new ExternalServiceException(
                     "user-service вернул ошибку при получении пользователя: status=" + ex.status(), ex
             );

@@ -14,6 +14,7 @@ import project.auth_service.dto.register.RegisterResponse;
 import project.auth_service.entity.RefreshToken;
 import project.auth_service.entity.Role;
 import project.auth_service.entity.UserCredentials;
+import project.auth_service.exception.ExternalServiceException;
 import project.auth_service.exception.InvalidCredentialsException;
 import project.auth_service.exception.TokenException;
 import project.auth_service.exception.UserAlreadyExistsException;
@@ -63,7 +64,11 @@ public class AuthService {
             userClientService.createUser(saved);
             //TODO: Пофиксить на транзакшнл аутбокс
         } catch (Exception e) {
-            log.error("Ошибка при вызове user-service: userId={}", saved.getUserId(), e);
+            if (e instanceof ExternalServiceException) {
+                log.warn("Ошибка при вызове user-service: userId={}, message={}", saved.getUserId(), e.getMessage());
+            } else {
+                log.error("Ошибка при вызове user-service: userId={}", saved.getUserId(), e);
+            }
             throw e;
         }
 
