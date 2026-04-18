@@ -27,7 +27,18 @@ spring:
 
 logging:
   level:
-    org.springframework.security: DEBUG
+    root: WARN
+    project.auth_service: INFO
+    org.springframework.security: WARN
+    org.springframework.test: WARN
+    org.springframework.web: WARN
+    org.springframework.cloud.contract.wiremock: WARN
+    com.github.tomakehurst.wiremock: WARN
+    liquibase: WARN
+    org.hibernate: WARN
+    org.hibernate.SQL: WARN
+    com.zaxxer.hikari: WARN
+    org.springdoc: WARN
 
 security:
   jwt:
