@@ -1,0 +1,71 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-create-refresh-token
+      author: maxim
+
+      changes:
+        - createTable:
+            tableName: refresh_token
+            remarks: "Таблица refresh-токенов (сессий пользователей)"
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  remarks: "Идентификатор токена"
+                  constraints:
+                    primaryKey: true
+
+              - column:
+                  name: user_id
+                  type: uuid
+                  remarks: "Идентификатор пользователя"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: token
+                  type: varchar
+                  remarks: "Refresh токен"
+                  constraints:
+                    nullable: false
+                    unique: true
+
+              - column:
+                  name: expires_at
+                  type: timestamp
+                  remarks: "Дата истечения токена"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValue: now()
+                  remarks: "Время создания записи"
+
+              - column:
+                  name: update_time
+                  type: timestamp
+                  defaultValue: now()
+                  remarks: "Время обновления записи"
+
+              - column:
+                  name: used
+                  type: boolean
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            tableName: refresh_token
+            indexName: idx_refresh_token_user_id
+            columns:
+              - column:
+                  name: user_id
+
+        - addForeignKeyConstraint:
+            baseTableName: refresh_token
+            baseColumnNames: user_id
+            referencedTableName: user_credentials
+            referencedColumnNames: user_id
+            constraintName: fk_refresh_token_user
+            onDelete: CASCADE

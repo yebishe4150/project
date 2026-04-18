@@ -1,0 +1,68 @@
+server:
+  port: 8081
+  address: 0.0.0.0
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5431/auth_db
+    username: user
+    password: password
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          user-service:
+            connectTimeout: 2000
+            readTimeout: 2000
+
+logging:
+  level:
+    root: info
+
+  masking:
+    mask: "***"
+
+    fullMaskingJsonBodyPaths:
+      - password
+      - token
+      - accessToken
+
+    partialMaskingJsonBodyPaths:
+      - email
+
+    maskHeaders:
+      - Authorization
+
+    partialMaskPercents: 0.6
+    minLengthForPartialMasking: 3
+
+security:
+  jwt:
+#    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}
+    access-token-expiration: 900        # 15 мин
+    refresh-token-expiration: 43200     # 12 часов
+
+services:
+  user:
+    url: http://localhost:8082
+
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /swagger

@@ -1,0 +1,120 @@
+version: "3.9"
+
+services:
+
+  # ========================
+  # DATABASES
+  # ========================
+
+  postgres-auth:
+    image: postgres:16
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+
+  postgres-user:
+    image: postgres:16
+    container_name: postgres-user
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - user_data:/var/lib/postgresql/data
+
+  postgres-content:
+    image: postgres:16
+    container_name: postgres-content
+    environment:
+      POSTGRES_DB: content_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5435:5432"
+    volumes:
+      - content_data:/var/lib/postgresql/data
+
+  # ========================
+  # MINIO
+  # ========================
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  # ========================
+  # SERVICES
+  # ========================
+
+  auth-service:
+    build: ./backend/auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres-auth
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+
+  user-service:
+    build: ./backend/user-service
+    container_name: user-service
+    ports:
+      - "8082:8080"
+    depends_on:
+      - postgres-user
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-user:5432/user_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+
+  content-service:
+    build: ./backend/content-service
+    container_name: content-service
+    ports:
+      - "8083:8080"
+    depends_on:
+      - postgres-content
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-content:5432/content_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+
+  gateway-service:
+    build: ./backend/gateway-service
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - user-service
+      - content-service
+
+# ========================
+# VOLUMES
+# ========================
+
+volumes:
+  auth_data:
+  user_data:
+  content_data:
+  minio_data:

@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01.create-images-table.yaml
+      author: maxim
+      changes:
+        - createTable:
+            tableName: images
+            ifNotExists: true
+            remarks: "Таблица изображений (пинов)"
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  remarks: "Идентификатор изображения"
+                  constraints:
+                    primaryKey: true
+
+              - column:
+                  name: url
+                  type: text
+                  remarks: "Ссылка на изображение в S3"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: user_id
+                  type: uuid
+                  remarks: "Идентификатор пользователя"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: description
+                  type: text
+                  remarks: "Описание изображения"
+
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValue: now()
+                  remarks: "Время создания записи"
+
+              - column:
+                  name: update_time
+                  type: timestamp
+                  defaultValue: now()
+                  remarks: "Время обновления записи"
+
+        - createIndex:
+            tableName: images
+            indexName: idx_images_user_id
+            columns:
+              - column:
+                  name: user_id

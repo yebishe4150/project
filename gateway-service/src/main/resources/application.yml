@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+
+          httpclient:
+            connect-timeout: 2000
+            response-timeout: 3s
+
+          routes:
+            - id: auth-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/v*/auth/**
+              filters:
+                - StripPrefix=1
+
+            - id: user-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/v*/users/**
+              filters:
+                - StripPrefix=1
+
+            - id: content-service
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/v*/content/**
+              filters:
+                - StripPrefix=1
+
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - http://localhost:3000
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                allowedHeaders: "*"
+                allowCredentials: true
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}

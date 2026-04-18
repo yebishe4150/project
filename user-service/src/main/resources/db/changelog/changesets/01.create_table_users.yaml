@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01.create_table_users.yaml
+      author: maxim
+      changes:
+        - createTable:
+            tableName: users
+            ifNotExists: true
+            remarks: "Справочник пользователей"
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  remarks: "Идентификатор пользователя"
+                  constraints:
+                    primaryKey: true
+
+              - column:
+                  name: login_name
+                  type: varchar
+                  remarks: "Логин пользователя"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: name
+                  type: varchar
+                  remarks: "Имя пользователя"
+
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValue: now()
+                  remarks: "Время создания записи"
+
+              - column:
+                  name: update_time
+                  type: timestamp
+                  defaultValue: now()
+                  remarks: "Время обновления записи"

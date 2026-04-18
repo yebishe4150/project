@@ -1,0 +1,25 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: content-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5434/content_db
+    username: user
+    password: password
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+s3:
+  endpoint: http://localhost:9000
+  access-key: admin
+  secret-key: password123
+  bucket: images
+  region: us-east-1
