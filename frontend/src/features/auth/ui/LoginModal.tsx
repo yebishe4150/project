@@ -1,18 +1,21 @@
 import { useState } from "react";
 import styles from "./LoginModal.module.css";
 import { useAuth } from "../../../app/providers/AuthProvider";
+import { useToast } from "../../../app/providers/useToast";
 import type { RegisterRequest } from "../model/request.types";
+import { mapAuthError } from "../../../shared/api/errors/errorMapper";
+import type { ApiError } from "../../../shared/api/errors/errorTypes";
 
 type Props = {
   onClose: () => void;
 };
 
-
 export const LoginModal = ({ onClose }: Props) => {
   const { login, register } = useAuth();
-
-  // 🔥 режим модалки
+  const { showToast } = useToast();
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [registerError, setRegisterError] = useState<ApiError | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState<RegisterRequest>({
     loginName: "",
@@ -21,9 +24,11 @@ export const LoginModal = ({ onClose }: Props) => {
     phone: ""
   });
 
-  // =========================
-  // SUBMIT
-  // =========================
+  const resetRegisterError = () => {
+    if (registerError) {
+      setRegisterError(null);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!form.loginName || !form.password) return;
@@ -34,20 +39,37 @@ export const LoginModal = ({ onClose }: Props) => {
           loginName: form.loginName,
           password: form.password
         });
+
+        showToast({
+          title: "Авторизация успешна",
+          message: "Вы успешно вошли в аккаунт."
+        });
       } else {
+        setRegisterError(null);
         await register(form);
+
+        showToast({
+          title: "Регистрация успешна",
+          message: "Аккаунт создан, вы уже авторизованы."
+        });
       }
 
       onClose();
+    } catch (error) {
+      if (mode === "signup") {
+        setRegisterError(mapAuthError(error));
+        return;
+      }
 
-    } catch (e) {
-      console.error("Auth error", e);
+      console.error("Auth error", error);
     }
   };
 
-  // =========================
-  // UI
-  // =========================
+  const switchMode = (nextMode: "login" | "signup") => {
+    setRegisterError(null);
+    setShowPassword(false);
+    setMode(nextMode);
+  };
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -55,45 +77,62 @@ export const LoginModal = ({ onClose }: Props) => {
         className={styles.modal}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ❌ закрыть */}
         <button className={styles.close} onClick={onClose}>
-          ✕
+          x
         </button>
 
-        {/* 🔥 заголовок */}
-        <h2>
-          {mode === "login" ? "Login" : "Sign up"}
-        </h2>
+        <h2>{mode === "login" ? "Login" : "Sign up"}</h2>
 
         <div className={styles.form}>
-          {/* username */}
-          <input
-            className={styles.input}
-            placeholder="Login"
-            value={form.loginName}
-            onChange={(e) =>
-              setForm(prev => ({
-                ...prev,
-                loginName: e.target.value
-              }))
-            }
-          />
+          <div className={styles.field}>
+            <input
+              className={`${styles.input} ${registerError?.field === "loginName" ? styles.inputError : ""}`}
+              placeholder="Login"
+              value={form.loginName}
+              onChange={(e) => {
+                resetRegisterError();
+                setForm((prev) => ({
+                  ...prev,
+                  loginName: e.target.value
+                }));
+              }}
+            />
 
-          {/* password */}
-          <input
-            className={styles.input}
-            type="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={(e) =>
-              setForm(prev => ({
-                ...prev,
-                password: e.target.value
-              }))
-            }
-          />
+            {mode === "signup" && registerError?.field === "loginName" && (
+              <div className={styles.errorText}>{registerError.message}</div>
+            )}
+          </div>
 
-          {/* 🔥 дополнительные поля */}
+          <div className={styles.field}>
+            <div className={styles.passwordField}>
+              <input
+                className={`${styles.input} ${styles.passwordInput} ${registerError?.field === "password" ? styles.inputError : ""}`}
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={form.password}
+                onChange={(e) => {
+                  resetRegisterError();
+                  setForm((prev) => ({
+                    ...prev,
+                    password: e.target.value
+                  }));
+                }}
+              />
+
+              <button
+                type="button"
+                className={styles.passwordToggle}
+                onClick={() => setShowPassword((current) => !current)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            {mode === "signup" && registerError?.field === "password" && registerError.message && (
+              <div className={styles.errorText}>{registerError.message}</div>
+            )}
+          </div>
+
           {mode === "signup" && (
             <>
               <input
@@ -101,7 +140,7 @@ export const LoginModal = ({ onClose }: Props) => {
                 placeholder="Email"
                 value={form.email}
                 onChange={(e) =>
-                  setForm(prev => ({
+                  setForm((prev) => ({
                     ...prev,
                     email: e.target.value
                   }))
@@ -113,7 +152,7 @@ export const LoginModal = ({ onClose }: Props) => {
                 placeholder="Phone"
                 value={form.phone}
                 onChange={(e) =>
-                  setForm(prev => ({
+                  setForm((prev) => ({
                     ...prev,
                     phone: e.target.value
                   }))
@@ -122,7 +161,10 @@ export const LoginModal = ({ onClose }: Props) => {
             </>
           )}
 
-          {/* кнопка */}
+          {mode === "signup" && registerError && !registerError.field && (
+            <div className={styles.generalError}>{registerError.message}</div>
+          )}
+
           <button
             className={styles.button}
             onClick={handleSubmit}
@@ -132,21 +174,16 @@ export const LoginModal = ({ onClose }: Props) => {
           </button>
         </div>
 
-        {/* 🔁 переключение */}
         <div className={styles.switch}>
           {mode === "login" ? (
             <p>
-              Нет аккаунта?{" "}
-              <span onClick={() => setMode("signup")}>
-                Зарегистрироваться
-              </span>
+              No account?{" "}
+              <span onClick={() => switchMode("signup")}>Sign up</span>
             </p>
           ) : (
             <p>
-              Уже есть аккаунт?{" "}
-              <span onClick={() => setMode("login")}>
-                Войти
-              </span>
+              Already have an account?{" "}
+              <span onClick={() => switchMode("login")}>Log in</span>
             </p>
           )}
         </div>

@@ -10,7 +10,7 @@ export const FeedPage = () => {
 
   useEffect(() => {
     fetchPins().then((data) => {
-      setPins(data.items)
+      setPins(data)
     })
   }, [])
 

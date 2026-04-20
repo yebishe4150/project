@@ -1,14 +1,19 @@
-export const fetchPins = async () => {
+import { apiFetch } from "@/shared/api/apiClient"
+import type { FeedResponse, Pin } from "../pinTypes"
+
+function mapLandingImageToPin(url: string, index: number): Pin {
   return {
-    items: Array.from({ length: 20 }).map((_, i) => ({
-      id: String(i),
-      imageUrl: `https://picsum.photos/300/${300 + i * 10}`,
-      width: 300,
-      height: 300 + i * 10,
-      liked: false,
-      likesCount: Math.floor(Math.random() * 100),
-    })),
-    nextCursor: null,
-    hasNext: false,
+    id: `${index}-${url}`,
+    imageUrl: url,
+    width: 300,
+    height: 300,
+    liked: false,
+    likesCount: 0,
   }
+}
+
+export async function fetchPins(): Promise<Pin[]> {
+  const response = await apiFetch<FeedResponse>("/content/public/feed")
+
+  return response.data.map((image, index) => mapLandingImageToPin(image.url, index))
 }

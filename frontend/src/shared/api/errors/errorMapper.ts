@@ -1,32 +1,46 @@
-import type {errorTypes} from "./errorTypes"
-import {typeGuard} from "../errors/typeGuard"
+import type { ApiError } from "./errorTypes";
+import { isApiError } from "./typeGuard";
 
-export function mapError(e: unknown): ApiError {
-  if (e.status === 401) {
-    return { message: "Неверный логин или пароль" };
-  }
-
-  if (e.status === 409) {
+export function mapAuthError(error: unknown): ApiError {
+  if (!isApiError(error)) {
     return {
-      field: "login",
-      message: "Этот логин уже занят"
+      status: 0,
+      message: "Не удалось выполнить запрос. Попробуйте еще раз."
     };
   }
 
-  if (e.status === 400) {
+  if (error.status === 400) {
     return {
+      status: error.status,
       field: "password",
-      message: "Пароль должен:\n- содержать минимум 8 символов\n- включать заглавную букву\n- содержать цифру"
+      message: error.message || "Пароль должен содержать минимум 8 символов, включать хотя бы одну заглавную букву и одну цифру."
     };
   }
 
-  if (e.status >= 500) {
-      return {
-        message: "Что-то пошло не так. Попробуйте позже"
-      };
-    }
+  if (error.status === 409) {
+    return {
+      status: error.status,
+      field: "loginName",
+      message: "Пользователь с таким логином уже существует."
+    };
+  }
+
+  if (error.status === 502) {
+    return {
+      status: error.status,
+      message: "Сервис регистрации временно недоступен. Попробуйте позже."
+    };
+  }
+
+  if (error.status >= 500) {
+    return {
+      status: error.status,
+      message: "Внутренняя ошибка сервера. Попробуйте позже."
+    };
+  }
 
   return {
-    message: "Неизвестная ошибка"
+    status: error.status,
+    message: error.message || "Неизвестная ошибка."
   };
 }
