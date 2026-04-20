@@ -1,6 +1,6 @@
 import { refresh, getAccessToken } from "../../features/auth/auth";
 
-const BASE_URL = "http://192.168.0.157:8080/api/v1";
+const BASE_URL = "/api/v1";
 
 
 export async function apiFetch<T>(

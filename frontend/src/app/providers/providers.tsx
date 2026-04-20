@@ -1,15 +1,17 @@
-// src/app/providers.tsx
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { AuthProvider } from "./AuthProvider";
+import { AuthProvider } from "./AuthProvider"
+import { ToastProvider } from "./ToastProvider"
 
 const queryClient = new QueryClient()
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
-     <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-       {children}
-      </QueryClientProvider>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </AuthProvider>
+    </ToastProvider>
   )
 }
