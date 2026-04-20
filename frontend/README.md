@@ -1,75 +1,102 @@
-# React + TypeScript + Vite
+# PinPet Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend part of the `PinPet` project built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+At the moment this is an early application skeleton with:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- feed page and basic layout
+- auth flow foundation with context/provider
+- separated project layers close to FSD style
+- mock pin feed data for the main page
 
-## React Compiler
+## Stack
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- React 19
+- TypeScript
+- Vite
+- React Router
+- TanStack Query
+- CSS Modules
 
-Note: This will impact Vite dev & build performances.
+## Project Structure
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+frontend/
+  public/
+  src/
+    app/        # app providers, layout, global styles
+    pages/      # route-level pages
+    widgets/    # large UI blocks like header/footer
+    features/   # user scenarios and feature logic
+    entities/   # domain entities such as pin
+    shared/     # shared api helpers and common logic
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Requirements:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js 20+ recommended
+- npm
+
+Install dependencies:
+
+```bash
+npm install
 ```
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+Build the project:
+
+```bash
+npm run build
+```
+
+Run linter:
+
+```bash
+npm run lint
+```
+
+Preview production build:
+
+```bash
+npm run preview
+```
+
+## Current Functionality
+
+- Main route `/`
+- Header and footer layout
+- Feed page with pin cards
+- Login/signup modal UI
+- Auth context with `login`, `register`, `logout`, `checkAuth`, and token refresh helpers
+
+## Notes About API
+
+The project currently mixes two modes:
+
+- feed data is mocked in `src/entities/pin/pin.api.ts`
+- auth requests use a real backend URL from `src/shared/api/apiClient.ts`
+
+Because of that, local development may require backend availability only for auth-related actions.
+
+## Important Technical Notes
+
+- `BASE_URL` for backend requests is hardcoded in `src/shared/api/apiClient.ts`
+- some auth and error-handling files are still in progress
+- the current `README` replaces the default Vite template and documents the actual project state
+- build and lint may require additional cleanup before the project is production-ready
+
+## Recommended Next Steps
+
+- move backend URL to environment variables
+- unify API response and error handling
+- finish replacing mock feed data with real API integration
+- clean up duplicated auth utilities
+- update build and lint configuration to a fully green state
