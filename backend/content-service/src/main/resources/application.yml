@@ -19,7 +19,12 @@ spring:
 
 s3:
   endpoint: http://localhost:9000
+  external-endpoint: http://192.168.0.157:9000
   access-key: admin
   secret-key: password123
   bucket: images
   region: us-east-1
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}

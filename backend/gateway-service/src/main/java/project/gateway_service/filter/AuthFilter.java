@@ -6,6 +6,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -25,11 +26,22 @@ public class AuthFilter implements GlobalFilter, Ordered {
             "/api/v1/auth",
             "/api/v1/content/feed",
 //            "/api/v1/content/images",
-            "/api/v1/content/public"
+            "/api/v1/content/public",
+            "/api/v1/content/ai",
+            "/api/v1/content/ai/generate"
     );
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+
+        log.info("Incoming request: {} {}",
+                exchange.getRequest().getMethod(),
+                exchange.getRequest().getURI().getPath()
+        );
+
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
+            return chain.filter(exchange);
+        }
 
         String path = exchange.getRequest().getURI().getPath();
 

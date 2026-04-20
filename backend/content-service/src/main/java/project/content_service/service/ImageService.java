@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import project.content_service.client.PollinationsImageClient;
 import project.content_service.dto.image.ImageResponse;
 import project.content_service.entity.Image;
 import project.content_service.entity.Tag;
@@ -29,6 +30,8 @@ public class ImageService {
     private final ImageRepository repository;
     private final TagRepository tagRepository;
     private final S3Client s3Client;
+    private final PollinationsImageClient aiClient;
+    private final PromptService promptService;
 
     @Value("${s3.bucket}")
     private String bucket;
@@ -43,36 +46,42 @@ public class ImageService {
             throw new FileUploadException("Файл пустой");
         }
 
-        String key = UUID.randomUUID() + "_" + file.getOriginalFilename();
-
         try {
-            s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(bucket)
-                            .key(key)
-                            .contentType(file.getContentType())
-                            .build(),
-                    RequestBody.fromBytes(file.getBytes())
+            return saveImage(
+                    file.getBytes(),
+                    file.getContentType(),
+                    file.getOriginalFilename(),
+                    userId,
+                    description,
+                    tagNames
             );
         } catch (IOException e) {
-            throw new FileUploadException("Ошибка загрузки файла");
+            throw new FileUploadException("Ошибка чтения файла");
         }
+    }
 
-        String url = String.format("%s/%s/%s", endpoint, bucket, key);
+    @Transactional
+    public String generateFromAi(
+            String prompt,
+            UUID userId,
+            String description,
+            List<String> tagNames
+    ) {
 
-        Image image = Image.builder()
-                .url(url)
-                .userId(userId)
-                .description(description)
-                .build();
+        String finalPrompt = promptService.preparePrompt(prompt);
 
-        if (tagNames != null && !tagNames.isEmpty()) {
-            image.setTags(resolveTags(tagNames));
-        }
+        byte[] imageBytes = aiClient.generateImage(finalPrompt);
 
-        Image saved = repository.save(image);
+        ImageResponse response = saveImage(
+                imageBytes,
+                "image/jpeg",
+                "ai_" + System.currentTimeMillis() + ".jpg",
+                userId,
+                description,
+                tagNames
+        );
 
-        return mapToResponse(saved);
+        return response.getUrl();
     }
 
     public List<ImageResponse> getAll() {
@@ -143,5 +152,46 @@ public class ImageService {
         existingTags.addAll(tagRepository.saveAll(newTags));
 
         return new HashSet<>(existingTags);
+    }
+
+    private ImageResponse saveImage(
+            byte[] bytes,
+            String contentType,
+            String originalName,
+            UUID userId,
+            String description,
+            List<String> tagNames
+    ) {
+
+        String key = UUID.randomUUID() + "_" + originalName;
+
+        try {
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(key)
+                            .contentType(contentType)
+                            .build(),
+                    RequestBody.fromBytes(bytes)
+            );
+        } catch (Exception e) {
+            throw new FileUploadException("Ошибка загрузки файла");
+        }
+
+        String url = String.format("%s/%s/%s", endpoint, bucket, key);
+
+        Image image = Image.builder()
+                .url(url)
+                .userId(userId)
+                .description(description)
+                .build();
+
+        if (tagNames != null && !tagNames.isEmpty()) {
+            image.setTags(resolveTags(tagNames));
+        }
+
+        Image saved = repository.save(image);
+
+        return mapToResponse(saved);
     }
 }

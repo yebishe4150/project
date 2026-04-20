@@ -23,7 +23,7 @@ public class FeedController {
 
     private final LandingFeedService landingFeedService;
 
-    @Operation(summary = "Публичный лендинг-фид (5 случайных изображений)")
+    @Operation(summary = "Публичный лендинг-фид (25 случайных изображений)")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",

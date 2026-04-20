@@ -6,6 +6,7 @@ import project.content_service.dto.landingimage.LandingImageResponse;
 import project.content_service.entity.Image;
 import project.content_service.repository.ImageRepository;
 import project.content_service.repository.LandingFeedRepository;
+import project.content_service.util.UrlRewriter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,7 +18,8 @@ public class LandingFeedService {
     private final LandingFeedRepository landingRepository;
     private final ImageRepository imageRepository;
 
-    private static final int FEED_SIZE = 5;
+    private static final int FEED_SIZE = 25;
+    private final UrlRewriter urlRewriter;
 
     public List<LandingImageResponse> getFeed() {
 
@@ -42,7 +44,7 @@ public class LandingFeedService {
                 .map(map::get)
                 .filter(Objects::nonNull)
                 .map(img -> LandingImageResponse.builder()
-                        .url(img.getUrl())
+                        .url(urlRewriter.rewriteForExternalAccess(img.getUrl()))
                         .build())
                 .toList();
     }
