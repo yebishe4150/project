@@ -1,18 +1,15 @@
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { FeedList } from "@/features/feed/FeedList"
-import { fetchPins } from "../../entities/pin/pin.api"
-import type { Pin } from "@/entities/pinTypes"
+import { fetchPins } from "@/entities/pin/pin.api.ts"
 import styles from "./FeedPage.module.css"
 
 
 export const FeedPage = () => {
-  const [pins, setPins] = useState<Pin[]>([])
-
-  useEffect(() => {
-    fetchPins().then((data) => {
-      setPins(data)
-    })
-  }, [])
+  const { data: pins = [] } = useQuery({
+    queryKey: ["feed", "pins"],
+    queryFn: fetchPins,
+    staleTime: 30_000,
+  })
 
   return (
     <div className={styles.container}>
