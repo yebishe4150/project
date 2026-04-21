@@ -21,6 +21,7 @@ import java.util.UUID;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final SecurityErrorResponseWriter securityErrorResponseWriter;
 
     private static final String INTERNAL_TOKEN = "super-secret";
 
@@ -30,18 +31,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        SecurityContextHolder.clearContext();
+
         String internal = request.getHeader("X-Internal-Token");
 
         if (INTERNAL_TOKEN.equals(internal)) {
-
             UserPrincipal principal = new UserPrincipal(
-                    UUID.fromString("00000000-0000-0000-0000-000000000000"), // фиксированный
+                    UUID.fromString("00000000-0000-0000-0000-000000000000"),
                     Role.SYSTEM
             );
 
-            JwtAuthentication auth = new JwtAuthentication(principal);
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            SecurityContextHolder.getContext()
+                    .setAuthentication(new JwtAuthentication(principal));
 
             filterChain.doFilter(request, response);
             return;
@@ -49,21 +50,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
-
-            String token = header.substring(7);
-
-            if (jwtService.isTokenValid(token)) {
-
-                UUID userId = jwtService.extractUserId(token);
-                Role role = jwtService.extractRole(token);
-
-                UserPrincipal principal = new UserPrincipal(userId, role);
-
-                JwtAuthentication auth = new JwtAuthentication(principal);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+        if (header == null) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        if (!header.startsWith("Bearer ")) {
+            securityErrorResponseWriter.writeUnauthorized(request, response);
+            return;
+        }
+
+        String token = header.substring(7);
+
+        if (!jwtService.isTokenValid(token)) {
+            securityErrorResponseWriter.writeUnauthorized(request, response);
+            return;
+        }
+
+        UUID userId = jwtService.extractUserId(token);
+        Role role = jwtService.extractRole(token);
+
+        UserPrincipal principal = new UserPrincipal(userId, role);
+
+        SecurityContextHolder.getContext()
+                .setAuthentication(new JwtAuthentication(principal));
 
         filterChain.doFilter(request, response);
     }

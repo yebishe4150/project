@@ -18,7 +18,7 @@ public class LandingFeedService {
     private final LandingFeedRepository landingRepository;
     private final ImageRepository imageRepository;
 
-    private static final int FEED_SIZE = 25;
+    private static final int FEED_SIZE = 50;
     private final UrlRewriter urlRewriter;
 
     public List<LandingImageResponse> getFeed() {

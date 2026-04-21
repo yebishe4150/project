@@ -9,6 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import project.user_service.security.JwtAuthenticationFilter;
+import project.user_service.security.SecurityErrorResponseWriter;
 
 @Configuration
 @EnableMethodSecurity
@@ -16,6 +17,7 @@ import project.user_service.security.JwtAuthenticationFilter;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final SecurityErrorResponseWriter securityErrorResponseWriter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -24,6 +26,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) ->
+                                securityErrorResponseWriter.writeUnauthorized(request, response))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
