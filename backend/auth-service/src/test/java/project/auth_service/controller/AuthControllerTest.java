@@ -39,6 +39,8 @@ class AuthControllerTest extends AbstractWireMockTest {
 
     private static final String LOGIN = "test_user";
     private static final String PASSWORD = "1234sAsD";
+    private static final String EMAIL = "test@example.com";
+    private static final String PHONE_NUMBER = "+79990000000";
 
     @Test
     void when_register_then_PersistUser_and_CallUserService() throws Exception {
@@ -74,7 +76,11 @@ class AuthControllerTest extends AbstractWireMockTest {
 
         WireMock.verify(postRequestedFor(urlEqualTo(USER_SERVICE_URL))
                 .withRequestBody(WireMock.matchingJsonPath("$.id",
-                        WireMock.equalTo(user.getUserId().toString()))));
+                        WireMock.equalTo(user.getUserId().toString())))
+                .withRequestBody(WireMock.matchingJsonPath("$.email",
+                        WireMock.equalTo(EMAIL)))
+                .withRequestBody(WireMock.matchingJsonPath("$.phoneNumber",
+                        WireMock.equalTo(PHONE_NUMBER))));
     }
 
     @Test
@@ -301,7 +307,9 @@ class AuthControllerTest extends AbstractWireMockTest {
                 HttpMethod.POST,
                 Map.of(
                         "id", UUID.randomUUID().toString(),
-                        "loginName", LOGIN
+                        "loginName", LOGIN,
+                        "email", EMAIL,
+                        "phoneNumber", PHONE_NUMBER
                 )
         );
     }
@@ -310,6 +318,8 @@ class AuthControllerTest extends AbstractWireMockTest {
         RegisterRequest request = new RegisterRequest();
         request.setLoginName(LOGIN);
         request.setPassword(PASSWORD);
+        request.setEmail(EMAIL);
+        request.setPhoneNumber(PHONE_NUMBER);
         return request;
     }
 
@@ -330,6 +340,8 @@ class AuthControllerTest extends AbstractWireMockTest {
         RegisterRequest request = new RegisterRequest();
         request.setLoginName(LOGIN);
         request.setPassword(PASSWORD);
+        request.setEmail(EMAIL);
+        request.setPhoneNumber(PHONE_NUMBER);
         return request;
     }
 }
