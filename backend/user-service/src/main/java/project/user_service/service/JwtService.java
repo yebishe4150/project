@@ -48,6 +48,16 @@ public class JwtService {
         return Role.valueOf(role);
     }
 
+    public String generateExpiredToken() {
+        return Jwts.builder()
+                .subject(UUID.randomUUID().toString())
+                .claim("role", Role.USER.name())
+                .issuedAt(new Date(System.currentTimeMillis() - 10_000)) // 10 сек назад
+                .expiration(new Date(System.currentTimeMillis() - 1_000)) // уже истёк
+                .signWith(key)
+                .compact();
+    }
+
     private Claims parse(String token) {
         return Jwts.parser()
                 .verifyWith(key)
