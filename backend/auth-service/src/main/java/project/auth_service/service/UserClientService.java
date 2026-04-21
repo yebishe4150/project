@@ -19,11 +19,13 @@ public class UserClientService {
 
     private final UserClient userClient;
 
-    public void createUser(UserCredentials user) {
+    public void createUser(UserCredentials user, String email, String phoneNumber) {
 
         CreateUserRequest request = new CreateUserRequest();
         request.setId(user.getUserId());
         request.setLoginName(user.getLoginName());
+        request.setEmail(email);
+        request.setPhoneNumber(phoneNumber);
 
         try {
             BaseResponse<UserResponse> response = userClient.createUser(request);

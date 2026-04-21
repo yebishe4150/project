@@ -70,7 +70,9 @@ public class AuthController {
 
         RegisterResponse response = authService.register(
                 request.getLoginName(),
-                request.getPassword()
+                request.getPassword(),
+                request.getEmail(),
+                request.getPhoneNumber()
         );
 
         return RegisterResponseWrapper.builder()

@@ -12,11 +12,17 @@ import project.user_service.exception.UserAlreadyExistsException;
 import project.user_service.repository.UserRepository;
 import project.user_service.service.mapper.UserMapper;
 
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    private static final String NICKNAME_PREFIX = "good_user_";
+    private static final int MIN_NICKNAME_NUMBER = 1;
+    private static final int MAX_NICKNAME_NUMBER = 123_123;
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -36,6 +42,7 @@ public class UserService {
         }
 
         User user = userMapper.toEntity(request);
+        user.setNickname(generateUniqueNickname());
 
         user = userRepository.save(user);
 
@@ -48,7 +55,11 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
-        userMapper.updateUserFromDto(request, user);
+        applyIfNotEmpty(request.getFirstName(), user::setFirstName);
+        applyIfNotEmpty(request.getSecondName(), user::setSecondName);
+        applyIfNotEmpty(request.getNickname(), user::setNickname);
+        applyIfNotEmpty(request.getEmail(), user::setEmail);
+        applyIfNotEmpty(request.getPhoneNumber(), user::setPhoneNumber);
 
         User saved = userRepository.save(user);
 
@@ -62,5 +73,24 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         userRepository.delete(user);
+    }
+
+    private void applyIfNotEmpty(String value, Consumer<String> setter) {
+        if (value != null && !value.trim().isEmpty()) {
+            setter.accept(value);
+        }
+    }
+
+    private String generateUniqueNickname() {
+        for (int attempt = 0; attempt < MAX_NICKNAME_NUMBER; attempt++) {
+            String nickname = NICKNAME_PREFIX + ThreadLocalRandom.current()
+                    .nextInt(MIN_NICKNAME_NUMBER, MAX_NICKNAME_NUMBER + 1);
+
+            if (!userRepository.existsByNickname(nickname)) {
+                return nickname;
+            }
+        }
+
+        throw new UserAlreadyExistsException("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ СѓРЅРёРєР°Р»СЊРЅС‹Р№ nickname");
     }
 }

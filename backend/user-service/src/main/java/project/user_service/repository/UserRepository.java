@@ -6,4 +6,6 @@ import project.user_service.entity.User;
 import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
+
+    boolean existsByNickname(String nickname);
 }
