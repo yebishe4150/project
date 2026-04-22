@@ -19,6 +19,7 @@ import java.util.UUID;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final SecurityErrorResponseWriter securityErrorResponseWriter;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -26,23 +27,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        SecurityContextHolder.clearContext();
+
         String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
-
-            String token = header.substring(7);
-
-            if (jwtService.isTokenValid(token)) {
-
-                UUID userId = jwtService.extractUserId(token);
-                Role role = jwtService.extractRole(token);
-
-                UserPrincipal principal = new UserPrincipal(userId, role);
-
-                JwtAuthentication auth = new JwtAuthentication(principal);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+        if (header == null) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        if (!header.startsWith("Bearer ")) {
+            securityErrorResponseWriter.writeUnauthorized(request, response);
+            return;
+        }
+
+        String token = header.substring(7);
+
+        if (!jwtService.isTokenValid(token)) {
+            securityErrorResponseWriter.writeUnauthorized(request, response);
+            return;
+        }
+
+        UUID userId = jwtService.extractUserId(token);
+        Role role = jwtService.extractRole(token);
+
+        UserPrincipal principal = new UserPrincipal(userId, role);
+
+        JwtAuthentication auth = new JwtAuthentication(principal);
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
     }

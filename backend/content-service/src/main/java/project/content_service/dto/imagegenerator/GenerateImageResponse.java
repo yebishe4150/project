@@ -1,10 +1,14 @@
 package project.content_service.dto.imagegenerator;
 
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
+@Builder
+@Schema(description = "Ответ на генерацию изображения")
 public class GenerateImageResponse {
-    String imageUrl;
+
+    @Schema(description = "URL сгенерированного изображения")
+    private String url;
 }
