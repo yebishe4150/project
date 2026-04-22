@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,8 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 import project.content_service.dto.ErrorResponse;
 import project.content_service.dto.ImageListResponseWrapper;
 import project.content_service.dto.image.ImageResponse;
-import project.content_service.dto.image.UploadImageRequest;
+import project.content_service.dto.upload.UploadImageRequest;
 import project.content_service.dto.upload.ImageUploadResponseWrapper;
+import project.content_service.dto.upload.UploadImageResponse;
+import project.content_service.security.UserPrincipal;
 import project.content_service.service.ImageService;
 
 import java.util.List;
@@ -55,17 +59,18 @@ public class ImageController {
                     )
             )
     })
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(path = "images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ImageUploadResponseWrapper upload(
             @RequestPart("file") MultipartFile file,
-            @Valid @ModelAttribute UploadImageRequest request
+            @Valid @ModelAttribute UploadImageRequest request,
+            @AuthenticationPrincipal UserPrincipal user
     ) {
 
-        ImageResponse response = service.upload(
+        UploadImageResponse response = service.upload(
                 file,
-                request.getUserId(),
-                request.getDescription(),
-                request.getTags()
+                user.getUserId(),
+                request
         );
 
         return ImageUploadResponseWrapper.builder()
