@@ -1,0 +1,19 @@
+.content {
+  min-height: calc(100vh - 278px);
+  background: linear-gradient(135deg, #fbfbef 0%, #fff7f4 100%);
+}
+
+.grid {
+  width: min(920px, calc(100% - 32px));
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 32px auto 0;
+}
+
+.image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+}
