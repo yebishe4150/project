@@ -5,78 +5,138 @@ import { useToast } from "../../../app/providers/useToast";
 import type { RegisterRequest } from "../model/request.types";
 import { mapAuthError } from "../../../shared/api/errors/errorMapper";
 import type { ApiError } from "../../../shared/api/errors/errorTypes";
+import {
+  validateLoginForm,
+  validateRegisterForm,
+} from "../model/validation";
+import type {
+  AuthField,
+  AuthValidationErrors,
+} from "../model/validation.types";
 
 type Props = {
   onClose: () => void;
+};
+
+type TouchedState = Record<AuthField, boolean>;
+
+const INITIAL_TOUCHED: TouchedState = {
+  loginName: false,
+  password: false,
 };
 
 export const LoginModal = ({ onClose }: Props) => {
   const { login, register } = useAuth();
   const { showToast } = useToast();
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const [registerError, setRegisterError] = useState<ApiError | null>(null);
+  const [apiError, setApiError] = useState<ApiError | null>(null);
+  const [touched, setTouched] = useState<TouchedState>(INITIAL_TOUCHED);
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState<RegisterRequest>({
     loginName: "",
     password: "",
     email: "",
-    phone: ""
+    phone: "",
   });
 
-  const resetRegisterError = () => {
-    if (registerError) {
-      setRegisterError(null);
+  const validationErrors: AuthValidationErrors =
+    mode === "login" ? validateLoginForm(form) : validateRegisterForm(form);
+
+  const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
+  const getFieldError = (field: AuthField) => {
+    if (touched[field] && validationErrors[field]) {
+      return validationErrors[field];
     }
+
+    if (apiError?.field === field) {
+      return apiError.message;
+    }
+
+    return null;
+  };
+
+  const updateField = (field: AuthField, value: string) => {
+    if (apiError) {
+      setApiError((current) => {
+        if (!current) {
+          return current;
+        }
+
+        if (!current.field || current.field === field) {
+          return null;
+        }
+
+        return current;
+      });
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleBlur = (field: AuthField) => {
+    setTouched((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
   };
 
   const handleSubmit = async () => {
-    if (!form.loginName || !form.password) return;
+    setTouched({
+      loginName: true,
+      password: true,
+    });
+
+    if (hasValidationErrors) {
+      setApiError(null);
+      return;
+    }
 
     try {
+      setApiError(null);
+
       if (mode === "login") {
         await login({
           loginName: form.loginName,
-          password: form.password
+          password: form.password,
         });
 
         showToast({
           title: "Авторизация успешна",
-          message: "Вы успешно вошли в аккаунт."
+          message: "Вы успешно вошли в аккаунт.",
         });
       } else {
-        setRegisterError(null);
         await register(form);
 
         showToast({
           title: "Регистрация успешна",
-          message: "Аккаунт создан, вы уже авторизованы."
+          message: "Аккаунт создан, вы уже авторизованы.",
         });
       }
 
       onClose();
     } catch (error) {
-      if (mode === "signup") {
-        setRegisterError(mapAuthError(error));
-        return;
-      }
-
-      console.error("Auth error", error);
+      setApiError(mapAuthError(error, mode));
     }
   };
 
   const switchMode = (nextMode: "login" | "signup") => {
-    setRegisterError(null);
+    setApiError(null);
+    setTouched(INITIAL_TOUCHED);
     setShowPassword(false);
     setMode(nextMode);
   };
 
+  const loginNameError = getFieldError("loginName");
+  const passwordError = getFieldError("password");
+
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div
-        className={styles.modal}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.close} onClick={onClose}>
           x
         </button>
@@ -86,37 +146,27 @@ export const LoginModal = ({ onClose }: Props) => {
         <div className={styles.form}>
           <div className={styles.field}>
             <input
-              className={`${styles.input} ${registerError?.field === "loginName" ? styles.inputError : ""}`}
+              className={`${styles.input} ${loginNameError ? styles.inputError : ""}`}
               placeholder="Login"
               value={form.loginName}
-              onChange={(e) => {
-                resetRegisterError();
-                setForm((prev) => ({
-                  ...prev,
-                  loginName: e.target.value
-                }));
-              }}
+              onChange={(e) => updateField("loginName", e.target.value)}
+              onBlur={() => handleBlur("loginName")}
             />
 
-            {mode === "signup" && registerError?.field === "loginName" && (
-              <div className={styles.errorText}>{registerError.message}</div>
+            {loginNameError && (
+              <div className={styles.errorText}>{loginNameError}</div>
             )}
           </div>
 
           <div className={styles.field}>
             <div className={styles.passwordField}>
               <input
-                className={`${styles.input} ${styles.passwordInput} ${registerError?.field === "password" ? styles.inputError : ""}`}
+                className={`${styles.input} ${styles.passwordInput} ${passwordError ? styles.inputError : ""}`}
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={form.password}
-                onChange={(e) => {
-                  resetRegisterError();
-                  setForm((prev) => ({
-                    ...prev,
-                    password: e.target.value
-                  }));
-                }}
+                onChange={(e) => updateField("password", e.target.value)}
+                onBlur={() => handleBlur("password")}
               />
 
               <button
@@ -128,8 +178,8 @@ export const LoginModal = ({ onClose }: Props) => {
               </button>
             </div>
 
-            {mode === "signup" && registerError?.field === "password" && registerError.message && (
-              <div className={styles.errorText}>{registerError.message}</div>
+            {passwordError && (
+              <div className={styles.errorText}>{passwordError}</div>
             )}
           </div>
 
@@ -142,7 +192,7 @@ export const LoginModal = ({ onClose }: Props) => {
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    email: e.target.value
+                    email: e.target.value,
                   }))
                 }
               />
@@ -154,21 +204,21 @@ export const LoginModal = ({ onClose }: Props) => {
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    phone: e.target.value
+                    phone: e.target.value,
                   }))
                 }
               />
             </>
           )}
 
-          {mode === "signup" && registerError && !registerError.field && (
-            <div className={styles.generalError}>{registerError.message}</div>
+          {apiError && !apiError.field && (
+            <div className={styles.generalError}>{apiError.message}</div>
           )}
 
           <button
             className={styles.button}
             onClick={handleSubmit}
-            disabled={!form.loginName || !form.password}
+            disabled={hasValidationErrors}
           >
             {mode === "login" ? "Login" : "Sign up"}
           </button>
