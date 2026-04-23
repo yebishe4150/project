@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { checkAuth } from "./auth";
 
 export function useAuth() {
-  const [isAuth, setIsAuth] = useState(null);
-
-  useEffect(() => {
-    checkAuth().then(setIsAuth);
-  }, []);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["auth-status"],
+    queryFn: checkAuth,
+    retry: false,
+  });
 
   return {
-    isAuth
+    isAuth: isLoading ? null : isError ? false : (data ?? false),
   };
 }

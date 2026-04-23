@@ -1,0 +1,164 @@
+.empty {
+  width: min(448px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 88px 0 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.icon {
+  width: 128px;
+  height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 45% 42%, rgba(255, 255, 255, 0.92) 0 38%, transparent 39%),
+    linear-gradient(135deg, #f1ffd7 0%, #c8efff 100%);
+  box-shadow: 0 20px 34px rgba(67, 62, 43, 0.12);
+}
+
+.icon svg {
+  width: 48px;
+  height: 48px;
+  fill: none;
+  stroke: #10b957;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.title {
+  margin: 28px 0 0;
+  color: #111827;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.text {
+  max-width: 390px;
+  margin: 12px 0 0;
+  color: #5f6673;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.buttons {
+  width: 100%;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.upload,
+.generate {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 13px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  box-shadow: 0 14px 26px rgba(31, 41, 55, 0.1);
+  cursor: pointer;
+}
+
+.upload {
+  background: linear-gradient(90deg, #4da8ff 0%, #02d5a7 100%);
+}
+
+.generate {
+  background: linear-gradient(90deg, #ffc414 0%, #ff8b5f 52%, #ec4fb0 100%);
+}
+
+.buttonIcon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.uploadForm {
+  width: 100%;
+  margin-top: 28px;
+  padding: 16px;
+  border: 1px solid rgba(95, 102, 115, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 14px 34px rgba(31, 41, 55, 0.08);
+}
+
+.fileName {
+  margin-bottom: 12px;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.textarea,
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(95, 102, 115, 0.2);
+  border-radius: 12px;
+  background: #fff;
+  color: #111827;
+  font: inherit;
+  font-size: 14px;
+}
+
+.textarea {
+  min-height: 86px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.input {
+  margin-top: 10px;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.formActions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelButton,
+.submitButton {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background: transparent;
+  color: #5f6673;
+}
+
+.submitButton {
+  background: #111827;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .empty {
+    padding-top: 64px;
+  }
+}

@@ -62,16 +62,17 @@ let refreshPromise: Promise<boolean> | null = null;
 async function refreshRequest(): Promise<boolean> {
   try {
     const raw = await apiFetch<ApiResponse<RefreshResponseData>>(
-        "/auth/refresh",
-        {
-          method: "POST"
-        }
+      "/auth/refresh",
+      {
+        method: "POST"
+      }
     );
 
     const data = mapRefreshResponse(raw);
 
     if (!data.accessToken) {
       accessToken = null;
+      clearAuthFlag();
       return false;
     }
 
@@ -80,6 +81,7 @@ async function refreshRequest(): Promise<boolean> {
     return true;
   } catch {
     accessToken = null;
+    clearAuthFlag();
     return false;
   }
 }
@@ -112,16 +114,16 @@ export async function checkAuth(): Promise<boolean> {
 // ================================
 
 export async function register(
-    payload: RegisterRequest
+  payload: RegisterRequest
 ): Promise<RegisterResult> {
 
   const raw = await apiFetch<ApiResponse<RegisterResponseData>>(
-      "/auth/register",
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "application/json" }
-      }
+    "/auth/register",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" }
+    }
   );
 
   return mapRegisterResponse(raw);
@@ -132,16 +134,16 @@ export async function register(
 // ================================
 
 export async function login(
-    payload: LoginRequest
+  payload: LoginRequest
 ): Promise<AuthData> {
 
   const raw = await apiFetch<ApiResponse<LoginResponseData>>(
-      "/auth/login",
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "application/json" }
-      }
+    "/auth/login",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" }
+    }
   );
 
   const mapped = mapLoginResponse(raw);
@@ -161,8 +163,8 @@ export async function login(
 export async function logout(): Promise<void> {
   try {
     await apiFetch(
-        "/auth/logout",
-        { method: "POST" }
+      "/auth/logout",
+      { method: "POST" }
     );
   } catch (e) {
     console.warn("Logout error:", e);

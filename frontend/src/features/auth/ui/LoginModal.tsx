@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./LoginModal.module.css";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import { useToast } from "../../../app/providers/useToast";
@@ -71,7 +72,7 @@ export const LoginModal = ({ onClose }: Props) => {
     setMode(nextMode);
   };
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div
         className={styles.modal}
@@ -188,6 +189,7 @@ export const LoginModal = ({ onClose }: Props) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
