@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 05.add-image-source-column.yaml
+      author: maxim
+      changes:
+        - addColumn:
+            tableName: images
+            columns:
+              - column:
+                  name: source
+                  type: varchar
+                  remarks: "Источник изображения: upload или ai generation"
+
+        - update:
+            tableName: images
+            columns:
+              - column:
+                  name: source
+                  value: GENERATED
+
+        - addNotNullConstraint:
+            tableName: images
+            columnName: source
+            columnDataType: varchar
+
+        - createIndex:
+            tableName: images
+            indexName: idx_images_user_id_source
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: source

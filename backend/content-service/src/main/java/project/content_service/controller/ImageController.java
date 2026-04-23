@@ -13,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,14 +22,15 @@ import org.springframework.web.multipart.MultipartFile;
 import project.content_service.dto.ErrorResponse;
 import project.content_service.dto.ImageListResponseWrapper;
 import project.content_service.dto.image.ImageResponse;
-import project.content_service.dto.upload.UploadImageRequest;
 import project.content_service.dto.upload.ImageUploadResponseWrapper;
+import project.content_service.dto.upload.UploadImageRequest;
 import project.content_service.dto.upload.UploadImageResponse;
+import project.content_service.dto.userimage.UserImageListResponseWrapper;
+import project.content_service.dto.userimage.UserImageResponse;
 import project.content_service.security.UserPrincipal;
 import project.content_service.service.ImageService;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/content")
@@ -108,18 +108,65 @@ public class ImageController {
                     description = "Список изображений пользователя",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ImageListResponseWrapper.class)
+                            schema = @Schema(implementation = UserImageListResponseWrapper.class)
                     )
             )
     })
-    @GetMapping("/user/{userId}")
-    public ImageListResponseWrapper getByUser(@PathVariable UUID userId) {
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/images/user")
+    public UserImageListResponseWrapper getByUser(@AuthenticationPrincipal UserPrincipal user) {
 
-        List<ImageResponse> response = service.getByUser(userId);
+        List<UserImageResponse> response = service.getByUser(user.getUserId());
 
-        return ImageListResponseWrapper.builder()
+        return UserImageListResponseWrapper.builder()
                 .data(response)
                 .message("Список изображений пользователя")
+                .build();
+    }
+
+    @Operation(summary = "Получить загруженные изображения пользователя")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Список загруженных изображений пользователя",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserImageListResponseWrapper.class)
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/images/user/uploads")
+    public UserImageListResponseWrapper getUploadedByUser(@AuthenticationPrincipal UserPrincipal user) {
+
+        List<UserImageResponse> response = service.getUploadedByUser(user.getUserId());
+
+        return UserImageListResponseWrapper.builder()
+                .data(response)
+                .message("Список загруженных изображений пользователя")
+                .build();
+    }
+
+    @Operation(summary = "Получить сгенерированные изображения пользователя")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Список сгенерированных изображений пользователя",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserImageListResponseWrapper.class)
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/images/user/generated")
+    public UserImageListResponseWrapper getGeneratedByUser(@AuthenticationPrincipal UserPrincipal user) {
+
+        List<UserImageResponse> response = service.getGeneratedByUser(user.getUserId());
+
+        return UserImageListResponseWrapper.builder()
+                .data(response)
+                .message("Список сгенерированных изображений пользователя")
                 .build();
     }
 

@@ -10,20 +10,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import project.content_service.dto.ErrorResponse;
 import project.content_service.dto.imagegenerator.GenerateImageRequest;
 import project.content_service.dto.imagegenerator.GenerateImageResponse;
 import project.content_service.dto.imagegenerator.GenerateImageResponseWrapper;
 import project.content_service.security.UserPrincipal;
-import project.content_service.service.ImageAiService;
+import project.content_service.service.ImageGenerationService;
 
 @RestController
-@RequestMapping("/v1/content/ai")
+@RequestMapping("/v1/content/image-generations")
 @RequiredArgsConstructor
-public class ImageAiController {
+public class ImageGenerationController {
 
-    private final ImageAiService imageAiService;
+    private final ImageGenerationService imageGenerationService;
 
     @Operation(summary = "Генерация изображения")
     @ApiResponses(value = {
@@ -51,7 +54,7 @@ public class ImageAiController {
             @AuthenticationPrincipal UserPrincipal user
     ) {
 
-        GenerateImageResponse response = imageAiService.generate(request, user.getUserId());
+        GenerateImageResponse response = imageGenerationService.generate(request, user.getUserId());
 
         return GenerateImageResponseWrapper.builder()
                 .data(response)
