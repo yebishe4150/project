@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import project.content_service.dto.image.ImageResponse;
 import project.content_service.entity.Image;
+import project.content_service.entity.ImageSource;
 import project.content_service.entity.Tag;
 import project.content_service.exception.FileUploadException;
 import project.content_service.repository.ImageRepository;
@@ -39,7 +40,8 @@ public class ImageStorageService {
             String originalName,
             UUID userId,
             String description,
-            List<String> tagNames
+            List<String> tagNames,
+            ImageSource source
     ) {
 
         String key = UUID.randomUUID() + "_" + originalName;
@@ -63,6 +65,7 @@ public class ImageStorageService {
                 .url(url)
                 .userId(userId)
                 .description(description)
+                .source(source)
                 .build();
 
         if (tagNames != null && !tagNames.isEmpty()) {

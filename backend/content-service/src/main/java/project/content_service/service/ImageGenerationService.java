@@ -7,13 +7,14 @@ import project.content_service.client.PollinationsImageClient;
 import project.content_service.dto.image.ImageResponse;
 import project.content_service.dto.imagegenerator.GenerateImageRequest;
 import project.content_service.dto.imagegenerator.GenerateImageResponse;
+import project.content_service.entity.ImageSource;
 import project.content_service.util.UrlRewriter;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ImageAiService {
+public class ImageGenerationService {
 
     private final PollinationsImageClient aiClient;
     private final PromptService promptService;
@@ -33,7 +34,8 @@ public class ImageAiService {
                 "ai_" + System.currentTimeMillis() + ".jpg",
                 userId,
                 request.getDescription(),
-                request.getTags()
+                request.getTags(),
+                ImageSource.GENERATED
         );
 
         return GenerateImageResponse.builder()

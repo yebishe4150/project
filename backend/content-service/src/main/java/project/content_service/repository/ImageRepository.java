@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import project.content_service.entity.Image;
+import project.content_service.entity.ImageSource;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,8 @@ import java.util.UUID;
 public interface ImageRepository extends JpaRepository<Image, UUID> {
 
     List<Image> findByUserId(UUID userId);
+
+    List<Image> findByUserIdAndSource(UUID userId, ImageSource source);
 
     List<Image> findAllByIdIn(List<UUID> ids);
 

@@ -8,6 +8,8 @@ import project.content_service.dto.image.ImageResponse;
 import project.content_service.dto.upload.UploadImageRequest;
 import project.content_service.dto.upload.UploadImageResponse;
 import project.content_service.dto.userimage.UserImageResponse;
+import project.content_service.entity.Image;
+import project.content_service.entity.ImageSource;
 import project.content_service.exception.FileUploadException;
 import project.content_service.repository.ImageRepository;
 import project.content_service.util.UrlRewriter;
@@ -45,7 +47,8 @@ public class ImageService {
                 file.getOriginalFilename(),
                 userId,
                 request.getDescription(),
-                request.getTags()
+                request.getTags(),
+                ImageSource.UPLOAD
         );
 
         return UploadImageResponse.builder()
@@ -63,9 +66,21 @@ public class ImageService {
     public List<UserImageResponse> getByUser(UUID userId) {
         return repository.findByUserId(userId)
                 .stream()
-                .map(image -> UserImageResponse.builder()
-                        .url(urlRewriter.rewriteForExternalAccess(image.getUrl()))
-                        .build())
+                .map(this::mapToUserImageResponse)
+                .toList();
+    }
+
+    public List<UserImageResponse> getUploadedByUser(UUID userId) {
+        return repository.findByUserIdAndSource(userId, ImageSource.UPLOAD)
+                .stream()
+                .map(this::mapToUserImageResponse)
+                .toList();
+    }
+
+    public List<UserImageResponse> getGeneratedByUser(UUID userId) {
+        return repository.findByUserIdAndSource(userId, ImageSource.GENERATED)
+                .stream()
+                .map(this::mapToUserImageResponse)
                 .toList();
     }
 
@@ -89,5 +104,11 @@ public class ImageService {
                 .stream()
                 .map(imageStorageService::mapToResponse)
                 .toList();
+    }
+
+    private UserImageResponse mapToUserImageResponse(Image image) {
+        return UserImageResponse.builder()
+                .url(urlRewriter.rewriteForExternalAccess(image.getUrl()))
+                .build();
     }
 }
