@@ -1,20 +1,25 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { LoginModal } from "../../features/auth/ui/LoginModal";
-import { ProfileModal } from "../../features/auth/ui/ProfileModal";
 
 export const Header = () => {
   const { isAuth, logout } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <header className={styles.header}>
       <div className={styles.logo}>PinPet</div>
 
       <div className={styles.actions}>
-        {isAuth === null && <span>Loading...</span>}
+        {isAuth === null && (
+          <div className={styles.authLoading} aria-live="polite" aria-label="Checking authorization">
+            <span className={styles.authLoadingDot} />
+            <span className={styles.authLoadingText}>Checking session</span>
+          </div>
+        )}
 
         {isAuth === false && (
           <button onClick={() => setIsOpen(true)}>
@@ -24,7 +29,7 @@ export const Header = () => {
 
         {isAuth === true && (
           <>
-            <button onClick={() => setIsProfileOpen(true)}>
+            <button onClick={() => navigate("/profile")}>
               Profile
             </button>
 
@@ -37,10 +42,6 @@ export const Header = () => {
 
       {isOpen && (
         <LoginModal onClose={() => setIsOpen(false)} />
-      )}
-
-      {isProfileOpen && (
-        <ProfileModal onClose={() => setIsProfileOpen(false)} />
       )}
     </header>
   );

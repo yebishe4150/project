@@ -12,8 +12,20 @@ export const FeedPage = () => {
   })
 
   return (
-    <div className={styles.container}>
-      <FeedList pins={pins} />
+    <div className={styles.page}>
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.badge}>PinPet Gallery</div>
+          <h1 className={styles.title}>Discover cozy pet inspiration</h1>
+          <p className={styles.text}>
+            Browse fresh uploads and AI-generated ideas in one soft little feed.
+          </p>
+        </div>
+      </section>
+
+      <section className={styles.container}>
+        <FeedList pins={pins} />
+      </section>
     </div>
   )
 }

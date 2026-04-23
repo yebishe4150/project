@@ -19,6 +19,7 @@ public class CreateUserRequest {
     @Schema(description = "Логин пользователя", example = "test_login")
     private String loginName;
 
-    @Schema(description = "Имя пользователя", example = "Максим")
-    private String name;
+    private String email;
+
+    private String phoneNumber;
 }

@@ -38,7 +38,7 @@ public class AuthService {
     private final JwtProperties jwtProperties;
 
     @Transactional
-    public RegisterResponse register(String loginName, String rawPassword) {
+    public RegisterResponse register(String loginName, String rawPassword, String email, String phoneNumber) {
 
         PasswordValidator.validate(rawPassword);
 
@@ -61,7 +61,7 @@ public class AuthService {
         }
 
         try {
-            userClientService.createUser(saved);
+            userClientService.createUser(saved, email, phoneNumber);
             //TODO: Пофиксить на транзакшнл аутбокс
         } catch (Exception e) {
             if (e instanceof ExternalServiceException) {

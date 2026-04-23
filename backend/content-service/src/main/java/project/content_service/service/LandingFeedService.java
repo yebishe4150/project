@@ -8,7 +8,11 @@ import project.content_service.repository.ImageRepository;
 import project.content_service.repository.LandingFeedRepository;
 import project.content_service.util.UrlRewriter;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,7 +22,7 @@ public class LandingFeedService {
     private final LandingFeedRepository landingRepository;
     private final ImageRepository imageRepository;
 
-    private static final int FEED_SIZE = 25;
+    private static final int FEED_SIZE = 50;
     private final UrlRewriter urlRewriter;
 
     public List<LandingImageResponse> getFeed() {

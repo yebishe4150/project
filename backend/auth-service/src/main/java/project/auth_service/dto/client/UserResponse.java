@@ -16,5 +16,13 @@ public class UserResponse {
     private String loginName;
 
     @Schema(description = "Имя", example = "Максим")
-    private String name;
+    private String firstName;
+
+    private String secondName;
+
+    private String nickname;
+
+    private String email;
+
+    private String phoneNumber;
 }

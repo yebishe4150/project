@@ -17,6 +17,8 @@ public class ErrorResponse {
     @Schema(description = "HTTP статус", example = "400")
     private int status;
 
+    private String path;
+
     @Schema(description = "Время ошибки")
     private LocalDateTime timestamp;
 }

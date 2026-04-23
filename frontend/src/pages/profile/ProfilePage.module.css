@@ -1,0 +1,12 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fbfbef 0%, #fff7f4 100%);
+}
+
+.loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #fbfbef 0%, #fff7f4 100%);
+  color: #5f6673;
+}

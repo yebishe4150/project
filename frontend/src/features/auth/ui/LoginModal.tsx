@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./LoginModal.module.css";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import { useToast } from "../../../app/providers/useToast";
@@ -134,7 +135,7 @@ export const LoginModal = ({ onClose }: Props) => {
   const loginNameError = getFieldError("loginName");
   const passwordError = getFieldError("password");
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.close} onClick={onClose}>
@@ -238,6 +239,6 @@ export const LoginModal = ({ onClose }: Props) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-};

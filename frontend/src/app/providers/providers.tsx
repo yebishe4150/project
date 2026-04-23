@@ -2,12 +2,29 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { AuthProvider } from "./AuthProvider"
 import { ToastProvider } from "./ToastProvider"
 
+function shouldRetryQuery(failureCount: number, error: unknown) {
+  if (failureCount >= 1) {
+    return false
+  }
+
+  if (typeof error !== "object" || error === null) {
+    return true
+  }
+
+  const status = "status" in error ? error.status : undefined
+
+  if (typeof status === "number") {
+    return status >= 500
+  }
+
+  return true
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false,
+      retry: shouldRetryQuery,
       refetchOnWindowFocus: false,
-      retryOnMount: false,
     },
   },
 })
@@ -15,11 +32,9 @@ const queryClient = new QueryClient({
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <ToastProvider>
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>{children}</AuthProvider>
+      </QueryClientProvider>
     </ToastProvider>
   )
 }

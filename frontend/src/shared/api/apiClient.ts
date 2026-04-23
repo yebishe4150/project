@@ -2,10 +2,6 @@ import { refresh, getAccessToken, canRefreshAuth } from "@/features/auth/auth.ts
 
 const BASE_URL = "/api/v1";
 
-// ================================
-// 🌐 API FETCH
-// ================================
-
 export async function apiFetch<T>(
     url: string,
     options: RequestInit = {}
@@ -22,7 +18,7 @@ export async function apiFetch<T>(
     credentials: "include"
   });
 
-  // 🔄 retry при 401
+  //  retry при 401
   if (res.status === 401 && !url.includes("/auth/refresh") && canRefreshAuth()) {
 
     // ❗ ВАЖНО: используем lock
@@ -47,11 +43,11 @@ export async function apiFetch<T>(
     });
   }
 
-  // 📦 безопасный парсинг
+  //  безопасный парсинг
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
 
-  // ❌ централизованная ошибка
+  //  централизованная ошибка
   if (!res.ok) {
     throw {
       status: res.status,

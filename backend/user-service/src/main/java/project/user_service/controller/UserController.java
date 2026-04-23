@@ -47,6 +47,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Получить текущего пользователя")
     public BaseResponse<UserResponse> me(
             @AuthenticationPrincipal UserPrincipal principal
@@ -73,6 +74,7 @@ public class UserController {
     }
 
     @PutMapping("/me")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "Обновить текущего пользователя")
     public BaseResponse<UserResponse> updateMe(
             @AuthenticationPrincipal UserPrincipal principal,

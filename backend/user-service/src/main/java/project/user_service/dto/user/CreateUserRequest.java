@@ -1,6 +1,7 @@
 package project.user_service.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -19,6 +20,8 @@ public class CreateUserRequest {
     @Schema(example = "test_login", description = "Логин пользователя")
     private String loginName;
 
-    @Schema(example = "Максим", description = "Имя пользователя")
-    private String name;
+    @Email
+    private String email;
+
+    private String phoneNumber;
 }
