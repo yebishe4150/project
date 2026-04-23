@@ -8,8 +8,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5431/auth_db
-    username: user
-    password: password
+    username: ${AUTH_DB_USERNAME:user}
+    password: ${AUTH_DB_PASSWORD:password}
 
   jpa:
     hibernate:
@@ -51,8 +51,9 @@ logging:
     minLengthForPartialMasking: 3
 
 security:
+  internal:
+    token: ${INTERNAL_SERVICE_TOKEN:super-secret}
   jwt:
-#    secret: ${JWT_SECRET}
     secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}
     access-token-expiration: 900        # 15 мин
     refresh-token-expiration: 43200     # 12 часов

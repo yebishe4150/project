@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/user_db
-    username: user
-    password: password
+    username: ${USER_DB_USERNAME:user}
+    password: ${USER_DB_PASSWORD:password}
 
   jpa:
     hibernate:
@@ -23,6 +23,7 @@ spring:
       max-request-size: 10MB
 
 security:
+  internal:
+    token: ${INTERNAL_SERVICE_TOKEN:super-secret}
   jwt:
-    #    secret: ${JWT_SECRET}
     secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}

@@ -7,11 +7,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FeignSecurityConfig {
 
-    private static final String INTERNAL_TOKEN = "super-secret";
-
     @Bean
-    public RequestInterceptor internalRequestInterceptor() {
+    public RequestInterceptor internalRequestInterceptor(InternalSecurityProperties properties) {
         return template ->
-                template.header("X-Internal-Token", INTERNAL_TOKEN);
+                template.header("X-Internal-Token", properties.getToken());
     }
 }

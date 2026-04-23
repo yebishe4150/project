@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import project.user_service.config.InternalSecurityProperties;
 import project.user_service.entity.Role;
 import project.user_service.service.JwtService;
 
@@ -22,8 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final SecurityErrorResponseWriter securityErrorResponseWriter;
-
-    private static final String INTERNAL_TOKEN = "super-secret";
+    private final InternalSecurityProperties internalSecurityProperties;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String internal = request.getHeader("X-Internal-Token");
 
-        if (INTERNAL_TOKEN.equals(internal)) {
+        if (internalSecurityProperties.getToken().equals(internal)) {
             UserPrincipal principal = new UserPrincipal(
                     UUID.fromString("00000000-0000-0000-0000-000000000000"),
                     Role.SYSTEM
