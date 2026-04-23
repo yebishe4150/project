@@ -1,3 +1,3 @@
-export type RegisterField = "loginName" | "password";
+export type AuthField = "loginName" | "password";
 
-export type RegisterValidationErrors = Partial<Record<RegisterField, string>>;
+export type AuthValidationErrors = Partial<Record<AuthField, string>>;

@@ -14,6 +14,7 @@ const AUTH_QUERY_KEY = ["auth-status"]
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient()
+
   const { data, isLoading, isError } = useQuery({
     queryKey: AUTH_QUERY_KEY,
     queryFn: checkAuth,
