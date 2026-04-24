@@ -3,20 +3,23 @@ import styles from "./ProfileTabs.module.css"
 type Props = {
   activeTab: "photos" | "ai"
   onChange: (tab: "photos" | "ai") => void
+  centerSlot?: React.ReactNode
 }
 
-export const ProfileTabs = ({ activeTab, onChange }: Props) => {
+export const ProfileTabs = ({ activeTab, onChange, centerSlot }: Props) => {
   return (
     <div className={styles.tabs}>
       <button
-        className={activeTab === "photos" ? styles.active : ""}
+        className={`${styles.tabButton} ${activeTab === "photos" ? styles.active : ""}`}
         onClick={() => onChange("photos")}
       >
         My Photos
       </button>
 
+      {centerSlot && <div className={styles.centerSlot}>{centerSlot}</div>}
+
       <button
-        className={activeTab === "ai" ? styles.active : ""}
+        className={`${styles.tabButton} ${activeTab === "ai" ? styles.active : ""}`}
         onClick={() => onChange("ai")}
       >
         AI Generated

@@ -3,6 +3,14 @@
   background: linear-gradient(135deg, #fbfbef 0%, #fff7f4 100%);
 }
 
+.status {
+  width: min(920px, calc(100% - 32px));
+  margin: 32px auto 0;
+  color: #5f6673;
+  font-size: 15px;
+  text-align: center;
+}
+
 .grid {
   width: min(920px, calc(100% - 32px));
   display: grid;

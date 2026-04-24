@@ -1,15 +1,16 @@
 .tabs {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
+  align-items: center;
+  justify-content: space-between;
   height: 80px;
+  padding: 0 24px;
   border-bottom: 1px solid #d8dbe2;
   background: rgba(250, 250, 239, 0.72);
 }
 
-.tabs button {
+.tabButton {
   position: relative;
-  width: 50%;
+  flex: 1 1 0;
   height: 100%;
   padding: 0;
   border: none;
@@ -19,6 +20,15 @@
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0;
+}
+
+.centerSlot {
+  position: relative;
+  flex: 0 0 auto;
+  width: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .active {
@@ -33,4 +43,14 @@
   width: 100%;
   height: 2px;
   background: linear-gradient(90deg, #4d86ff 0%, #ff49c2 100%);
+}
+
+@media (max-width: 640px) {
+  .tabs {
+    padding: 0 12px;
+  }
+
+  .centerSlot {
+    width: 60px;
+  }
 }
