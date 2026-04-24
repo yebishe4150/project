@@ -1,0 +1,198 @@
+package project.content_service.controller;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import project.content_service.AbstractTest;
+import project.content_service.entity.Image;
+import project.content_service.entity.ImageSource;
+import project.content_service.entity.Role;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+class ImageControllerTest extends AbstractTest {
+
+    private static final String CONTENT_URL = "/v1/content";
+    private static final String USER_IMAGES_URL = "/v1/content/images/user";
+    private static final String USER_UPLOADED_URL = "/v1/content/images/user/uploads";
+    private static final String USER_GENERATED_URL = "/v1/content/images/user/generated";
+
+    @Test
+    void when_uploadWithUserToken_then_SaveImageAndReturnExternalUrl() throws Exception {
+        UUID userId = UUID.randomUUID();
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "cat.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "image-bytes".getBytes()
+        );
+
+        when(s3Client.putObject(any(software.amazon.awssdk.services.s3.model.PutObjectRequest.class), any(software.amazon.awssdk.core.sync.RequestBody.class)))
+                .thenReturn(PutObjectResponse.builder().eTag("etag").build());
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .file(file)
+                        .param("description", "test image")
+                        .param("tags", "Cat", "Art")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(userId, Role.USER)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode json = objectMapper.readTree(response);
+        JsonNode data = json.get("data");
+
+        assertThat(data.get("url").asText()).startsWith("http://cdn.local:9000/images/");
+        assertThat(imageRepository.findAll()).hasSize(1);
+
+        Image saved = imageRepository.findAll().getFirst();
+        assertThat(saved.getUserId()).isEqualTo(userId);
+        assertThat(saved.getSource()).isEqualTo(ImageSource.UPLOAD);
+        assertThat(saved.getTags()).extracting(tag -> tag.getName()).containsExactlyInAnyOrder("cat", "art");
+    }
+
+    @Test
+    void when_uploadWithoutToken_then_ReturnUnauthorized() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "cat.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "image-bytes".getBytes()
+        );
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .file(file))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+        assertThat(error.get("message").asText()).isEqualTo("Unauthorized");
+    }
+
+    @Test
+    void when_uploadWithAdminToken_then_ReturnForbidden() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "cat.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "image-bytes".getBytes()
+        );
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .file(file)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(UUID.randomUUID(), Role.ADMIN)))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+        assertThat(error.get("message").asText()).isEqualTo("Forbidden");
+    }
+
+    @Test
+    void when_uploadEmptyFile_then_ReturnBadRequest() throws Exception {
+        UUID userId = UUID.randomUUID();
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "empty.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                new byte[0]
+        );
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .file(file)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(userId, Role.USER)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+        assertThat(error.get("message").asText()).isEqualTo("Файл пустой");
+    }
+
+    @Test
+    void when_getAllWithUserToken_then_ReturnAllImages() throws Exception {
+        saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/a.jpg", "a");
+        saveImage(UUID.randomUUID(), ImageSource.GENERATED, "http://localhost:9000/images/b.jpg", "b");
+
+        String response = mockMvc.perform(get(CONTENT_URL)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(UUID.randomUUID(), Role.USER)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode json = objectMapper.readTree(response);
+        assertThat(json.get("data")).hasSize(2);
+    }
+
+    @Test
+    void when_getUserSpecificEndpoints_then_FilterByOwnerAndSource() throws Exception {
+        UUID userId = UUID.randomUUID();
+        saveImage(userId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
+        saveImage(userId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+        saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/foreign.jpg", "foreign");
+
+        String auth = "Bearer " + bearerToken(userId, Role.USER);
+
+        JsonNode allByUser = objectMapper.readTree(mockMvc.perform(get(USER_IMAGES_URL).header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        JsonNode uploaded = objectMapper.readTree(mockMvc.perform(get(USER_UPLOADED_URL).header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        JsonNode generated = objectMapper.readTree(mockMvc.perform(get(USER_GENERATED_URL).header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+
+        assertThat(allByUser.get("data")).hasSize(2);
+        assertThat(uploaded.get("data")).hasSize(1);
+        assertThat(generated.get("data")).hasSize(1);
+    }
+
+    @Test
+    void when_searchByTagsWithUserToken_then_ReturnOnlyImagesMatchingAllNormalizedTags() throws Exception {
+        saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/match.jpg", "match", "cat", "art");
+        saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/partial.jpg", "partial", "cat");
+
+        String response = mockMvc.perform(get("/v1/content/search")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(UUID.randomUUID(), Role.USER))
+                        .param("tags", " CAT ", "art"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode json = objectMapper.readTree(response);
+        assertThat(json.get("data")).hasSize(1);
+        assertThat(json.get("data").get(0).get("description").asText()).isEqualTo("match");
+    }
+
+    @Test
+    void when_searchWithoutTagsWithUserToken_then_ReturnEmptyList() throws Exception {
+        String response = mockMvc.perform(get("/v1/content/search")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(UUID.randomUUID(), Role.USER)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode json = objectMapper.readTree(response);
+        assertThat(json.get("data")).hasSize(0);
+    }
+}

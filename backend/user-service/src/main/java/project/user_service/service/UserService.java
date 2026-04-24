@@ -1,6 +1,8 @@
 package project.user_service.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.user_service.dto.user.CreateUserRequest;
@@ -12,10 +14,12 @@ import project.user_service.exception.UserAlreadyExistsException;
 import project.user_service.repository.UserRepository;
 import project.user_service.service.mapper.UserMapper;
 
+import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
-import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -28,10 +32,10 @@ public class UserService {
     private final UserMapper userMapper;
 
     public UserResponse getById(UUID id) {
-        return userMapper.toResponse(
-                userRepository.findById(id)
-                        .orElseThrow(() -> new NotFoundException("Пользователь не найден"))
-        );
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        return userMapper.toResponse(user);
     }
 
     @Transactional
@@ -46,6 +50,8 @@ public class UserService {
 
         user = userRepository.save(user);
 
+        log.info("Пользователь создан в user-service: userId={}, loginName={}", user.getId(), user.getLoginName());
+
         return userMapper.toResponse(user);
     }
 
@@ -55,15 +61,23 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
+        if (hasNicknameConflict(user, request.getNickname())) {
+            throw new UserAlreadyExistsException("Никнейм уже занят");
+        }
+
         applyIfNotEmpty(request.getFirstName(), user::setFirstName);
         applyIfNotEmpty(request.getSecondName(), user::setSecondName);
         applyIfNotEmpty(request.getNickname(), user::setNickname);
         applyIfNotEmpty(request.getEmail(), user::setEmail);
         applyIfNotEmpty(request.getPhoneNumber(), user::setPhoneNumber);
 
-        User saved = userRepository.save(user);
-
-        return userMapper.toResponse(saved);
+        try {
+            User saved = userRepository.saveAndFlush(user);
+            log.info("Пользователь обновлён: userId={}", saved.getId());
+            return userMapper.toResponse(saved);
+        } catch (DataIntegrityViolationException ex) {
+            throw new UserAlreadyExistsException("Никнейм уже занят");
+        }
     }
 
     @Transactional
@@ -73,12 +87,32 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         userRepository.delete(user);
+        log.info("Пользователь удалён: userId={}", id);
+    }
+
+    private boolean hasNicknameConflict(User user, String requestedNickname) {
+        if (requestedNickname == null || requestedNickname.trim().isEmpty()) {
+            return false;
+        }
+
+        String normalizedRequestedNickname = normalizeNickname(requestedNickname);
+        String currentNickname = normalizeNickname(user.getNickname());
+
+        if (normalizedRequestedNickname.equals(currentNickname)) {
+            return false;
+        }
+
+        return userRepository.existsByNickname(normalizedRequestedNickname);
     }
 
     private void applyIfNotEmpty(String value, Consumer<String> setter) {
         if (value != null && !value.trim().isEmpty()) {
             setter.accept(value);
         }
+    }
+
+    private String normalizeNickname(String nickname) {
+        return nickname == null ? null : nickname.trim().toLowerCase(Locale.ROOT);
     }
 
     private String generateUniqueNickname() {
@@ -91,6 +125,6 @@ public class UserService {
             }
         }
 
-        throw new UserAlreadyExistsException("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ СѓРЅРёРєР°Р»СЊРЅС‹Р№ nickname");
+        throw new UserAlreadyExistsException("Не удалось сгенерировать уникальный nickname");
     }
 }

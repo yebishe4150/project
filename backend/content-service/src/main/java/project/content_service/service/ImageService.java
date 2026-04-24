@@ -1,6 +1,7 @@
 package project.content_service.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageService {
@@ -32,6 +34,8 @@ public class ImageService {
         if (file.isEmpty()) {
             throw new FileUploadException("Файл пустой");
         }
+
+        log.info("Запущена загрузка изображения: userId={}, originalName={}", userId, file.getOriginalFilename());
 
         byte[] bytes;
 
@@ -50,6 +54,8 @@ public class ImageService {
                 request.getTags(),
                 ImageSource.UPLOAD
         );
+
+        log.info("Изображение успешно загружено: userId={}, url={}", userId, image.getUrl());
 
         return UploadImageResponse.builder()
                 .url(urlRewriter.rewriteForExternalAccess(image.getUrl()))
@@ -87,6 +93,7 @@ public class ImageService {
     public List<ImageResponse> searchByTags(List<String> tags) {
 
         if (tags == null || tags.isEmpty()) {
+            log.info("Поиск изображений по тегам завершён без результата: передан пустой список тегов");
             return List.of();
         }
 

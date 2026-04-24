@@ -61,6 +61,7 @@ public class UserController {
                 .build();
     }
 
+    //TODO: сделать поиск клиента никнейму и отдавать на фронт никнейм преавторайз user/admin
     @GetMapping("/{id}")
     @Operation(summary = "Получить пользователя по ID")
     public BaseResponse<UserResponse> getUser(@PathVariable UUID id) {
@@ -89,6 +90,7 @@ public class UserController {
                 .build();
     }
 
+    //TODO: подумать о смысле этого ендпоинта для админа или удалить его
     @PutMapping("/{id}")
     @Operation(summary = "Обновить пользователя по ID")
     public BaseResponse<UserResponse> update(
@@ -104,6 +106,8 @@ public class UserController {
                 .build();
     }
 
+    //TODO: перевести метод в удаление ME и подумать о способе удаления:
+    // колонка deleted в user для будущего восстановления или удаления окончательно
     @DeleteMapping("/{id}")
     @Operation(summary = "Удалить пользователя")
     public BaseResponse<Void> delete(@PathVariable UUID id) {

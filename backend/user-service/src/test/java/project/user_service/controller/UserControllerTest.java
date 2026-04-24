@@ -206,6 +206,32 @@ class UserControllerTest extends AbstractTest {
     }
 
     @Test
+    void when_updateMe_withOccupiedNickname_then_ReturnConflict() throws Exception {
+        User currentUser = saveUserWithNickname("CurrentNick");
+        saveUserWithNickname("BusyNick");
+
+        String token = jwtService.generateToken(currentUser.getId(), Role.USER);
+
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("nickname", "BUSYNICK");
+
+        String response = mockMvc.perform(put(ME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isConflict())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(409);
+        assertThat(error.get("message").asText()).isEqualTo("Никнейм уже занят");
+        assertThat(error.get("path").asText()).isEqualTo(ME_URL);
+    }
+
+    @Test
     void when_createUser_then_GenerateRandomNickname() throws Exception {
         UUID userId = UUID.randomUUID();
 
@@ -281,12 +307,16 @@ class UserControllerTest extends AbstractTest {
     }
 
     private User saveUser() {
+        return saveUserWithNickname(NICKNAME);
+    }
+
+    private User saveUserWithNickname(String nickname) {
         return userRepository.save(User.builder()
                 .id(UUID.randomUUID())
                 .loginName(LOGIN_NAME)
                 .firstName(FIRST_NAME)
                 .secondName(SECOND_NAME)
-                .nickname(NICKNAME)
+                .nickname(nickname)
                 .email(EMAIL)
                 .phoneNumber(PHONE_NUMBER)
                 .build());
