@@ -5,19 +5,45 @@ import styles from "./ProfileEmptyState.module.css"
 
 type Props = {
   onUpload: (data: UploadImageData) => Promise<void>
-  onGenerate: () => Promise<void>
+  onGenerate: (data: {
+    prompt: string
+    description?: string
+    tags?: string[]
+  }) => Promise<void>
 }
 
 export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isGenerateFormOpen, setIsGenerateFormOpen] = useState(false)
   const [description, setDescription] = useState("")
+  const [generateDescription, setGenerateDescription] = useState("")
+  const [prompt, setPrompt] = useState("")
   const [tags, setTags] = useState("")
+  const [generateTags, setGenerateTags] = useState("")
   const [isUploading, setIsUploading] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const resetUploadForm = () => {
     setSelectedFile(null)
     setDescription("")
     setTags("")
+  }
+
+  const resetGenerateForm = () => {
+    setIsGenerateFormOpen(false)
+    setPrompt("")
+    setGenerateDescription("")
+    setGenerateTags("")
+  }
+
+  const handleSelectFile = (file: File) => {
+    resetGenerateForm()
+    setSelectedFile(file)
+  }
+
+  const openGenerateForm = () => {
+    resetUploadForm()
+    setIsGenerateFormOpen(true)
   }
 
   const handleSubmit = async () => {
@@ -39,6 +65,29 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
       resetUploadForm()
     } finally {
       setIsUploading(false)
+    }
+  }
+
+  const handleGenerateSubmit = async () => {
+    const normalizedPrompt = prompt.trim()
+    const parsedTags = generateTags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+
+    if (!normalizedPrompt || isGenerating) return
+
+    setIsGenerating(true)
+
+    try {
+      await onGenerate({
+        prompt: normalizedPrompt,
+        description: generateDescription.trim() || undefined,
+        tags: parsedTags.length > 0 ? parsedTags : undefined,
+      })
+      resetGenerateForm()
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -87,11 +136,54 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
         </div>
       )}
 
+      {isGenerateFormOpen && (
+        <div className={styles.uploadForm}>
+          <textarea
+            className={styles.textarea}
+            placeholder="Prompt"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+          />
+
+          <textarea
+            className={styles.textarea}
+            placeholder="Description"
+            value={generateDescription}
+            onChange={(event) => setGenerateDescription(event.target.value)}
+          />
+
+          <input
+            className={styles.input}
+            placeholder="Tags, separated by commas"
+            value={generateTags}
+            onChange={(event) => setGenerateTags(event.target.value)}
+          />
+
+          <div className={styles.formActions}>
+            <button className={styles.cancelButton} type="button" onClick={resetGenerateForm}>
+              Cancel
+            </button>
+            <button
+              className={styles.submitButton}
+              type="button"
+              onClick={handleGenerateSubmit}
+              disabled={!prompt.trim() || isGenerating}
+            >
+              {isGenerating ? "Generating..." : "Generate image"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.buttons}>
-        <UploadImageButton className={styles.upload} onSelect={setSelectedFile}>
+        <UploadImageButton className={styles.upload} onSelect={handleSelectFile}>
           Upload Photo
         </UploadImageButton>
-        <button className={styles.generate} type="button" onClick={onGenerate}>
+        <button
+          className={styles.generate}
+          type="button"
+          onClick={openGenerateForm}
+        >
           <span className={styles.buttonIcon}>+</span>
           Generate with AI
         </button>

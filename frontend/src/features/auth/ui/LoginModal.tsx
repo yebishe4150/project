@@ -242,3 +242,4 @@ export const LoginModal = ({ onClose }: Props) => {
     </div>,
     document.body
   );
+};

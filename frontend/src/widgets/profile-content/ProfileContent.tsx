@@ -1,58 +1,78 @@
 import { useState } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { generateImage } from "@/features/upload-image/api/generateImage"
 import { uploadImage } from "@/features/upload-image/api/uploadImage"
 import type { UploadImageData } from "@/features/upload-image/model/uploadImage.types"
 import { ProfileEmptyState } from "./ui/ProfileEmptyState"
+import { ProfileAddMenu } from "./ui/ProfileAddMenu"
 import { ProfileTabs } from "./ui/ProfileTabs"
-import type { ProfileImage } from "./profileContent.api"
+import {
+  fetchProfileImages,
+  type ProfileImageTab,
+} from "./profileContent.api"
 import styles from "./ProfileContent.module.css"
 
+const PROFILE_IMAGES_QUERY_KEY = ["profile-images"]
+
 export const ProfileContent = () => {
-  const [activeTab, setActiveTab] = useState<"photos" | "ai">("photos")
-  const [images, setImages] = useState<ProfileImage[]>([])
+  const [activeTab, setActiveTab] = useState<ProfileImageTab>("photos")
+  const queryClient = useQueryClient()
+  const { data: images = [], isLoading } = useQuery({
+    queryKey: [...PROFILE_IMAGES_QUERY_KEY, activeTab],
+    queryFn: () => fetchProfileImages(activeTab),
+  })
 
-  const handleUpload = async (data: UploadImageData) => {
-    const uploadedImage = await uploadImage(data)
-
-    setImages((currentImages) => [
-      {
-        id: uploadedImage.url,
-        url: uploadedImage.url,
-        description: data.description || null,
-        createTime: new Date().toISOString(),
-      },
-      ...currentImages,
+  const refreshImages = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: [...PROFILE_IMAGES_QUERY_KEY, "photos"],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: [...PROFILE_IMAGES_QUERY_KEY, "ai"],
+      }),
     ])
   }
 
-  const handleGenerate = async () => {
-    const prompt = window.prompt("Describe the image you want to generate")
+  const handleUpload = async (data: UploadImageData) => {
+    await uploadImage(data)
+    await refreshImages()
+    setActiveTab("photos")
+  }
 
-    if (!prompt) return
-
-    const generatedImage = await generateImage({ prompt })
-
-    setImages((currentImages) => [
-      {
-        id: generatedImage.imageUrl,
-        url: generatedImage.imageUrl,
-        description: prompt,
-        createTime: new Date().toISOString(),
-      },
-      ...currentImages,
-    ])
+  const handleGenerate = async ({
+    prompt,
+    description,
+    tags,
+  }: {
+    prompt: string
+    description?: string
+    tags?: string[]
+  }) => {
+    await generateImage({ prompt, description, tags })
+    await refreshImages()
+    setActiveTab("ai")
   }
 
   return (
     <section className={styles.content}>
-      <ProfileTabs activeTab={activeTab} onChange={setActiveTab} />
+      <ProfileTabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        centerSlot={
+          images.length > 0 ? (
+            <ProfileAddMenu onUpload={handleUpload} onGenerate={handleGenerate} />
+          ) : undefined
+        }
+      />
 
-      {images.length === 0 ? (
+      {isLoading ? (
+        <div className={styles.status}>Loading images...</div>
+      ) : images.length === 0 ? (
         <ProfileEmptyState onUpload={handleUpload} onGenerate={handleGenerate} />
       ) : (
         <div className={styles.grid}>
           {images.map((image) => (
-            <img className={styles.image} key={image.id} src={image.url} alt="" />
+            <img className={styles.image} key={image.id} src={image.url} alt={image.description ?? ""} />
           ))}
         </div>
       )}

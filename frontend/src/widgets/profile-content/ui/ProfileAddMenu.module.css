@@ -1,0 +1,162 @@
+.root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trigger {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffc414 0%, #ff8b5f 48%, #ec4fb0 100%);
+  color: #fff;
+  font-size: 30px;
+  line-height: 1;
+  box-shadow: 0 12px 24px rgba(236, 79, 176, 0.24);
+  cursor: pointer;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(320px, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid rgba(95, 102, 115, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(16px);
+  z-index: 20;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload,
+.generate {
+  width: 100%;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(31, 41, 55, 0.12);
+  cursor: pointer;
+}
+
+.upload {
+  background: linear-gradient(90deg, #4da8ff 0%, #02d5a7 100%);
+}
+
+.generate {
+  background: linear-gradient(90deg, #ffc414 0%, #ff8b5f 52%, #ec4fb0 100%);
+}
+
+.buttonIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.fileName {
+  margin-bottom: 10px;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.textarea,
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(95, 102, 115, 0.22);
+  border-radius: 12px;
+  background: #fff;
+  color: #111827;
+  font: inherit;
+  font-size: 14px;
+}
+
+.textarea {
+  min-height: 76px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.input {
+  min-height: 40px;
+  margin-top: 10px;
+  padding: 0 12px;
+}
+
+.formActions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cancelButton,
+.submitButton {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cancelButton,
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.cancelButton {
+  color: #fff;
+}
+
+.cancelButton {
+  background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.submitButton {
+  background: linear-gradient(90deg, #8b5cf6 0%, #c084fc 100%);
+  color: #fff;
+}
+
+.backIcon {
+  margin-right: 6px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.submitButton:disabled {
+  background: #6b7280;
+  opacity: 0.72;
+  cursor: not-allowed;
+  box-shadow: none;
+}
