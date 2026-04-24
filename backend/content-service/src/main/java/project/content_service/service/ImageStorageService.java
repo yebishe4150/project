@@ -1,6 +1,7 @@
 package project.content_service.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import project.content_service.dto.image.ImageResponse;
@@ -20,6 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageStorageService {
@@ -56,6 +58,8 @@ public class ImageStorageService {
                     RequestBody.fromBytes(bytes)
             );
         } catch (Exception e) {
+            log.warn("Ошибка загрузки файла в S3: userId={}, originalName={}, message={}",
+                    userId, originalName, e.getMessage());
             throw new FileUploadException("Ошибка загрузки файла");
         }
 
@@ -73,6 +77,7 @@ public class ImageStorageService {
         }
 
         Image saved = repository.save(image);
+        log.info("Изображение сохранено: imageId={}, userId={}, source={}", saved.getId(), userId, source);
 
         return mapToResponse(saved);
     }

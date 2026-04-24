@@ -1,6 +1,7 @@
 package project.content_service.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import project.content_service.dto.landingimage.LandingImageResponse;
 import project.content_service.entity.Image;
@@ -15,14 +16,15 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LandingFeedService {
 
+    private static final int FEED_SIZE = 50;
+
     private final LandingFeedRepository landingRepository;
     private final ImageRepository imageRepository;
-
-    private static final int FEED_SIZE = 50;
     private final UrlRewriter urlRewriter;
 
     public List<LandingImageResponse> getFeed() {

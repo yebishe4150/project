@@ -1,6 +1,7 @@
 package project.content_service.client;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PollinationsImageClient {
@@ -23,7 +25,7 @@ public class PollinationsImageClient {
         String url = "https://image.pollinations.ai/prompt/" +
                 URLEncoder.encode(prompt, StandardCharsets.UTF_8);
 
-        return webClient.get()
+        byte[] image = webClient.get()
                 .uri(url)
                 .retrieve()
                 .bodyToMono(byte[].class)
@@ -32,8 +34,9 @@ public class PollinationsImageClient {
                                 .filter(this::isRetryable)
                 )
                 .timeout(Duration.ofSeconds(10))
-
                 .block();
+
+        return image;
     }
 
     private boolean isRetryable(Throwable e) {

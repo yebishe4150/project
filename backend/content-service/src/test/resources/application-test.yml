@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    url: jdbc:h2:mem:${random.uuid};DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     username: sa
     password:
 
@@ -17,35 +17,27 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
-  cloud:
-    openfeign:
-      client:
-        config:
-          user-service:
-            connectTimeout: 75
-            readTimeout: 75
-
 logging:
   level:
     root: WARN
-    project.auth_service: INFO
+    project.content_service: INFO
     org.springframework.security: WARN
     org.springframework.test: WARN
     org.springframework.web: WARN
-    org.springframework.cloud.contract.wiremock: WARN
-    com.github.tomakehurst.wiremock: WARN
     liquibase: WARN
     org.hibernate: WARN
     org.hibernate.SQL: WARN
     com.zaxxer.hikari: WARN
     org.springdoc: WARN
 
+s3:
+  endpoint: http://localhost:9000
+  external-endpoint: http://cdn.local:9000
+  access-key: admin
+  secret-key: password123
+  bucket: images
+  region: us-east-1
+
 security:
-  internal:
-    token: super-secret
   jwt:
     secret: super-secret-key-super-secret-key-super-secret-key
-
-services:
-  user:
-    url: http://localhost:${wiremock.server.port}

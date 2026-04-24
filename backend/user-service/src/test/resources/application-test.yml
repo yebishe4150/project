@@ -31,6 +31,8 @@ logging:
     org.springdoc: WARN
 
 security:
+  internal:
+    token: super-secret
   jwt:
     secret: super-secret-key-super-secret-key-super-secret-key
     access-token-expiration: 3600

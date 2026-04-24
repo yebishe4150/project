@@ -20,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthFilter implements GlobalFilter, Ordered {
 
+    private static final String INTERNAL_TOKEN_HEADER = "X-Internal-Token";
     private final JwtService jwtService;
 
     private static final List<String> PUBLIC_PATHS = List.of(
@@ -33,40 +34,42 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        ServerWebExchange sanitizedExchange = removeInternalTokenHeader(exchange);
 
-        log.info("Incoming request: {} {}",
-                exchange.getRequest().getMethod(),
-                exchange.getRequest().getURI().getPath()
-        );
-
-        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
-            return chain.filter(exchange);
+        if (sanitizedExchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
+            return chain.filter(sanitizedExchange);
         }
 
-        String path = exchange.getRequest().getURI().getPath();
+        String path = sanitizedExchange.getRequest().getURI().getPath();
 
         boolean isPublic = PUBLIC_PATHS.stream()
                 .anyMatch(path::startsWith);
 
         if (isPublic) {
-            return chain.filter(exchange);
+            return chain.filter(sanitizedExchange);
         }
 
-        String header = exchange.getRequest()
+        String header = sanitizedExchange.getRequest()
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
         if (header == null || !header.startsWith("Bearer ")) {
-            return unauthorized(exchange);
+            return unauthorized(sanitizedExchange);
         }
 
         String token = header.substring(7);
 
         if (!jwtService.isTokenValid(token)) {
-            return unauthorized(exchange);
+            return unauthorized(sanitizedExchange);
         }
 
-        return chain.filter(exchange);
+        return chain.filter(sanitizedExchange);
+    }
+
+    private ServerWebExchange removeInternalTokenHeader(ServerWebExchange exchange) {
+        return exchange.mutate()
+                .request(request -> request.headers(headers -> headers.remove(INTERNAL_TOKEN_HEADER)))
+                .build();
     }
 
     private Mono<Void> unauthorized(ServerWebExchange exchange) {

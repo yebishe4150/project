@@ -1,9 +1,11 @@
 package project.content_service.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import project.content_service.client.TranslateClient;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PromptService {
@@ -20,12 +22,13 @@ public class PromptService {
 
                 if (translated != null && !translated.isBlank()) {
                     result = translated;
+                    log.info("Промпт переведён на английский");
                 } else {
-                    System.out.println("Translate returned null/empty, using original");
+                    log.warn("Перевод вернул пустой результат, используется исходный промпт");
                 }
 
             } catch (Exception e) {
-                System.out.println("Translate failed, using original prompt");
+                log.warn("Не удалось перевести промпт, используется исходный текст: {}", e.getMessage());
             }
         }
 

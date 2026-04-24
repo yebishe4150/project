@@ -1,12 +1,14 @@
 package project.content_service.client;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TranslateClient {
@@ -32,12 +34,10 @@ public class TranslateClient {
                             ? responseData.get("translatedText").toString()
                             : null;
                 })
-                .doOnNext(r -> System.out.println("TRANSLATED: " + r))
                 .onErrorResume(e -> {
-                    System.out.println("Translate failed: " + e.getMessage());
+                    log.warn("Translate-сервис недоступен, используется исходный текст: {}", e.getMessage());
                     return Mono.just(text);
                 })
                 .block();
     }
-
 }
