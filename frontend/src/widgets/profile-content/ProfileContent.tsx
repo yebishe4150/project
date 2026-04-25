@@ -52,6 +52,7 @@ export const ProfileContent = () => {
     await refreshImages()
     setActiveTab("ai")
   }
+  
 
   return (
     <section className={styles.content}>
