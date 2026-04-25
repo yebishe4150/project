@@ -62,6 +62,10 @@ services:
   user:
     url: http://localhost:8082
 
+user-sync:
+  retry-delay-ms: ${USER_SYNC_RETRY_DELAY_MS:3600000}
+  initial-delay-ms: ${USER_SYNC_INITIAL_DELAY_MS:60000}
+
 springdoc:
   api-docs:
     path: /docs

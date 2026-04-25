@@ -3,18 +3,18 @@ package project.auth_service.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import project.auth_service.config.JwtProperties;
-import project.auth_service.dto.refresh.RefreshResponse;
 import project.auth_service.dto.login.LoginRequest;
 import project.auth_service.dto.login.LoginResponse;
+import project.auth_service.dto.refresh.RefreshResponse;
 import project.auth_service.dto.register.RegisterResponse;
+import project.auth_service.dto.client.CreateUserRequest;
 import project.auth_service.entity.RefreshToken;
 import project.auth_service.entity.Role;
 import project.auth_service.entity.UserCredentials;
-import project.auth_service.exception.ExternalServiceException;
 import project.auth_service.exception.InvalidCredentialsException;
 import project.auth_service.exception.TokenException;
 import project.auth_service.exception.UserAlreadyExistsException;
@@ -34,7 +34,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final UserClientService userClientService;
+    private final UserSyncService userSyncService;
     private final JwtProperties jwtProperties;
 
     @Transactional
@@ -60,19 +60,18 @@ public class AuthService {
             throw new UserAlreadyExistsException("Пользователь уже существует");
         }
 
-        try {
-            userClientService.createUser(saved, email, phoneNumber);
-            //TODO: Пофиксить на транзакшнл аутбокс
-        } catch (Exception e) {
-            if (e instanceof ExternalServiceException) {
-                log.warn("Ошибка при вызове user-service: userId={}, message={}", saved.getUserId(), e.getMessage());
-            } else {
-                log.error("Ошибка при вызове user-service: userId={}", saved.getUserId(), e);
-            }
-            throw e;
-        }
+        userSyncService.schedule(saved);
+        log.info("Пользователь сохранён в auth-service и поставлен в очередь синхронизации: userId={}, role={}",
+                saved.getUserId(), saved.getRole());
 
-        log.info("Пользователь создан: userId={}, role={}", saved.getUserId(), saved.getRole());
+        CreateUserRequest createUserRequest = new CreateUserRequest();
+        createUserRequest.setId(saved.getUserId());
+        createUserRequest.setLoginName(saved.getLoginName());
+        createUserRequest.setEmail(email);
+        createUserRequest.setPhoneNumber(phoneNumber);
+
+        userSyncService.trySyncNow(createUserRequest);
+
         return RegisterResponse.builder()
                 .loginName(saved.getLoginName())
                 .build();
@@ -127,7 +126,7 @@ public class AuthService {
 
         if (token.isUsed()) {
 
-            //TODO: добавить удаление всех сессий в случае повторного использования токена
+            // TODO: добавить удаление всех сессий в случае повторного использования токена
 
             log.warn("Повторное использование refresh token");
             throw new TokenException("Refresh token already used");

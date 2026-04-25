@@ -12,7 +12,7 @@ public class FeignRetryConfig {
         return new Retryer.Default(
                 100,
                 1000,
-                2
+                1
         );
     }
 }

@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-create-user-sync-task
+      author: maxim
+
+      changes:
+        - createTable:
+            tableName: user_sync_task
+            columns:
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: login_name
+                  type: varchar
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: error_count
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: last_attempt_at
+                  type: timestamp
+
+              - column:
+                  name: last_error
+                  type: varchar
+
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValue: now()
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: update_time
+                  type: timestamp
+                  defaultValue: now()
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            tableName: user_sync_task
+            indexName: idx_user_sync_task_create_time
+            columns:
+              - column:
+                  name: create_time
+
+        - addForeignKeyConstraint:
+            baseTableName: user_sync_task
+            baseColumnNames: user_id
+            referencedTableName: user_credentials
+            referencedColumnNames: user_id
+            constraintName: fk_user_sync_task_user
+            onDelete: CASCADE

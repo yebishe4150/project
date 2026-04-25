@@ -9,6 +9,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import project.auth_service.repository.UserCredentialsRepository;
+import project.auth_service.repository.UserSyncTaskRepository;
+import project.auth_service.service.UserSyncService;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = true)
@@ -25,6 +27,12 @@ public abstract class AbstractTest {
 
     @Autowired
     protected UserCredentialsRepository userCredentialsRepository;
+
+    @Autowired
+    protected UserSyncTaskRepository userSyncTaskRepository;
+
+    @Autowired
+    protected UserSyncService userSyncService;
 
     protected String toJson(Object obj) throws Exception {
         return objectMapper.writeValueAsString(obj);
