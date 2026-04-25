@@ -7,7 +7,7 @@ spring:
     name: auth-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5431/auth_db
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5431/auth_db}
     username: ${AUTH_DB_USERNAME:user}
     password: ${AUTH_DB_PASSWORD:password}
 
@@ -60,7 +60,7 @@ security:
 
 services:
   user:
-    url: http://localhost:8082
+    url: ${USER_SERVICE_URL:http://localhost:8082}
 
 user-sync:
   retry-delay-ms: ${USER_SYNC_RETRY_DELAY_MS:3600000}
