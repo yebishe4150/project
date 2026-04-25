@@ -73,6 +73,7 @@ class AuthControllerTest extends AbstractWireMockTest {
 
         assertThat(result.getData()).isNotNull();
         assertThat(result.getData().getLoginName()).isEqualTo(LOGIN);
+        assertThat(userSyncTaskRepository.findById(user.getUserId())).isEmpty();
 
         WireMock.verify(postRequestedFor(urlEqualTo(USER_SERVICE_URL))
                 .withRequestBody(WireMock.matchingJsonPath("$.id",
@@ -84,16 +85,30 @@ class AuthControllerTest extends AbstractWireMockTest {
     }
 
     @Test
-    void when_register_whenUserServiceSlow_then_ReturnBadGateway() throws Exception {
+    void when_register_whenUserServiceSlow_then_PersistPendingSyncTask() throws Exception {
 
         RegisterRequest request = createRequest();
 
         stubTimeout(USER_SERVICE_URL, HttpMethod.POST, 100);
 
-        mockMvc.perform(post(REGISTER_URL)
+        String response = mockMvc.perform(post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
-                .andExpect(status().isBadGateway());
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        UserCredentials user = userCredentialsRepository
+                .findByLoginName(LOGIN)
+                .orElseThrow();
+
+        BaseResponse<RegisterResponse> result =
+                objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertThat(result.getData()).isNotNull();
+        assertThat(result.getData().getLoginName()).isEqualTo(LOGIN);
+        assertThat(userSyncTaskRepository.findById(user.getUserId())).isPresent();
     }
 
     @Test
@@ -139,6 +154,32 @@ class AuthControllerTest extends AbstractWireMockTest {
         assertThat(result.getData().getLoginName()).isEqualTo(LOGIN);
 
         WireMock.verify(2, postRequestedFor(urlEqualTo(USER_SERVICE_URL)));
+    }
+
+    @Test
+    void when_syncTaskExists_then_SchedulerRetriesAndRemovesTask() throws Exception {
+
+        RegisterRequest request = createRequest();
+
+        stubTimeout(USER_SERVICE_URL, HttpMethod.POST, 100);
+
+        mockMvc.perform(post(REGISTER_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isOk());
+
+        UserCredentials user = userCredentialsRepository
+                .findByLoginName(LOGIN)
+                .orElseThrow();
+
+        assertThat(userSyncTaskRepository.findById(user.getUserId())).isPresent();
+
+        stubCreateUserSuccess();
+
+        userSyncService.retryPendingSync();
+
+        assertThat(userSyncTaskRepository.findById(user.getUserId())).isEmpty();
+        WireMock.verify(3, postRequestedFor(urlEqualTo(USER_SERVICE_URL)));
     }
 
     @Test

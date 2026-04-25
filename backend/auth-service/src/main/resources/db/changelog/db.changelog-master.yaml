@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changesets/01.create-user-credentials.yaml
   - include:
       file: db/changelog/changesets/02.create-refresh-token.yaml
+  - include:
+      file: db/changelog/changesets/03.create-user-sync-task.yaml

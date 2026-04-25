@@ -1,14 +1,14 @@
 package project.auth_service.dto.client;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
-@Schema(description = "Запрос на создание пользователя (для user-service)")
+@Schema(description = "Запрос на создание пользователя для user-service")
 public class CreateUserRequest {
 
     @NotNull(message = "ID пользователя обязателен")
@@ -22,4 +22,11 @@ public class CreateUserRequest {
     private String email;
 
     private String phoneNumber;
+
+    public static CreateUserRequest from(UUID id, String loginName) {
+        CreateUserRequest request = new CreateUserRequest();
+        request.setId(id);
+        request.setLoginName(loginName);
+        return request;
+    }
 }

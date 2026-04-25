@@ -14,7 +14,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5433:5432"
+      - "5431:5432"
     volumes:
       - auth_data:/var/lib/postgresql/data
 
@@ -26,7 +26,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5434:5432"
+      - "5432:5432"
     volumes:
       - user_data:/var/lib/postgresql/data
 
@@ -38,7 +38,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5435:5432"
+      - "5434:5432"
     volumes:
       - content_data:/var/lib/postgresql/data
 
