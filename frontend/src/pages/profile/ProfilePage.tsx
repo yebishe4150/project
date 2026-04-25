@@ -1,8 +1,10 @@
+import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Navigate } from "react-router-dom"
 import styles from "./ProfilePage.module.css"
 import { ProfileHeader } from "@/widgets/profile-header/ProfileHeader"
 import { ProfileContent } from "@/widgets/profile-content/ProfileContent"
+import { ProfileContactInfo, type ContactInfoValues } from "@/widgets/profile-contact-info/ProfileContactInfo"
 import { fetchCurrentUser, updateCurrentUserNickname } from "./profile.api"
 import type { ProfileUserResponse } from "./profile.api"
 import { useAuth } from "@/app/providers/AuthProvider"
@@ -31,6 +33,7 @@ function mapProfileUser(user: ProfileUserResponse): User {
 export const ProfilePage = () => {
   const { isAuth } = useAuth()
   const queryClient = useQueryClient()
+  const [activeSection, setActiveSection] = useState<"content" | "contact-info">("content")
   const {
     data: profileResponse,
     isLoading,
@@ -49,11 +52,41 @@ export const ProfilePage = () => {
   })
 
   const user = profileResponse ? mapProfileUser(profileResponse) : null
+  const [contactInfo, setContactInfo] = useState<ContactInfoValues>({
+    email: "",
+    phoneNumber: "",
+    login: "",
+  })
 
   const handleUpdateNickname = async (nickname: string) => {
     if (!user) return
 
     await updateNicknameMutation.mutateAsync(nickname)
+  }
+
+  const handleOpenContactInfo = () => {
+    if (user) {
+      setContactInfo((current) =>
+        current.login || current.email || current.phoneNumber
+          ? current
+          : {
+              email: `${user.loginName}@example.com`,
+              phoneNumber: "",
+              login: user.loginName,
+            },
+      )
+    }
+
+    setActiveSection("contact-info")
+  }
+
+  const handleCloseContactInfo = () => {
+    setActiveSection("content")
+  }
+
+  const handleSaveContactInfo = (values: ContactInfoValues) => {
+    setContactInfo(values)
+    setActiveSection("content")
   }
 
   if (isAuth === null) {
@@ -74,8 +107,22 @@ export const ProfilePage = () => {
 
   return (
     <div className={styles.page}>
-      <ProfileHeader user={user} onUpdateNickname={handleUpdateNickname} />
-      <ProfileContent />
+      <ProfileHeader
+        user={user}
+        onUpdateNickname={handleUpdateNickname}
+        onOpenContactInfo={handleOpenContactInfo}
+        isSecondaryView={activeSection !== "content"}
+        onBackToProfile={handleCloseContactInfo}
+      />
+      {activeSection === "contact-info" ? (
+        <ProfileContactInfo
+          initialValues={contactInfo}
+          onCancel={handleCloseContactInfo}
+          onSave={handleSaveContactInfo}
+        />
+      ) : (
+        <ProfileContent />
+      )}
     </div>
   )
 }
