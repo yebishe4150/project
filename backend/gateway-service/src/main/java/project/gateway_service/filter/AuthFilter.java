@@ -24,6 +24,8 @@ public class AuthFilter implements GlobalFilter, Ordered {
     private final JwtService jwtService;
 
     private static final List<String> PUBLIC_PATHS = List.of(
+            "/actuator/health",
+            "/actuator/info",
             "/api/v1/auth",
             "/api/v1/content/feed",
 //            "/api/v1/content/images",

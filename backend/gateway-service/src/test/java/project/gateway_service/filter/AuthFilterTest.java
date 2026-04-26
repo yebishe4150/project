@@ -42,6 +42,19 @@ class AuthFilterTest {
     }
 
     @Test
+    void when_ActuatorHealthPathWithoutAuthorization_then_RequestPassesThrough() {
+        AuthFilter filter = new AuthFilter(jwtService);
+        CapturingChain chain = new CapturingChain();
+        MockServerWebExchange exchange = exchange(HttpMethod.GET, "/actuator/health");
+
+        filter.filter(exchange, chain).block();
+
+        assertThat(chain.wasCalled()).isTrue();
+        assertThat(exchange.getResponse().getStatusCode()).isNull();
+        verifyNoInteractions(jwtService);
+    }
+
+    @Test
     void when_OptionsRequest_then_RequestPassesThroughWithoutAuthCheck() {
         AuthFilter filter = new AuthFilter(jwtService);
         CapturingChain chain = new CapturingChain();
