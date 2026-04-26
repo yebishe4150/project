@@ -27,3 +27,13 @@ security:
     token: ${INTERNAL_SERVICE_TOKEN:super-secret}
   jwt:
     secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
