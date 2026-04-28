@@ -28,6 +28,18 @@ security:
   jwt:
     secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}
 
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  me:
+    limit: ${RATE_LIMIT_ME_LIMIT:120}
+    window-seconds: ${RATE_LIMIT_ME_WINDOW_SECONDS:60}
+  update-me:
+    limit: ${RATE_LIMIT_UPDATE_ME_LIMIT:30}
+    window-seconds: ${RATE_LIMIT_UPDATE_ME_WINDOW_SECONDS:60}
+  internal-create:
+    limit: ${RATE_LIMIT_INTERNAL_CREATE_LIMIT:60}
+    window-seconds: ${RATE_LIMIT_INTERNAL_CREATE_WINDOW_SECONDS:60}
+
 management:
   endpoints:
     web:

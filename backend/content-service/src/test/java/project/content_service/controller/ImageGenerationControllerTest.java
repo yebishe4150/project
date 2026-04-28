@@ -28,7 +28,7 @@ class ImageGenerationControllerTest extends AbstractTest {
     void when_generateWithUserToken_then_SaveGeneratedImageAndReturnExternalUrl() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        when(pollinationsImageClient.generateImage(any())).thenReturn("generated-bytes".getBytes());
+        when(pollinationsImageClient.generateImage(any())).thenReturn(jpegBytes());
         when(s3Client.putObject(any(software.amazon.awssdk.services.s3.model.PutObjectRequest.class), any(software.amazon.awssdk.core.sync.RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().eTag("etag").build());
 
@@ -117,5 +117,21 @@ class ImageGenerationControllerTest extends AbstractTest {
 
         JsonNode error = objectMapper.readTree(response);
         assertThat(error.get("message").asText()).isEqualTo("Сервис генерации изображений недоступен");
+    }
+
+    private byte[] jpegBytes() {
+        return new byte[]{
+                (byte) 0xFF,
+                (byte) 0xD8,
+                (byte) 0xFF,
+                (byte) 0xE0,
+                0x00,
+                0x10,
+                'J',
+                'F',
+                'I',
+                'F',
+                0x00
+        };
     }
 }

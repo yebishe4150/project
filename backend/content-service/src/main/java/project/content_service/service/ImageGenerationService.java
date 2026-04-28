@@ -41,7 +41,7 @@ public class ImageGenerationService {
         ImageResponse image = imageStorageService.save(
                 imageBytes,
                 "image/jpeg",
-                "ai_" + System.currentTimeMillis() + ".jpg",
+                "jpg",
                 userId,
                 request.getDescription(),
                 request.getTags(),

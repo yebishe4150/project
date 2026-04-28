@@ -29,6 +29,15 @@ security:
   jwt:
     secret: ${JWT_SECRET:super-secret-key-super-secret-key-super-secret-key-123}
 
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  upload:
+    limit: ${RATE_LIMIT_UPLOAD_LIMIT:20}
+    window-seconds: ${RATE_LIMIT_UPLOAD_WINDOW_SECONDS:60}
+  image-generation:
+    limit: ${RATE_LIMIT_IMAGE_GENERATION_LIMIT:5}
+    window-seconds: ${RATE_LIMIT_IMAGE_GENERATION_WINDOW_SECONDS:60}
+
 management:
   endpoints:
     web:

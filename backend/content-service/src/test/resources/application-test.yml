@@ -41,3 +41,6 @@ s3:
 security:
   jwt:
     secret: super-secret-key-super-secret-key-super-secret-key
+
+rate-limit:
+  enabled: false

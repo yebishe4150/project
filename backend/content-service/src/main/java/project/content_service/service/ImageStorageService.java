@@ -39,14 +39,14 @@ public class ImageStorageService {
     public ImageResponse save(
             byte[] bytes,
             String contentType,
-            String originalName,
+            String extension,
             UUID userId,
             String description,
             List<String> tagNames,
             ImageSource source
     ) {
 
-        String key = UUID.randomUUID() + "_" + originalName;
+        String key = UUID.randomUUID() + "." + extension;
 
         try {
             s3Client.putObject(
@@ -58,8 +58,8 @@ public class ImageStorageService {
                     RequestBody.fromBytes(bytes)
             );
         } catch (Exception e) {
-            log.warn("Ошибка загрузки файла в S3: userId={}, originalName={}, message={}",
-                    userId, originalName, e.getMessage());
+            log.warn("Ошибка загрузки файла в S3: userId={}, message={}",
+                    userId, e.getMessage());
             throw new FileUploadException("Ошибка загрузки файла");
         }
 

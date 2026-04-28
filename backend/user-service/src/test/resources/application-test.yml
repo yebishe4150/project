@@ -36,3 +36,6 @@ security:
   jwt:
     secret: super-secret-key-super-secret-key-super-secret-key
     access-token-expiration: 3600
+
+rate-limit:
+  enabled: false

@@ -52,3 +52,6 @@ security:
 services:
   user:
     url: http://localhost:${wiremock.server.port}
+
+rate-limit:
+  enabled: false

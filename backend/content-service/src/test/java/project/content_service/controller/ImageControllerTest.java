@@ -34,7 +34,7 @@ class ImageControllerTest extends AbstractTest {
                 "file",
                 "cat.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "image-bytes".getBytes()
+                jpegBytes()
         );
 
         when(s3Client.putObject(any(software.amazon.awssdk.services.s3.model.PutObjectRequest.class), any(software.amazon.awssdk.core.sync.RequestBody.class)))
@@ -68,7 +68,7 @@ class ImageControllerTest extends AbstractTest {
                 "file",
                 "cat.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "image-bytes".getBytes()
+                jpegBytes()
         );
 
         String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
@@ -88,7 +88,7 @@ class ImageControllerTest extends AbstractTest {
                 "file",
                 "cat.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "image-bytes".getBytes()
+                jpegBytes()
         );
 
         String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
@@ -123,6 +123,72 @@ class ImageControllerTest extends AbstractTest {
 
         JsonNode error = objectMapper.readTree(response);
         assertThat(error.get("message").asText()).isEqualTo("Файл пустой");
+    }
+
+    @Test
+    void when_uploadContentTypeDoesNotMatchBytes_then_ReturnBadRequest() throws Exception {
+        UUID userId = UUID.randomUUID();
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "cat.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "not-an-image".getBytes()
+        );
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .file(file)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(userId, Role.USER)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+        assertThat(error.get("message").asText()).contains("Поддерживаются только изображения");
+    }
+
+    @Test
+    void when_uploadHeaderDoesNotMatchDetectedType_then_ReturnBadRequest() throws Exception {
+        UUID userId = UUID.randomUUID();
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "cat.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                pngBytes()
+        );
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .file(file)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(userId, Role.USER)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+        assertThat(error.get("message").asText()).isEqualTo("Content-Type файла не соответствует содержимому");
+    }
+
+    @Test
+    void when_uploadExtensionDoesNotMatchDetectedType_then_ReturnBadRequest() throws Exception {
+        UUID userId = UUID.randomUUID();
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "cat.png",
+                MediaType.IMAGE_JPEG_VALUE,
+                jpegBytes()
+        );
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .file(file)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(userId, Role.USER)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+        assertThat(error.get("message").asText()).isEqualTo("Расширение файла не соответствует содержимому");
     }
 
     @Test
@@ -194,5 +260,34 @@ class ImageControllerTest extends AbstractTest {
 
         JsonNode json = objectMapper.readTree(response);
         assertThat(json.get("data")).hasSize(0);
+    }
+
+    private byte[] jpegBytes() {
+        return new byte[]{
+                (byte) 0xFF,
+                (byte) 0xD8,
+                (byte) 0xFF,
+                (byte) 0xE0,
+                0x00,
+                0x10,
+                'J',
+                'F',
+                'I',
+                'F',
+                0x00
+        };
+    }
+
+    private byte[] pngBytes() {
+        return new byte[]{
+                (byte) 0x89,
+                0x50,
+                0x4E,
+                0x47,
+                0x0D,
+                0x0A,
+                0x1A,
+                0x0A
+        };
     }
 }

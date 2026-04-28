@@ -27,6 +27,7 @@ public class ImageService {
     private final ImageRepository repository;
     private final ImageStorageService imageStorageService;
     private final UrlRewriter urlRewriter;
+    private final ImageFileValidator imageFileValidator;
 
     @Transactional
     public UploadImageResponse upload(MultipartFile file, UUID userId, UploadImageRequest request) {
@@ -45,10 +46,16 @@ public class ImageService {
             throw new FileUploadException("Ошибка чтения файла");
         }
 
-        ImageResponse image = imageStorageService.save(
+        ImageFileValidator.ValidatedImage validatedImage = imageFileValidator.validate(
                 bytes,
                 file.getContentType(),
-                file.getOriginalFilename(),
+                file.getOriginalFilename()
+        );
+
+        ImageResponse image = imageStorageService.save(
+                bytes,
+                validatedImage.contentType(),
+                validatedImage.extension(),
                 userId,
                 request.getDescription(),
                 request.getTags(),
