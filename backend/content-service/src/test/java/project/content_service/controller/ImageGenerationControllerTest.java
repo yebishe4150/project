@@ -73,6 +73,24 @@ class ImageGenerationControllerTest extends AbstractTest {
     }
 
     @Test
+    void when_generateWithMalformedToken_then_ReturnUnauthorized() throws Exception {
+        String response = mockMvc.perform(post(GENERATE_URL)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer invalid-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"prompt\":\"cat\"}"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(401);
+        assertThat(error.get("message").asText()).isEqualTo("Unauthorized");
+        assertThat(error.get("path").asText()).isEqualTo(GENERATE_URL);
+    }
+
+    @Test
     void when_generateWithAdminToken_then_ReturnForbidden() throws Exception {
         String response = mockMvc.perform(post(GENERATE_URL)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(UUID.randomUUID(), Role.ADMIN))

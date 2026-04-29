@@ -210,6 +210,52 @@ class AuthControllerTest extends AbstractWireMockTest {
     }
 
     @Test
+    void when_register_withBlankLogin_then_ReturnBadRequest_and_DoNotCallUserService() throws Exception {
+
+        RegisterRequest request = createRegisterRequest();
+        request.setLoginName("   ");
+
+        String response = mockMvc.perform(post(REGISTER_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ErrorResponse error = objectMapper.readValue(response, ErrorResponse.class);
+
+        assertThat(error.getStatus()).isEqualTo(400);
+        assertThat(error.getMessage()).contains("loginName");
+        assertThat(error.getPath()).isEqualTo(REGISTER_URL);
+        assertThat(userCredentialsRepository.findByLoginName(LOGIN)).isEmpty();
+        WireMock.verify(0, postRequestedFor(urlEqualTo(USER_SERVICE_URL)));
+    }
+
+    @Test
+    void when_register_withInvalidEmail_then_ReturnBadRequest_and_DoNotCallUserService() throws Exception {
+
+        RegisterRequest request = createRegisterRequest();
+        request.setEmail("not-an-email");
+
+        String response = mockMvc.perform(post(REGISTER_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ErrorResponse error = objectMapper.readValue(response, ErrorResponse.class);
+
+        assertThat(error.getStatus()).isEqualTo(400);
+        assertThat(error.getMessage()).contains("email");
+        assertThat(error.getPath()).isEqualTo(REGISTER_URL);
+        assertThat(userCredentialsRepository.findByLoginName(LOGIN)).isEmpty();
+        WireMock.verify(0, postRequestedFor(urlEqualTo(USER_SERVICE_URL)));
+    }
+
+    @Test
     void when_login_then_ReturnAccessToken_and_SetRefreshCookie() throws Exception {
 
         registerUser();
@@ -252,6 +298,26 @@ class AuthControllerTest extends AbstractWireMockTest {
 
         assertThat(error.getStatus()).isEqualTo(401);
         assertThat(error.getMessage()).isNotBlank();
+    }
+
+    @Test
+    void when_login_withBlankPassword_then_ReturnBadRequest() throws Exception {
+
+        LoginRequest request = createLoginRequest(LOGIN, "   ");
+
+        String response = mockMvc.perform(post(LOGIN_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ErrorResponse error = objectMapper.readValue(response, ErrorResponse.class);
+
+        assertThat(error.getStatus()).isEqualTo(400);
+        assertThat(error.getMessage()).contains("password");
+        assertThat(error.getPath()).isEqualTo(LOGIN_URL);
     }
 
     @Test
@@ -302,6 +368,23 @@ class AuthControllerTest extends AbstractWireMockTest {
     }
 
     @Test
+    void when_refresh_withInvalidCookie_then_ReturnUnauthorized() throws Exception {
+
+        String response = mockMvc.perform(post(REFRESH_URL)
+                        .cookie(new Cookie(REFRESH_COOKIE, "invalid-refresh-token")))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ErrorResponse error = objectMapper.readValue(response, ErrorResponse.class);
+
+        assertThat(error.getStatus()).isEqualTo(401);
+        assertThat(error.getMessage()).isNotBlank();
+        assertThat(error.getPath()).isEqualTo(REFRESH_URL);
+    }
+
+    @Test
     void when_logout_then_ClearRefreshCookie() throws Exception {
 
         registerUser();
@@ -325,6 +408,24 @@ class AuthControllerTest extends AbstractWireMockTest {
 
         BaseResponse<Void> result =
                 objectMapper.readValue(response, new TypeReference<>() {});
+
+        assertThat(result.getMessage()).isNotBlank();
+        assertThat(logoutResponse.getHeaders(HttpHeaders.SET_COOKIE))
+                .anySatisfy(header -> assertThat(header)
+                        .contains(REFRESH_COOKIE + "=")
+                        .contains("Max-Age=0"));
+    }
+
+    @Test
+    void when_logout_withoutCookie_then_ReturnOkAndClearRefreshCookie() throws Exception {
+
+        MockHttpServletResponse logoutResponse = mockMvc.perform(post(LOGOUT_URL))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        BaseResponse<Void> result =
+                objectMapper.readValue(logoutResponse.getContentAsString(), new TypeReference<>() {});
 
         assertThat(result.getMessage()).isNotBlank();
         assertThat(logoutResponse.getHeaders(HttpHeaders.SET_COOKIE))
