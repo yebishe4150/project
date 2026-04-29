@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @GetMapping("/{nickname}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SYSTEM')")
     @Operation(summary = "Получить пользователя по nickname")
     public BaseResponse<UserResponse> getUser(@PathVariable String nickname) {
 

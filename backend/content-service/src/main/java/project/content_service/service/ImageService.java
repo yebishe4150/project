@@ -91,8 +91,8 @@ public class ImageService {
                 .toList();
     }
 
-    public List<UserImageResponse> getUploadedByUserNickname(String nickname, String authorizationHeader) {
-        UUID userId = userClientService.getUserIdByNickname(nickname, authorizationHeader);
+    public List<UserImageResponse> getUploadedByUserNickname(String nickname) {
+        UUID userId = userClientService.getUserIdByNickname(nickname);
         return getUploadedByUser(userId);
     }
 
@@ -103,8 +103,8 @@ public class ImageService {
                 .toList();
     }
 
-    public List<UserImageResponse> getGeneratedByUserNickname(String nickname, String authorizationHeader) {
-        UUID userId = userClientService.getUserIdByNickname(nickname, authorizationHeader);
+    public List<UserImageResponse> getGeneratedByUserNickname(String nickname) {
+        UUID userId = userClientService.getUserIdByNickname(nickname);
         return getGeneratedByUser(userId);
     }
 

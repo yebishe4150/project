@@ -20,9 +20,9 @@ public class UserClientService {
 
     private final UserClient userClient;
 
-    public UUID getUserIdByNickname(String nickname, String authorizationHeader) {
+    public UUID getUserIdByNickname(String nickname) {
         try {
-            BaseResponse<UserResponse> response = userClient.getUserByNickname(nickname, authorizationHeader);
+            BaseResponse<UserResponse> response = userClient.getUserByNickname(nickname);
 
             if (response == null || response.getData() == null || response.getData().getId() == null) {
                 log.error("Пустой ответ от user-service при поиске пользователя по nickname: nickname={}", nickname);

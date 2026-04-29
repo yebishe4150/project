@@ -194,6 +194,23 @@ class UserControllerTest extends AbstractTest {
     }
 
     @Test
+    void when_getUserByNickname_withInternalToken_then_ReturnUser() throws Exception {
+        User user = saveUserWithNickname("Public-Nick_1");
+
+        String response = mockMvc.perform(get(USERS_URL + "/PUBLIC-NICK_1")
+                        .header("X-Internal-Token", INTERNAL_TOKEN))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode data = objectMapper.readTree(response).get("data");
+
+        assertThat(data.get("id").asText()).isEqualTo(user.getId().toString());
+        assertThat(data.get("nickname").asText()).isEqualTo("public-nick_1");
+    }
+
+    @Test
     void when_getUserByNickname_withoutToken_then_Unauthorized() throws Exception {
         String response = mockMvc.perform(get(USERS_URL + "/testernick"))
                 .andExpect(status().isUnauthorized())

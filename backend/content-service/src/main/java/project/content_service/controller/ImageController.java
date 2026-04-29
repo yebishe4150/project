@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -153,11 +151,10 @@ public class ImageController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/images/users/{nickname}/uploads")
     public UserImageListResponseWrapper getUploadedByUserNickname(
-            @PathVariable String nickname,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
+            @PathVariable String nickname
     ) {
 
-        List<UserImageResponse> response = service.getUploadedByUserNickname(nickname, authorizationHeader);
+        List<UserImageResponse> response = service.getUploadedByUserNickname(nickname);
 
         return UserImageListResponseWrapper.builder()
                 .data(response)
@@ -191,11 +188,10 @@ public class ImageController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/images/users/{nickname}/generated")
     public UserImageListResponseWrapper getGeneratedByUserNickname(
-            @PathVariable String nickname,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
+            @PathVariable String nickname
     ) {
 
-        List<UserImageResponse> response = service.getGeneratedByUserNickname(nickname, authorizationHeader);
+        List<UserImageResponse> response = service.getGeneratedByUserNickname(nickname);
 
         return UserImageListResponseWrapper.builder()
                 .data(response)

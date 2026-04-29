@@ -1,6 +1,7 @@
 package project.content_service.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,6 +18,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,6 +35,7 @@ class ImageControllerTest extends AbstractWireMockTest {
     private static final String USER_UPLOADED_BY_NICKNAME_URL = "/v1/content/images/users/tester/uploads";
     private static final String USER_GENERATED_BY_NICKNAME_URL = "/v1/content/images/users/tester/generated";
     private static final String USER_SERVICE_NICKNAME_URL = "/v1/users/tester";
+    private static final String INTERNAL_TOKEN = "super-secret";
 
     @Test
     void when_uploadWithUserToken_then_SaveImageAndReturnExternalUrl() throws Exception {
@@ -249,7 +254,7 @@ class ImageControllerTest extends AbstractWireMockTest {
         stubSuccess(
                 USER_SERVICE_NICKNAME_URL,
                 HttpMethod.GET,
-                Map.of(HttpHeaders.AUTHORIZATION, auth),
+                Map.of("X-Internal-Token", INTERNAL_TOKEN),
                 Map.of(
                         "id", targetUserId.toString(),
                         "nickname", "tester"
@@ -269,6 +274,48 @@ class ImageControllerTest extends AbstractWireMockTest {
         assertThat(uploaded.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/upload.jpg");
         assertThat(generated.get("data")).hasSize(1);
         assertThat(generated.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/generated.jpg");
+    }
+
+    @Test
+    void when_getUserSpecificEndpointByNickname_whenUserServiceFirstCallTimesOut_then_RetryAndReturnImages() throws Exception {
+        UUID requesterId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+
+        String auth = "Bearer " + bearerToken(requesterId, Role.USER);
+        String scenario = "USER_SERVICE_RETRY";
+        String secondCall = "SECOND_CALL";
+
+        WireMock.stubFor(WireMock.get(USER_SERVICE_NICKNAME_URL)
+                .inScenario(scenario)
+                .whenScenarioStateIs(STARTED)
+                .willReturn(WireMock.aResponse()
+                        .withFixedDelay(100))
+                .willSetStateTo(secondCall));
+
+        WireMock.stubFor(WireMock.get(USER_SERVICE_NICKNAME_URL)
+                .inScenario(scenario)
+                .whenScenarioStateIs(secondCall)
+                .withHeader("X-Internal-Token", WireMock.equalTo(INTERNAL_TOKEN))
+                .willReturn(WireMock.okJson("""
+                        {
+                          "data": {
+                            "id": "%s",
+                            "nickname": "tester"
+                          },
+                          "message": "ok"
+                        }
+                        """.formatted(targetUserId))));
+
+        JsonNode generated = objectMapper.readTree(mockMvc.perform(get(USER_GENERATED_BY_NICKNAME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+
+        assertThat(generated.get("data")).hasSize(1);
+        assertThat(generated.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/generated.jpg");
+
+        WireMock.verify(2, getRequestedFor(urlEqualTo(USER_SERVICE_NICKNAME_URL)));
     }
 
     @Test
