@@ -61,12 +61,12 @@ public class UserController {
                 .build();
     }
 
-    //TODO: сделать поиск клиента никнейму и отдавать на фронт никнейм преавторайз user/admin
-    @GetMapping("/{id}")
-    @Operation(summary = "Получить пользователя по ID")
-    public BaseResponse<UserResponse> getUser(@PathVariable UUID id) {
+    @GetMapping("/{nickname}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @Operation(summary = "Получить пользователя по nickname")
+    public BaseResponse<UserResponse> getUser(@PathVariable String nickname) {
 
-        UserResponse user = userService.getById(id);
+        UserResponse user = userService.getByNickname(nickname);
 
         return BaseResponse.<UserResponse>builder()
                 .data(user)

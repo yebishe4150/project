@@ -3,15 +3,17 @@ package project.content_service.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import project.content_service.AbstractTest;
+import project.content_service.AbstractWireMockTest;
 import project.content_service.entity.Image;
 import project.content_service.entity.ImageSource;
 import project.content_service.entity.Role;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,12 +22,15 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class ImageControllerTest extends AbstractTest {
+class ImageControllerTest extends AbstractWireMockTest {
 
     private static final String CONTENT_URL = "/v1/content";
     private static final String USER_IMAGES_URL = "/v1/content/images/user";
     private static final String USER_UPLOADED_URL = "/v1/content/images/user/uploads";
     private static final String USER_GENERATED_URL = "/v1/content/images/user/generated";
+    private static final String USER_UPLOADED_BY_NICKNAME_URL = "/v1/content/images/users/tester/uploads";
+    private static final String USER_GENERATED_BY_NICKNAME_URL = "/v1/content/images/users/tester/generated";
+    private static final String USER_SERVICE_NICKNAME_URL = "/v1/users/tester";
 
     @Test
     void when_uploadWithUserToken_then_SaveImageAndReturnExternalUrl() throws Exception {
@@ -229,6 +234,41 @@ class ImageControllerTest extends AbstractTest {
         assertThat(allByUser.get("data")).hasSize(2);
         assertThat(uploaded.get("data")).hasSize(1);
         assertThat(generated.get("data")).hasSize(1);
+    }
+
+    @Test
+    void when_getUserSpecificEndpointsByNickname_then_ResolveUserAndFilterBySource() throws Exception {
+        UUID requesterId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        saveImage(targetUserId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
+        saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+        saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/foreign.jpg", "foreign");
+
+        String auth = "Bearer " + bearerToken(requesterId, Role.USER);
+
+        stubSuccess(
+                USER_SERVICE_NICKNAME_URL,
+                HttpMethod.GET,
+                Map.of(HttpHeaders.AUTHORIZATION, auth),
+                Map.of(
+                        "id", targetUserId.toString(),
+                        "nickname", "tester"
+                )
+        );
+
+        JsonNode uploaded = objectMapper.readTree(mockMvc.perform(get(USER_UPLOADED_BY_NICKNAME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        JsonNode generated = objectMapper.readTree(mockMvc.perform(get(USER_GENERATED_BY_NICKNAME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+
+        assertThat(uploaded.get("data")).hasSize(1);
+        assertThat(uploaded.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/upload.jpg");
+        assertThat(generated.get("data")).hasSize(1);
+        assertThat(generated.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/generated.jpg");
     }
 
     @Test

@@ -176,6 +176,39 @@ class UserControllerTest extends AbstractTest {
     }
 
     @Test
+    void when_getUserByNickname_withUserRole_then_ReturnUser() throws Exception {
+        User user = saveUserWithNickname("Public-Nick_1");
+        String token = jwtService.generateToken(UUID.randomUUID(), Role.USER);
+
+        String response = mockMvc.perform(get(USERS_URL + "/PUBLIC-NICK_1")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode data = objectMapper.readTree(response).get("data");
+
+        assertThat(data.get("id").asText()).isEqualTo(user.getId().toString());
+        assertThat(data.get("nickname").asText()).isEqualTo("public-nick_1");
+    }
+
+    @Test
+    void when_getUserByNickname_withoutToken_then_Unauthorized() throws Exception {
+        String response = mockMvc.perform(get(USERS_URL + "/testernick"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(401);
+        assertThat(error.get("message").asText()).isEqualTo("Unauthorized");
+        assertThat(error.get("path").asText()).isEqualTo(USERS_URL + "/testernick");
+    }
+
+    @Test
     void when_updateMe_withNullAndEmptyFields_then_UpdateOnlyNotEmptyFields() throws Exception {
         User user = saveUser();
         String token = jwtService.generateToken(user.getId(), Role.USER);
@@ -229,6 +262,97 @@ class UserControllerTest extends AbstractTest {
         assertThat(error.get("status").asInt()).isEqualTo(409);
         assertThat(error.get("message").asText()).isEqualTo("Никнейм уже занят");
         assertThat(error.get("path").asText()).isEqualTo(ME_URL);
+    }
+
+    @Test
+    void when_updateMe_withValidNickname_then_NormalizeAndUpdate() throws Exception {
+        User user = saveUser();
+        String token = jwtService.generateToken(user.getId(), Role.USER);
+
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("nickname", "New-Nick_20");
+
+        String response = mockMvc.perform(put(ME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode data = objectMapper.readTree(response).get("data");
+
+        assertThat(data.get("nickname").asText()).isEqualTo("new-nick_20");
+    }
+
+    @Test
+    void when_updateMe_withInvalidNicknameCharacters_then_ReturnBadRequest() throws Exception {
+        User user = saveUser();
+        String token = jwtService.generateToken(user.getId(), Role.USER);
+
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("nickname", "bad nick!");
+
+        String response = mockMvc.perform(put(ME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(400);
+        assertThat(error.get("message").asText()).contains("nickname");
+    }
+
+    @Test
+    void when_updateMe_withTooLongNickname_then_ReturnBadRequest() throws Exception {
+        User user = saveUser();
+        String token = jwtService.generateToken(user.getId(), Role.USER);
+
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("nickname", "abcdefghijklmnopqrstu");
+
+        String response = mockMvc.perform(put(ME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(400);
+        assertThat(error.get("message").asText()).contains("nickname");
+    }
+
+    @Test
+    void when_updateMe_withTooShortNickname_then_ReturnBadRequest() throws Exception {
+        User user = saveUser();
+        String token = jwtService.generateToken(user.getId(), Role.USER);
+
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("nickname", "me");
+
+        String response = mockMvc.perform(put(ME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(400);
+        assertThat(error.get("message").asText()).contains("nickname");
     }
 
     @Test

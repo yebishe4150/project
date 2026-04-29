@@ -8,13 +8,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -147,6 +150,21 @@ public class ImageController {
                 .build();
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/images/users/{nickname}/uploads")
+    public UserImageListResponseWrapper getUploadedByUserNickname(
+            @PathVariable String nickname,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
+    ) {
+
+        List<UserImageResponse> response = service.getUploadedByUserNickname(nickname, authorizationHeader);
+
+        return UserImageListResponseWrapper.builder()
+                .data(response)
+                .message("Список загруженных изображений пользователя")
+                .build();
+    }
+
     @Operation(summary = "Получить сгенерированные изображения пользователя")
     @ApiResponses(value = {
             @ApiResponse(
@@ -163,6 +181,21 @@ public class ImageController {
     public UserImageListResponseWrapper getGeneratedByUser(@AuthenticationPrincipal UserPrincipal user) {
 
         List<UserImageResponse> response = service.getGeneratedByUser(user.getUserId());
+
+        return UserImageListResponseWrapper.builder()
+                .data(response)
+                .message("Список сгенерированных изображений пользователя")
+                .build();
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/images/users/{nickname}/generated")
+    public UserImageListResponseWrapper getGeneratedByUserNickname(
+            @PathVariable String nickname,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
+    ) {
+
+        List<UserImageResponse> response = service.getGeneratedByUserNickname(nickname, authorizationHeader);
 
         return UserImageListResponseWrapper.builder()
                 .data(response)

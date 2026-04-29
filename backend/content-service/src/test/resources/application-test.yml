@@ -42,5 +42,9 @@ security:
   jwt:
     secret: super-secret-key-super-secret-key-super-secret-key
 
+services:
+  user:
+    url: http://localhost:${wiremock.server.port}
+
 rate-limit:
   enabled: false

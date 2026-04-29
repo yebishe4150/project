@@ -28,6 +28,7 @@ public class ImageService {
     private final ImageStorageService imageStorageService;
     private final UrlRewriter urlRewriter;
     private final ImageFileValidator imageFileValidator;
+    private final UserClientService userClientService;
 
     @Transactional
     public UploadImageResponse upload(MultipartFile file, UUID userId, UploadImageRequest request) {
@@ -90,11 +91,21 @@ public class ImageService {
                 .toList();
     }
 
+    public List<UserImageResponse> getUploadedByUserNickname(String nickname, String authorizationHeader) {
+        UUID userId = userClientService.getUserIdByNickname(nickname, authorizationHeader);
+        return getUploadedByUser(userId);
+    }
+
     public List<UserImageResponse> getGeneratedByUser(UUID userId) {
         return repository.findByUserIdAndSource(userId, ImageSource.GENERATED)
                 .stream()
                 .map(this::mapToUserImageResponse)
                 .toList();
+    }
+
+    public List<UserImageResponse> getGeneratedByUserNickname(String nickname, String authorizationHeader) {
+        UUID userId = userClientService.getUserIdByNickname(nickname, authorizationHeader);
+        return getGeneratedByUser(userId);
     }
 
     public List<ImageResponse> searchByTags(List<String> tags) {
@@ -125,4 +136,5 @@ public class ImageService {
                 .url(urlRewriter.rewriteForExternalAccess(image.getUrl()))
                 .build();
     }
+
 }
