@@ -3,6 +3,7 @@ import {
   Camera,
   CircleUserRound,
   Globe,
+  Lock,
   Mail,
   MessageCircle,
   Phone,
@@ -15,12 +16,16 @@ export type ContactInfoValues = {
   email: string
   phoneNumber: string
   login: string
+  firstName: string
+  secondName: string
+  password: string
 }
 
 type Props = {
   initialValues: ContactInfoValues
   onCancel: () => void
-  onSave: (values: ContactInfoValues) => void
+  onSave: (values: ContactInfoValues) => void | Promise<void>
+  isSaving?: boolean
 }
 
 type Field = {
@@ -28,7 +33,8 @@ type Field = {
   label: string
   placeholder: string
   icon: ReactNode
-  type?: "text" | "email" | "tel"
+  type?: "text" | "email" | "tel" | "password"
+  disabled?: boolean
 }
 
 const fields: Field[] = [
@@ -47,10 +53,31 @@ const fields: Field[] = [
     icon: <Phone aria-hidden="true" />,
   },
   {
+    key: "firstName",
+    label: "First Name",
+    placeholder: "John",
+    icon: <CircleUserRound />,
+  },
+  {
+    key: "secondName",
+    label: "Last Name",
+    placeholder: "Doe",
+    icon: <CircleUserRound />,
+  },
+  {
     key: "login",
     label: "Login",
     placeholder: "username",
     icon: <CircleUserRound aria-hidden="true" />,
+    disabled: true,
+  },
+  {
+    key: "password",
+    label: "Password",
+    placeholder: "********",
+    type: "password",
+    icon: <Lock aria-hidden="true" />,
+    disabled: true,
   },
 ]
 
@@ -88,7 +115,7 @@ const socialItems: SocialItem[] = [
   },
 ]
 
-export const ProfileContactInfo = ({ initialValues, onCancel, onSave }: Props) => {
+export const ProfileContactInfo = ({ initialValues, onCancel, onSave, isSaving = false }: Props) => {
   const [values, setValues] = useState(initialValues)
 
   return (
@@ -109,6 +136,7 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave }: Props) =
                 type={field.type ?? "text"}
                 placeholder={field.placeholder}
                 value={values[field.key]}
+                disabled={field.disabled || isSaving}
                 onChange={(event) =>
                   setValues((current) => ({
                     ...current,
@@ -131,11 +159,11 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave }: Props) =
         </div>
 
         <div className={styles.actions}>
-          <button className={styles.cancelButton} type="button" onClick={onCancel}>
+          <button className={styles.cancelButton} type="button" onClick={onCancel} disabled={isSaving}>
             Cancel
           </button>
-          <button className={styles.saveButton} type="button" onClick={() => onSave(values)}>
-            Save Changes
+          <button className={styles.saveButton} type="button" onClick={() => onSave(values)} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>

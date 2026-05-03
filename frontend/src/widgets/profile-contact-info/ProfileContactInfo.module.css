@@ -1,6 +1,7 @@
 .section {
   width: min(920px, calc(100% - 32px));
   margin: 26px auto 40px;
+  padding-bottom: 24px;
 }
 
 .card {

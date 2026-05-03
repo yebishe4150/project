@@ -30,11 +30,25 @@ function mapProfileImage(image: ProfileImageApiResponse): ProfileImage {
   }
 }
 
-export async function fetchProfileImages(tab: ProfileImageTab): Promise<ProfileImage[]> {
+export async function fetchPrivateProfileImages(tab: ProfileImageTab): Promise<ProfileImage[]> {
   const endpoint =
     tab === "photos"
       ? "/content/images/user/uploads"
       : "/content/images/user/generated"
+
+  const response = await apiFetch<ApiResponse<ProfileImageApiResponse[]>>(endpoint)
+
+  return response.data.map(mapProfileImage)
+}
+
+export async function fetchPublicProfileImages(
+  nickName: string,
+  tab: ProfileImageTab,
+): Promise<ProfileImage[]> {
+  const endpoint =
+    tab === "photos"
+      ? `/content/images/users/${encodeURIComponent(nickName)}/uploads`
+      : `/content/images/users/${encodeURIComponent(nickName)}/generated`
 
   const response = await apiFetch<ApiResponse<ProfileImageApiResponse[]>>(endpoint)
 

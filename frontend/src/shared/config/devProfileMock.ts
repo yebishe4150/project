@@ -7,6 +7,8 @@ export type DevProfileUser = {
   nickname?: string | null
   firstName?: string | null
   secondName?: string | null
+  email?: string
+  phoneNumber?: string
 }
 
 let devProfileUser: DevProfileUser = {
@@ -15,6 +17,8 @@ let devProfileUser: DevProfileUser = {
   nickname: "Luna",
   firstName: "UI",
   secondName: "Preview",
+  email: "luna@example.com",
+  phoneNumber: "",
 }
 
 export function getDevProfileUser() {
@@ -25,6 +29,17 @@ export function updateDevProfileNickname(nickname: string) {
   devProfileUser = {
     ...devProfileUser,
     nickname,
+  }
+
+  return devProfileUser
+}
+
+export function updateDevProfile(
+  payload: Partial<Pick<DevProfileUser, "nickname" | "firstName" | "secondName" | "email" | "phoneNumber">>,
+) {
+  devProfileUser = {
+    ...devProfileUser,
+    ...payload,
   }
 
   return devProfileUser
