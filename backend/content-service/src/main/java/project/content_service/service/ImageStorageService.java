@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import project.content_service.dto.image.ImageResponse;
 import project.content_service.entity.Image;
 import project.content_service.entity.ImageSource;
@@ -13,6 +15,7 @@ import project.content_service.repository.ImageRepository;
 import project.content_service.repository.TagRepository;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.util.HashSet;
@@ -62,6 +65,8 @@ public class ImageStorageService {
                     userId, e.getMessage());
             throw new FileUploadException("Ошибка загрузки файла");
         }
+
+        deleteObjectOnTransactionRollback(key);
 
         String url = String.format("%s/%s/%s", endpoint, bucket, key);
 
@@ -114,5 +119,32 @@ public class ImageStorageService {
         existingTags.addAll(tagRepository.saveAll(newTags));
 
         return new HashSet<>(existingTags);
+    }
+
+    private void deleteObjectOnTransactionRollback(String key) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            return;
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    deleteObject(key);
+                }
+            }
+        });
+    }
+
+    private void deleteObject(String key) {
+        try {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build());
+        } catch (Exception ex) {
+            log.warn("Не удалось удалить S3-объект после отката транзакции: key={}, message={}",
+                    key, ex.getMessage());
+        }
     }
 }

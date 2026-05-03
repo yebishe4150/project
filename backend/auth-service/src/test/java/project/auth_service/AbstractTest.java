@@ -8,6 +8,7 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import project.auth_service.repository.RefreshTokenRepository;
 import project.auth_service.repository.UserCredentialsRepository;
 import project.auth_service.repository.UserSyncTaskRepository;
 import project.auth_service.service.UserSyncService;
@@ -30,6 +31,9 @@ public abstract class AbstractTest {
 
     @Autowired
     protected UserSyncTaskRepository userSyncTaskRepository;
+
+    @Autowired
+    protected RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
     protected UserSyncService userSyncService;
