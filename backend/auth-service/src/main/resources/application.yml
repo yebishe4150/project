@@ -38,6 +38,8 @@ logging:
 
     fullMaskingJsonBodyPaths:
       - password
+      - currentPassword
+      - newPassword
       - token
       - accessToken
 

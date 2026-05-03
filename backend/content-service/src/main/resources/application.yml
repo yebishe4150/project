@@ -17,6 +17,11 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  servlet:
+    multipart:
+      max-file-size: ${CONTENT_MAX_FILE_SIZE:10MB}
+      max-request-size: ${CONTENT_MAX_REQUEST_SIZE:10MB}
+
   cloud:
     openfeign:
       client:

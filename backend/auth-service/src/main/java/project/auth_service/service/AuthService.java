@@ -174,6 +174,43 @@ public class AuthService {
         log.info("Пользователь вышел: userId={}", userId);
     }
 
+    @Transactional
+    public String changePassword(UUID userId, String currentPassword, String newPassword, String currentRefreshToken) {
+
+        PasswordValidator.validate(newPassword);
+
+        if (currentRefreshToken == null) {
+            throw new TokenException("Refresh token отсутствует");
+        }
+
+        UserCredentials user = userCredentialsRepository.findById(userId)
+                .orElseThrow(() -> new InvalidCredentialsException("Учетные данные пользователя не найдены"));
+
+        RefreshToken refreshToken = refreshRepo.findByToken(currentRefreshToken)
+                .orElseThrow(() -> new TokenException("Некорректный refresh token"));
+
+        if (!refreshToken.getUserId().equals(userId) || refreshToken.isUsed()) {
+            throw new TokenException("Некорректный refresh token");
+        }
+
+        if (refreshToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new TokenException("Срок действия refresh token истёк");
+        }
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            log.warn("Смена пароля отклонена: userId={}", userId);
+            throw new InvalidCredentialsException("Неверный текущий пароль");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userCredentialsRepository.save(user);
+        refreshRepo.deleteAllByUserIdAndTokenNot(userId, currentRefreshToken);
+
+        log.info("Пароль изменён: userId={}", userId);
+
+        return jwtService.generateToken(user.getUserId(), user.getRole());
+    }
+
     private String generateRefreshToken() {
         return UUID.randomUUID().toString();
     }
