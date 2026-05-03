@@ -67,6 +67,22 @@ public abstract class AbstractTest {
         return objectMapper.writeValueAsString(obj);
     }
 
+    protected byte[] jpegBytes() {
+        return new byte[]{
+                (byte) 0xFF,
+                (byte) 0xD8,
+                (byte) 0xFF,
+                (byte) 0xE0,
+                0x00,
+                0x10,
+                'J',
+                'F',
+                'I',
+                'F',
+                0x00
+        };
+    }
+
     protected String bearerToken(UUID userId, Role role) {
         return Jwts.builder()
                 .subject(userId.toString())

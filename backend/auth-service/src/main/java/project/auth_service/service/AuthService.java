@@ -36,6 +36,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserSyncService userSyncService;
     private final JwtProperties jwtProperties;
+    private final RefreshSessionRevocationService refreshSessionRevocationService;
 
     @Transactional
     public RegisterResponse register(String loginName, String rawPassword, String email, String phoneNumber) {
@@ -125,9 +126,7 @@ public class AuthService {
                 .orElseThrow(() -> new TokenException("Пользователь не найден"));
 
         if (token.isUsed()) {
-
-            // TODO: добавить удаление всех сессий в случае повторного использования токена
-
+            refreshSessionRevocationService.revokeAllExceptCurrent(userId, refreshToken);
             log.warn("Повторное использование refresh token");
             throw new TokenException("Refresh token already used");
         }

@@ -417,22 +417,6 @@ class ImageControllerTest extends AbstractWireMockTest {
         assertThat(error.get("path").asText()).isEqualTo("/v1/content/search");
     }
 
-    private byte[] jpegBytes() {
-        return new byte[]{
-                (byte) 0xFF,
-                (byte) 0xD8,
-                (byte) 0xFF,
-                (byte) 0xE0,
-                0x00,
-                0x10,
-                'J',
-                'F',
-                'I',
-                'F',
-                0x00
-        };
-    }
-
     private byte[] pngBytes() {
         return new byte[]{
                 (byte) 0x89,

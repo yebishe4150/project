@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import project.auth_service.AbstractWireMockTest;
 import project.auth_service.dto.BaseResponse;
 import project.auth_service.dto.ErrorResponse;
@@ -14,7 +16,9 @@ import project.auth_service.dto.login.LoginRequest;
 import project.auth_service.dto.login.LoginResponse;
 import project.auth_service.dto.refresh.RefreshResponse;
 import project.auth_service.dto.register.RegisterRequest;
+import project.auth_service.entity.RefreshToken;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -81,6 +85,55 @@ class AuthSessionControllerTest extends AbstractWireMockTest {
         assertThat(result.getData().getAccessToken()).isNotBlank();
         assertThat(result.getData().getRefreshToken()).isNull();
         assertThat(newRefreshToken).isNotEqualTo(oldRefreshToken);
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void when_refresh_withReusedToken_then_RevokeOtherSessions_and_ReturnUnauthorized() throws Exception {
+
+        String loginName = "reused_token_user_" + UUID.randomUUID();
+        registerUser(loginName);
+
+        String oldRefreshToken = loginAndGetRefreshToken(loginName);
+        MockHttpServletResponse refreshResponse = mockMvc.perform(post(REFRESH_URL)
+                        .cookie(new Cookie(REFRESH_COOKIE, oldRefreshToken)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+        String newRefreshToken = extractCookieValue(refreshResponse.getHeader(HttpHeaders.SET_COOKIE));
+
+        String reusedResponse = mockMvc.perform(post(REFRESH_URL)
+                        .cookie(new Cookie(REFRESH_COOKIE, oldRefreshToken)))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ErrorResponse reusedError = objectMapper.readValue(reusedResponse, ErrorResponse.class);
+        assertThat(reusedError.getMessage()).isEqualTo("Refresh token already used");
+
+        List<RefreshToken> remainingTokens = refreshTokenRepository.findAll()
+                .stream()
+                .filter(token -> token.getToken().equals(oldRefreshToken) || token.getToken().equals(newRefreshToken))
+                .toList();
+
+        assertThat(remainingTokens)
+                .singleElement()
+                .satisfies(token -> {
+                    assertThat(token.getToken()).isEqualTo(oldRefreshToken);
+                    assertThat(token.isUsed()).isTrue();
+                });
+
+        String revokedTokenResponse = mockMvc.perform(post(REFRESH_URL)
+                        .cookie(new Cookie(REFRESH_COOKIE, newRefreshToken)))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ErrorResponse revokedTokenError = objectMapper.readValue(revokedTokenResponse, ErrorResponse.class);
+        assertThat(revokedTokenError.getStatus()).isEqualTo(401);
+        assertThat(revokedTokenError.getPath()).isEqualTo(REFRESH_URL);
     }
 
     @Test
@@ -174,11 +227,15 @@ class AuthSessionControllerTest extends AbstractWireMockTest {
     }
 
     private void registerUser() throws Exception {
+        registerUser(LOGIN);
+    }
+
+    private void registerUser(String loginName) throws Exception {
         stubCreateUserSuccess();
 
         mockMvc.perform(post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(createRegisterRequest())))
+                        .content(toJson(createRegisterRequest(loginName))))
                 .andExpect(status().isOk());
     }
 
@@ -196,9 +253,13 @@ class AuthSessionControllerTest extends AbstractWireMockTest {
     }
 
     private String loginAndGetRefreshToken() throws Exception {
+        return loginAndGetRefreshToken(LOGIN);
+    }
+
+    private String loginAndGetRefreshToken(String loginName) throws Exception {
         MockHttpServletResponse loginResponse = mockMvc.perform(post(LOGIN_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(toJson(createLoginRequest())))
+                        .content(toJson(createLoginRequest(loginName, PASSWORD))))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -207,8 +268,12 @@ class AuthSessionControllerTest extends AbstractWireMockTest {
     }
 
     private RegisterRequest createRegisterRequest() {
+        return createRegisterRequest(LOGIN);
+    }
+
+    private RegisterRequest createRegisterRequest(String loginName) {
         RegisterRequest request = new RegisterRequest();
-        request.setLoginName(LOGIN);
+        request.setLoginName(loginName);
         request.setPassword(PASSWORD);
         request.setEmail(EMAIL);
         request.setPhoneNumber(PHONE_NUMBER);
@@ -220,8 +285,12 @@ class AuthSessionControllerTest extends AbstractWireMockTest {
     }
 
     private LoginRequest createLoginRequest(String password) {
+        return createLoginRequest(LOGIN, password);
+    }
+
+    private LoginRequest createLoginRequest(String loginName, String password) {
         LoginRequest request = new LoginRequest();
-        request.setLoginName(LOGIN);
+        request.setLoginName(loginName);
         request.setPassword(password);
         return request;
     }

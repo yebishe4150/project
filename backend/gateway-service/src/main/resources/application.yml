@@ -41,6 +41,10 @@ spring:
             add-to-simple-url-handler-mapping: true
             cors-configurations:
               '[/**]':
+                # Intentional for local-only development.
+                # Browser requests go to Vite on the same origin, and Vite proxies /api to this gateway,
+                # so gateway CORS is not part of the normal frontend flow.
+                # Revisit only if the browser starts calling the gateway directly from another origin.
                 allowedOriginPatterns:
                   - "*"
                 allowedMethods:
