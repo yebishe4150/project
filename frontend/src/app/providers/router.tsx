@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom"
 import { FeedPage } from "../../pages/feed/FeedPage"
-import { ProfilePage } from "../../pages/profile/ProfilePage"
+import { PrivateProfilePage } from "../../pages/profile/PrivateProfilePage"
+import { PublicProfilePage } from "../../pages/profile/PublicProfilePage"
 import { MainLayout } from "../layouts/MainLayout"
 
 export const router = createBrowserRouter([
@@ -12,8 +13,12 @@ export const router = createBrowserRouter([
         element: <FeedPage />,
       },
       {
-        path: "/profile",
-        element: <ProfilePage />,
+        path: "/profile/:nickname",
+        element: <PublicProfilePage />,
+      },
+      {
+        path: "/profile/:nickname/me",
+        element: <PrivateProfilePage />,
       },
     ],
   },

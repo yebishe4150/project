@@ -3,23 +3,23 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { generateImage } from "@/features/upload-image/api/generateImage"
 import { uploadImage } from "@/features/upload-image/api/uploadImage"
 import type { UploadImageData } from "@/features/upload-image/model/uploadImage.types"
-import { ProfileEmptyState } from "./ui/ProfileEmptyState"
 import { ProfileAddMenu } from "./ui/ProfileAddMenu"
+import { ProfileEmptyState } from "./ui/ProfileEmptyState"
 import { ProfileTabs } from "./ui/ProfileTabs"
 import {
-  fetchProfileImages,
+  fetchPrivateProfileImages,
   type ProfileImageTab,
 } from "./profileContent.api"
 import styles from "./ProfileContent.module.css"
 
 const PROFILE_IMAGES_QUERY_KEY = ["profile-images"]
 
-export const ProfileContent = () => {
+export const PrivateProfileContent = () => {
   const [activeTab, setActiveTab] = useState<ProfileImageTab>("photos")
   const queryClient = useQueryClient()
   const { data: images = [], isLoading } = useQuery({
     queryKey: [...PROFILE_IMAGES_QUERY_KEY, activeTab],
-    queryFn: () => fetchProfileImages(activeTab),
+    queryFn: () => fetchPrivateProfileImages(activeTab),
   })
 
   const refreshImages = async () => {
@@ -52,7 +52,6 @@ export const ProfileContent = () => {
     await refreshImages()
     setActiveTab("ai")
   }
-  
 
   return (
     <section className={styles.content}>

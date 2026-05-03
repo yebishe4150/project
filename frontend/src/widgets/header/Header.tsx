@@ -1,13 +1,31 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import styles from "./Header.module.css";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { LoginModal } from "../../features/auth/ui/LoginModal";
+import { fetchCurrentUser } from "../../pages/profile/profile.api";
+
+const CURRENT_USER_QUERY_KEY = ["current-user"];
 
 export const Header = () => {
-  const { isAuth, logout } = useAuth();
+  const { isAuth } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { data: currentUser } = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: fetchCurrentUser,
+    enabled: isAuth === true,
+  });
+
+  const profileSlug = currentUser?.nickname || currentUser?.loginName;
+  const isProfileRoute = /^\/profile\/[^/]+(?:\/me)?$/.test(location.pathname);
+  const handleOpenProfile = () => {
+    if (!profileSlug) return;
+
+    navigate(`/profile/${encodeURIComponent(profileSlug)}/me`);
+  };
 
   return (
     <header className={styles.header}>
@@ -27,16 +45,10 @@ export const Header = () => {
           </button>
         )}
 
-        {isAuth === true && (
-          <>
-            <button onClick={() => navigate("/profile")}>
-              Profile
-            </button>
-
-            <button onClick={logout}>
-              Log out
-            </button>
-          </>
+        {isAuth === true && !isProfileRoute && (
+          <button onClick={handleOpenProfile} disabled={!profileSlug}>
+            Profile
+          </button>
         )}
       </div>
 
