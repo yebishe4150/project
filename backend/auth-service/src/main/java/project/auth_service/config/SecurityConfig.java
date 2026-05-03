@@ -34,7 +34,12 @@ public class SecurityConfig {
                                 "/actuator/info"
                         ).permitAll()
 
-                        .requestMatchers("/v1/auth/**").permitAll()
+                        .requestMatchers(
+                                "/v1/auth/register",
+                                "/v1/auth/login",
+                                "/v1/auth/refresh",
+                                "/v1/auth/logout"
+                        ).permitAll()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
