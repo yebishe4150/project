@@ -13,6 +13,7 @@ import project.user_service.exception.NotFoundException;
 import project.user_service.exception.UserAlreadyExistsException;
 import project.user_service.repository.UserRepository;
 import project.user_service.service.mapper.UserMapper;
+import project.user_service.validation.NicknameValidator;
 
 import java.util.Locale;
 import java.util.UUID;
@@ -33,6 +34,13 @@ public class UserService {
 
     public UserResponse getById(UUID id) {
         User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        return userMapper.toResponse(user);
+    }
+
+    public UserResponse getByNickname(String nickname) {
+        User user = userRepository.findByNickname(normalizeNickname(nickname))
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         return userMapper.toResponse(user);
@@ -61,13 +69,16 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
-        if (hasNicknameConflict(user, request.getNickname())) {
+        String normalizedNickname = normalizeNickname(request.getNickname());
+        NicknameValidator.validate(normalizedNickname);
+
+        if (hasNicknameConflict(user, normalizedNickname)) {
             throw new UserAlreadyExistsException("Никнейм уже занят");
         }
 
         applyIfNotEmpty(request.getFirstName(), user::setFirstName);
         applyIfNotEmpty(request.getSecondName(), user::setSecondName);
-        applyIfNotEmpty(request.getNickname(), user::setNickname);
+        applyIfNotEmpty(normalizedNickname, user::setNickname);
         applyIfNotEmpty(request.getEmail(), user::setEmail);
         applyIfNotEmpty(request.getPhoneNumber(), user::setPhoneNumber);
 
@@ -90,12 +101,11 @@ public class UserService {
         log.info("Пользователь удалён: userId={}", id);
     }
 
-    private boolean hasNicknameConflict(User user, String requestedNickname) {
-        if (requestedNickname == null || requestedNickname.trim().isEmpty()) {
+    private boolean hasNicknameConflict(User user, String normalizedRequestedNickname) {
+        if (normalizedRequestedNickname == null || normalizedRequestedNickname.isEmpty()) {
             return false;
         }
 
-        String normalizedRequestedNickname = normalizeNickname(requestedNickname);
         String currentNickname = normalizeNickname(user.getNickname());
 
         if (normalizedRequestedNickname.equals(currentNickname)) {

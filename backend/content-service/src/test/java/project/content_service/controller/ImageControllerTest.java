@@ -1,31 +1,41 @@
 package project.content_service.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import project.content_service.AbstractTest;
+import project.content_service.AbstractWireMockTest;
 import project.content_service.entity.Image;
 import project.content_service.entity.ImageSource;
 import project.content_service.entity.Role;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class ImageControllerTest extends AbstractTest {
+class ImageControllerTest extends AbstractWireMockTest {
 
     private static final String CONTENT_URL = "/v1/content";
     private static final String USER_IMAGES_URL = "/v1/content/images/user";
     private static final String USER_UPLOADED_URL = "/v1/content/images/user/uploads";
     private static final String USER_GENERATED_URL = "/v1/content/images/user/generated";
+    private static final String USER_UPLOADED_BY_NICKNAME_URL = "/v1/content/images/users/tester/uploads";
+    private static final String USER_GENERATED_BY_NICKNAME_URL = "/v1/content/images/users/tester/generated";
+    private static final String USER_SERVICE_NICKNAME_URL = "/v1/users/tester";
+    private static final String INTERNAL_TOKEN = "super-secret";
 
     @Test
     void when_uploadWithUserToken_then_SaveImageAndReturnExternalUrl() throws Exception {
@@ -208,6 +218,21 @@ class ImageControllerTest extends AbstractTest {
     }
 
     @Test
+    void when_getAllWithoutToken_then_ReturnUnauthorized() throws Exception {
+        String response = mockMvc.perform(get(CONTENT_URL))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(401);
+        assertThat(error.get("message").asText()).isEqualTo("Unauthorized");
+        assertThat(error.get("path").asText()).isEqualTo(CONTENT_URL);
+    }
+
+    @Test
     void when_getUserSpecificEndpoints_then_FilterByOwnerAndSource() throws Exception {
         UUID userId = UUID.randomUUID();
         saveImage(userId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
@@ -229,6 +254,120 @@ class ImageControllerTest extends AbstractTest {
         assertThat(allByUser.get("data")).hasSize(2);
         assertThat(uploaded.get("data")).hasSize(1);
         assertThat(generated.get("data")).hasSize(1);
+    }
+
+    @Test
+    void when_getUserImagesWithAdminToken_then_ReturnForbidden() throws Exception {
+        String response = mockMvc.perform(get(USER_IMAGES_URL)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(UUID.randomUUID(), Role.ADMIN)))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(403);
+        assertThat(error.get("message").asText()).isEqualTo("Forbidden");
+        assertThat(error.get("path").asText()).isEqualTo(USER_IMAGES_URL);
+    }
+
+    @Test
+    void when_getUserSpecificEndpointsByNickname_then_ResolveUserAndFilterBySource() throws Exception {
+        UUID requesterId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        saveImage(targetUserId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
+        saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+        saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/foreign.jpg", "foreign");
+
+        String auth = "Bearer " + bearerToken(requesterId, Role.USER);
+
+        stubSuccess(
+                USER_SERVICE_NICKNAME_URL,
+                HttpMethod.GET,
+                Map.of("X-Internal-Token", INTERNAL_TOKEN),
+                Map.of(
+                        "id", targetUserId.toString(),
+                        "nickname", "tester"
+                )
+        );
+
+        JsonNode uploaded = objectMapper.readTree(mockMvc.perform(get(USER_UPLOADED_BY_NICKNAME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        JsonNode generated = objectMapper.readTree(mockMvc.perform(get(USER_GENERATED_BY_NICKNAME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+
+        assertThat(uploaded.get("data")).hasSize(1);
+        assertThat(uploaded.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/upload.jpg");
+        assertThat(generated.get("data")).hasSize(1);
+        assertThat(generated.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/generated.jpg");
+    }
+
+    @Test
+    void when_getUserSpecificEndpointByNickname_whenUserServiceFirstCallTimesOut_then_RetryAndReturnImages() throws Exception {
+        UUID requesterId = UUID.randomUUID();
+        UUID targetUserId = UUID.randomUUID();
+        saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+
+        String auth = "Bearer " + bearerToken(requesterId, Role.USER);
+        String scenario = "USER_SERVICE_RETRY";
+        String secondCall = "SECOND_CALL";
+
+        WireMock.stubFor(WireMock.get(USER_SERVICE_NICKNAME_URL)
+                .inScenario(scenario)
+                .whenScenarioStateIs(STARTED)
+                .willReturn(WireMock.aResponse()
+                        .withFixedDelay(100))
+                .willSetStateTo(secondCall));
+
+        WireMock.stubFor(WireMock.get(USER_SERVICE_NICKNAME_URL)
+                .inScenario(scenario)
+                .whenScenarioStateIs(secondCall)
+                .withHeader("X-Internal-Token", WireMock.equalTo(INTERNAL_TOKEN))
+                .willReturn(WireMock.okJson("""
+                        {
+                          "data": {
+                            "id": "%s",
+                            "nickname": "tester"
+                          },
+                          "message": "ok"
+                        }
+                        """.formatted(targetUserId))));
+
+        JsonNode generated = objectMapper.readTree(mockMvc.perform(get(USER_GENERATED_BY_NICKNAME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+
+        assertThat(generated.get("data")).hasSize(1);
+        assertThat(generated.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/generated.jpg");
+
+        WireMock.verify(2, getRequestedFor(urlEqualTo(USER_SERVICE_NICKNAME_URL)));
+    }
+
+    @Test
+    void when_getUserSpecificEndpointByNickname_whenUserServiceReturnsNotFound_then_ReturnNotFound() throws Exception {
+        String auth = "Bearer " + bearerToken(UUID.randomUUID(), Role.USER);
+
+        WireMock.stubFor(WireMock.get(USER_SERVICE_NICKNAME_URL)
+                .withHeader("X-Internal-Token", WireMock.equalTo(INTERNAL_TOKEN))
+                .willReturn(WireMock.notFound()));
+
+        String response = mockMvc.perform(get(USER_UPLOADED_BY_NICKNAME_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isNotFound())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(404);
+        assertThat(error.get("message").asText()).isNotBlank();
     }
 
     @Test
@@ -260,6 +399,22 @@ class ImageControllerTest extends AbstractTest {
 
         JsonNode json = objectMapper.readTree(response);
         assertThat(json.get("data")).hasSize(0);
+    }
+
+    @Test
+    void when_searchWithoutToken_then_ReturnUnauthorized() throws Exception {
+        String response = mockMvc.perform(get("/v1/content/search")
+                        .param("tags", "cat"))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+
+        assertThat(error.get("status").asInt()).isEqualTo(401);
+        assertThat(error.get("message").asText()).isEqualTo("Unauthorized");
+        assertThat(error.get("path").asText()).isEqualTo("/v1/content/search");
     }
 
     private byte[] jpegBytes() {

@@ -27,11 +27,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
             "/actuator/health",
             "/actuator/info",
             "/api/v1/auth",
-            "/api/v1/content/feed",
-//            "/api/v1/content/images",
-            "/api/v1/content/public",
-            "/api/v1/content/ai",
-            "/api/v1/content/ai/generate"
+            "/api/v1/content/public"
     );
 
     @Override

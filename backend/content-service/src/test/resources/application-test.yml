@@ -17,6 +17,14 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  cloud:
+    openfeign:
+      client:
+        config:
+          user-service:
+            connectTimeout: 75
+            readTimeout: 75
+
 logging:
   level:
     root: WARN
@@ -39,8 +47,14 @@ s3:
   region: us-east-1
 
 security:
+  internal:
+    token: super-secret
   jwt:
     secret: super-secret-key-super-secret-key-super-secret-key
+
+services:
+  user:
+    url: http://localhost:${wiremock.server.port}
 
 rate-limit:
   enabled: false
