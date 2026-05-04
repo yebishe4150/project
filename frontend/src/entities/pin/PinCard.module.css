@@ -1,11 +1,12 @@
 .pinCard {
-  margin-bottom: 16px;
-  break-inside: avoid;
+  width: 100%;
   cursor: pointer;
 }
 
 .image {
   width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
   border-radius: 12px;
   transition: 0.2s;
   display: block;

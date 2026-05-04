@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Image, Search, UserRound } from "lucide-react";
 import styles from "./Header.module.css";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { LoginModal } from "../../features/auth/ui/LoginModal";
@@ -13,6 +14,10 @@ export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
   const { data: currentUser } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: fetchCurrentUser,
@@ -21,6 +26,31 @@ export const Header = () => {
 
   const profileSlug = currentUser?.nickname || currentUser?.loginName;
   const isProfileRoute = /^\/profile\/[^/]+(?:\/me)?$/.test(location.pathname);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
+
+  useEffect(() => {
+    if (!isSearchOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!searchWrapRef.current?.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isSearchOpen]);
+
   const handleOpenProfile = () => {
     if (!profileSlug) return;
 
@@ -46,9 +76,52 @@ export const Header = () => {
         )}
 
         {isAuth === true && !isProfileRoute && (
-          <button onClick={handleOpenProfile} disabled={!profileSlug}>
-            Profile
-          </button>
+          <>
+            <div ref={searchWrapRef} className={`${styles.searchWrap} ${isSearchOpen ? styles.searchWrapOpen : ""}`}>
+              <button
+                className={styles.navButton}
+                type="button"
+                aria-expanded={isSearchOpen}
+                onClick={() => setIsSearchOpen((current) => !current)}
+              >
+                <Search aria-hidden="true" />
+                <span>Search</span>
+              </button>
+
+              {isSearchOpen && (
+                <input
+                  ref={searchInputRef}
+                  className={styles.searchInput}
+                  type="search"
+                  aria-label="Search"
+                  placeholder="Search"
+                  value={searchValue}
+                  onChange={(event) => setSearchValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      setIsSearchOpen(false);
+                      event.currentTarget.blur();
+                    }
+                  }}
+                />
+              )}
+            </div>
+
+            <button
+              className={`${styles.navButton} ${styles.profileButton}`}
+              type="button"
+              onClick={handleOpenProfile}
+              disabled={!profileSlug}
+            >
+              <UserRound aria-hidden="true" />
+              <span>Profile</span>
+            </button>
+
+            <button className={styles.navButton} type="button">
+              <Image aria-hidden="true" />
+              <span>Gallery</span>
+            </button>
+          </>
         )}
       </div>
 

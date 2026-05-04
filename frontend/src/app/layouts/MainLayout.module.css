@@ -7,3 +7,23 @@
 .main {
   flex: 1;
 }
+
+.profileFrame,
+.profileColumn {
+  min-width: 0;
+}
+
+.profileColumn {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+@media (min-width: 1536px) {
+  .profileFrame {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 262px minmax(0, 1fr);
+    align-items: stretch;
+  }
+}

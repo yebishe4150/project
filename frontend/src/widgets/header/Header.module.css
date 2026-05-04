@@ -1,13 +1,13 @@
 .header {
-  height: 60px;
+  min-height: 76px;
   border-bottom: 1px solid rgba(216, 219, 226, 0.8);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 136px 0 20px;
   position: sticky;
   top: 0;
-  background: rgba(255, 255, 255, 0.88);
+  background: linear-gradient(135deg, rgba(251, 251, 239, 0.92) 0%, rgba(255, 247, 244, 0.92) 100%);
   backdrop-filter: blur(12px);
   z-index: 10;
 }
@@ -21,23 +21,87 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
-.actions button {
-  min-height: 36px;
-  padding: 0 14px;
+.navButton {
+  min-height: 40px;
+  padding: 0 8px;
   border: 0;
   border-radius: 999px;
-  background: #111827;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: #415064;
+  font-family: inherit;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
 }
 
-.actions button:first-of-type {
-  background: linear-gradient(90deg, #4da8ff 0%, #02d5a7 100%);
+.navButton svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.navButton:hover:not(:disabled) {
+  background: linear-gradient(90deg, #626dff 0%, #f72e96 100%);
+  box-shadow: 0 12px 24px rgba(188, 47, 182, 0.22);
+  color: #fff;
+}
+
+.navButton:focus-visible:not(:disabled) {
+  outline: none;
+  background: linear-gradient(90deg, #626dff 0%, #f72e96 100%);
+  box-shadow: 0 12px 24px rgba(188, 47, 182, 0.22);
+  color: #fff;
+}
+
+.navButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.profileButton {
+  min-width: 105px;
+  padding: 0 18px;
+}
+
+.searchWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.searchWrapOpen {
+  padding: 0 10px 0 0;
+  border-radius: 999px;
+  background: rgba(246, 243, 255, 0.9);
+}
+
+.searchInput {
+  width: 180px;
+  height: 34px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.searchInput::placeholder {
+  color: #8b96a8;
 }
 
 .authLoading {
@@ -51,6 +115,18 @@
   color: #334155;
   font-size: 13px;
   font-weight: 700;
+}
+
+.actions>button:not(.navButton) {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4da8ff 0%, #02d5a7 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .authLoadingDot {

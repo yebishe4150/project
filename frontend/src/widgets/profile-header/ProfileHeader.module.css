@@ -345,6 +345,12 @@
   }
 }
 
+@media (min-width: 1536px) {
+  .navWrap {
+    display: none;
+  }
+}
+
 .shareWrap {
   position: relative;
   display: inline-flex;
