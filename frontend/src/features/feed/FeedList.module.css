@@ -1,4 +1,76 @@
-.feedList {
-  column-gap: 16px;
-  columns: 250px;
+.feedViewport {
+  width: min(100vw, 1680px);
+  margin-inline: calc(50% - min(50vw, 840px));
+  overflow: hidden;
+  padding: 8px 0 34px;
+}
+
+.feedTrack {
+  --feed-duration: 42s;
+  --row-offset: 0px;
+  --card-width: clamp(170px, 18vw, 265px);
+  --gap: 20px;
+  width: max-content;
+  display: flex;
+  align-items: center;
+  margin-left: var(--row-offset);
+  margin-top: 14px;
+  animation: feed-drum-scroll var(--feed-duration) linear infinite;
+  will-change: transform;
+}
+
+.feedTrack:first-child {
+  margin-top: 0;
+}
+
+.reverseTrack {
+  animation-direction: reverse;
+}
+
+.feedGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding-right: var(--gap);
+}
+
+.pinWrap {
+  flex: 0 0 var(--pin-width, var(--card-width));
+  transform: translateY(var(--pin-lift));
+}
+
+.empty {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: #5f6673;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+@keyframes feed-drum-scroll {
+  from {
+    translate: 0;
+  }
+
+  to {
+    translate: -50%;
+  }
+}
+
+@media (max-width: 720px) {
+  .feedViewport {
+    padding-bottom: 20px;
+  }
+
+  .feedTrack {
+    --card-width: clamp(150px, 42vw, 210px);
+    --gap: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedTrack {
+    animation: none;
+  }
 }
