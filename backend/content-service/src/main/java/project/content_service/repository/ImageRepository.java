@@ -17,6 +17,13 @@ public interface ImageRepository extends JpaRepository<Image, UUID> {
 
     List<Image> findAllByIdIn(List<UUID> ids);
 
+    @Query("""
+            SELECT i FROM Image i
+            JOIN i.tags t
+            WHERE t.id = :tagId
+            """)
+    List<Image> findByTagId(UUID tagId);
+
     @Query("select i from Image i order by function('random')")
     List<Image> getRandom(Pageable pageable);
 

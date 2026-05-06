@@ -29,7 +29,7 @@ rate-limit:
     limit: ${RATE_LIMIT_ME_LIMIT:120}
     window-seconds: ${RATE_LIMIT_ME_WINDOW_SECONDS:60}
   update-me:
-    limit: ${RATE_LIMIT_UPDATE_ME_LIMIT:10}
+    limit: ${RATE_LIMIT_UPDATE_ME_LIMIT:15}
     window-seconds: ${RATE_LIMIT_UPDATE_ME_WINDOW_SECONDS:60}
   internal-create:
     limit: ${RATE_LIMIT_INTERNAL_CREATE_LIMIT:30}
