@@ -2,7 +2,6 @@ package project.content_service.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import project.content_service.dto.gallery.GalleryImageResponse;
 import project.content_service.dto.gallery.GalleryTagResponse;
 import project.content_service.entity.Tag;
@@ -23,7 +22,6 @@ public class GalleryService {
     private final ImageRepository imageRepository;
     private final UrlRewriter urlRewriter;
 
-    @Transactional(readOnly = true)
     public List<GalleryTagResponse> getTags() {
         return tagRepository.findAll()
                 .stream()
@@ -35,7 +33,6 @@ public class GalleryService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<GalleryImageResponse> getImagesByTag(UUID tagId) {
         if (!tagRepository.existsById(tagId)) {
             throw new NotFoundException("Тег не найден");
