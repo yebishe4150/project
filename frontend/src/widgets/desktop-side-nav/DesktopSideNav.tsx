@@ -22,9 +22,9 @@ export const DesktopSideNav = () => {
     enabled: isAuth === true,
   })
 
-  const isPublicProfileRoute = /^\/profile\/[^/]+$/.test(location.pathname)
   const profileSlug = currentUser?.nickname || currentUser?.loginName
-  const showMyProfile = isAuth === true && isPublicProfileRoute
+  const showProfile = isAuth === true
+  const isGalleryRoute = location.pathname === "/gallery"
 
   useEffect(() => {
     if (isSearchOpen) {
@@ -56,6 +56,20 @@ export const DesktopSideNav = () => {
     navigate(`/profile/${encodeURIComponent(profileSlug)}/me`)
   }
 
+  const submitSearch = () => {
+    const nextValue = searchValue.trim()
+
+    setIsSearchOpen(false)
+
+    if (!nextValue) {
+      navigate("/gallery")
+      return
+    }
+
+    navigate(`/gallery?search=${encodeURIComponent(nextValue)}`)
+    setSearchValue("")
+  }
+
   return (
     <aside className={styles.sideNav} aria-label="Desktop navigation">
       <div className={styles.navList}>
@@ -68,37 +82,50 @@ export const DesktopSideNav = () => {
           <span>Feed</span>
         </button>
 
-        <div ref={searchWrapRef} className={`${styles.searchWrap} ${isSearchOpen ? styles.searchWrapOpen : ""}`}>
-          <button
-            className={styles.navItem}
-            type="button"
-            aria-expanded={isSearchOpen}
-            onClick={() => setIsSearchOpen((current) => !current)}
-          >
-            <Search aria-hidden="true" />
-            <span>Search</span>
-          </button>
+        {!isGalleryRoute && (
+          <>
+            <div ref={searchWrapRef} className={`${styles.searchWrap} ${isSearchOpen ? styles.searchWrapOpen : ""}`}>
+              <button
+                className={styles.navItem}
+                type="button"
+                aria-expanded={isSearchOpen}
+                onClick={() => setIsSearchOpen((current) => !current)}
+              >
+                <Search aria-hidden="true" />
+                <span>Search</span>
+              </button>
 
-          {isSearchOpen && (
-            <input
-              ref={searchInputRef}
-              className={styles.searchInput}
-              type="search"
-              aria-label="Search"
-              placeholder="Search"
-              value={searchValue}
-              onChange={(event) => setSearchValue(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  setIsSearchOpen(false)
-                  event.currentTarget.blur()
-                }
-              }}
-            />
-          )}
-        </div>
+              {isSearchOpen && (
+                <input
+                  ref={searchInputRef}
+                  className={styles.searchInput}
+                  type="search"
+                  aria-label="Search"
+                  placeholder="Search"
+                  value={searchValue}
+                  onChange={(event) => setSearchValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      submitSearch()
+                      event.currentTarget.blur()
+                    }
+                  }}
+                />
+              )}
+            </div>
 
-        {showMyProfile && (
+            <button
+              className={styles.navItem}
+              type="button"
+              onClick={() => navigate("/gallery")}
+            >
+              <Image aria-hidden="true" />
+              <span>Gallery</span>
+            </button>
+          </>
+        )}
+
+        {showProfile && (
           <button
             className={styles.navItem}
             type="button"
@@ -106,18 +133,9 @@ export const DesktopSideNav = () => {
             disabled={!profileSlug}
           >
             <UserRound aria-hidden="true" />
-            <span>My profile</span>
+            <span>Profile</span>
           </button>
         )}
-
-        <button
-          className={styles.navItem}
-          type="button"
-          onClick={() => navigate("/")}
-        >
-          <Image aria-hidden="true" />
-          <span>Gallery</span>
-        </button>
       </div>
     </aside>
   )

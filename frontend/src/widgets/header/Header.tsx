@@ -57,6 +57,20 @@ export const Header = () => {
     navigate(`/profile/${encodeURIComponent(profileSlug)}/me`);
   };
 
+  const submitSearch = () => {
+    const nextValue = searchValue.trim();
+
+    setIsSearchOpen(false);
+
+    if (!nextValue) {
+      navigate("/gallery");
+      return;
+    }
+
+    navigate(`/gallery?search=${encodeURIComponent(nextValue)}`);
+    setSearchValue("");
+  };
+
   return (
     <header className={styles.header}>
       <div className={styles.logo}>PinPet</div>
@@ -99,7 +113,7 @@ export const Header = () => {
                   onChange={(event) => setSearchValue(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
-                      setIsSearchOpen(false);
+                      submitSearch();
                       event.currentTarget.blur();
                     }
                   }}
@@ -117,7 +131,11 @@ export const Header = () => {
               <span>Profile</span>
             </button>
 
-            <button className={styles.navButton} type="button">
+            <button
+              className={styles.navButton}
+              type="button"
+              onClick={() => navigate("/gallery")}
+            >
               <Image aria-hidden="true" />
               <span>Gallery</span>
             </button>
