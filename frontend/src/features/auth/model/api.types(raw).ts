@@ -23,3 +23,7 @@ export interface LoginResponseData  {
   userId: string;
   role: string;
 };
+
+export interface ChangePasswordResponseData {
+  accessToken: string;
+}

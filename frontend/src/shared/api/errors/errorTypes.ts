@@ -1,4 +1,4 @@
-export type AuthErrorField = "loginName" | "password";
+export type AuthErrorField = "loginName" | "password" | "currentPassword" | "newPassword";
 
 export type ApiError = {
   status: number;

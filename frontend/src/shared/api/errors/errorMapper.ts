@@ -20,7 +20,7 @@ export function mapAuthError(
       field: "password",
       message:
         error.message ||
-        "Пароль должен содержать минимум 8 символов, включать хотя бы одну заглавную букву и одну цифру.",
+        "Password must be at least 8 characters long and include at least one uppercase letter and one digit.",
     };
   }
 
@@ -56,5 +56,50 @@ export function mapAuthError(
   return {
     status: error.status,
     message: error.message || "Неизвестная ошибка.",
+  };
+}
+
+export function mapChangePasswordError(error: unknown): ApiError {
+  if (!isApiError(error)) {
+    return {
+      status: 0,
+      message: "Could not change the password. Please try again.",
+    };
+  }
+
+  if (error.status === 400) {
+    return {
+      status: error.status,
+      field: "newPassword",
+      message:
+        "Password must be at least 8 characters long and include at least one uppercase letter and one digit.",
+    };
+  }
+
+  if (error.status === 401) {
+    return {
+      status: error.status,
+      field: "currentPassword",
+      message: "Current password is incorrect.",
+    };
+  }
+
+  if (error.status === 403) {
+    return {
+      status: error.status,
+      message: "You do not have permission to change the password.",
+    };
+  }
+
+  if (error.status >= 500) {
+    return {
+      status: error.status,
+      message: "Internal server error. Please try again later.",
+    };
+  }
+
+  return {
+    status: error.status,
+    message: "Could not change the password. Please try again.",
   };
 }

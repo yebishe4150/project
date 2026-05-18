@@ -9,21 +9,21 @@ function hasDigit(value: string) {
   return /\d/.test(value);
 }
 
-function validatePasswordRules(password: string): string | undefined {
+export function validatePasswordRules(password: string): string | undefined {
   if (!password) {
-    return "Поле пароля обязательно.";
+    return "Password is required.";
   }
 
   if (password.length < 8) {
-    return "Пароль должен быть не менее 8 символов.";
+    return "Password must be at least 8 characters long.";
   }
 
   if (!hasUppercase(password)) {
-    return "Пароль должен содержать хотя бы одну заглавную букву.";
+    return "Password must contain at least one uppercase letter.";
   }
 
   if (!hasDigit(password)) {
-    return "Пароль должен содержать хотя бы одну цифру.";
+    return "Password must contain at least one digit.";
   }
 
   return undefined;

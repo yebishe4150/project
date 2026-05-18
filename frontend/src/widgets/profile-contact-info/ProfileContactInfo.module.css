@@ -88,6 +88,128 @@
   box-shadow: 0 0 0 4px rgba(128, 149, 255, 0.12);
 }
 
+.inputError {
+  border-color: rgba(222, 48, 96, 0.75);
+}
+
+.inputError:focus {
+  border-color: rgba(222, 48, 96, 0.85);
+  box-shadow: 0 0 0 4px rgba(222, 48, 96, 0.12);
+}
+
+.passwordPanel {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid rgba(214, 220, 230, 0.95);
+  border-radius: 18px;
+  background: rgba(248, 250, 255, 0.8);
+}
+
+.passwordField {
+  display: block;
+}
+
+.passwordInputWrap {
+  position: relative;
+}
+
+.passwordInputWrap .input {
+  margin-top: 8px;
+}
+
+.passwordInput {
+  padding-right: 54px;
+}
+
+.passwordPreviewButton {
+  position: absolute;
+  right: 12px;
+  top: calc(50% + 4px);
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #697488;
+  cursor: pointer;
+}
+
+.passwordPreviewButton:hover:not(:disabled) {
+  background: rgba(105, 116, 136, 0.1);
+  color: #3f4b63;
+}
+
+.passwordPreviewButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.passwordPreviewButton svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.passwordLabel {
+  display: block;
+  color: #657089;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.errorText {
+  display: block;
+  margin-top: 8px;
+  color: #cf2459;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.generalError {
+  margin-top: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(222, 48, 96, 0.24);
+  border-radius: 14px;
+  background: rgba(255, 245, 248, 0.92);
+  color: #b91c4f;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.passwordSubmitButton {
+  justify-self: center;
+  min-width: 140px;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #4f84ff 0%, #f0349b 100%);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 14px 24px rgba(104, 94, 218, 0.22);
+  cursor: pointer;
+}
+
+.passwordSubmitButton:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
 .socialTitle {
   margin-top: 36px;
   color: #445168;
