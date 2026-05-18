@@ -1,17 +1,17 @@
 .sideNav {
   display: none;
   min-height: 100%;
-  background: #fffaf4;
+  background: #ffffff;
   border-right: 1px solid rgba(216, 219, 226, 0.9);
 }
 
 .navList {
   position: sticky;
   top: 0;
-  padding: 24px 16px 0 24px;
+  padding: 34px 16px 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .navItem {
@@ -95,6 +95,12 @@
 }
 
 @media (min-width: 1536px) {
+  .navList {
+    padding: 34px 16px 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
   .sideNav {
     display: block;
   }

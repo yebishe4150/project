@@ -1,0 +1,378 @@
+.page {
+  min-height: 100vh;
+  padding: 48px clamp(18px, 3vw, 44px) 34px;
+  background: #fbfcff;
+  color: #111827;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 34px;
+}
+
+.title {
+  margin: 0;
+  font-size: 42px;
+  line-height: 1.05;
+  letter-spacing: 0;
+  color: #111827;
+}
+
+.subtitle {
+  margin: 12px 0 0;
+  color: #5f6777;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.searchForm,
+.sortControl {
+  height: 58px;
+  border: 1px solid rgba(204, 211, 224, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 30px rgba(16, 24, 40, 0.04);
+  color: #687386;
+}
+
+.searchForm {
+  width: min(360px, 42vw);
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.searchForm svg,
+.sortControl svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  stroke-width: 2.2;
+}
+
+.searchForm input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.searchForm input::placeholder {
+  color: #8b95a8;
+}
+
+.sortControl {
+  position: relative;
+  min-width: 216px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sortControl select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.sortControl svg:last-child {
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+}
+
+.collections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+.collectionCard {
+  overflow: hidden;
+  border: 1px solid rgba(211, 217, 228, 0.82);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.collectionCardExpanded {
+  grid-column: 1 / -1;
+  border-color: rgba(98, 109, 255, 0.28);
+  box-shadow: 0 18px 46px rgba(51, 65, 85, 0.11);
+}
+
+.collectionButton {
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  display: block;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.collectionCardExpanded .collectionButton {
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(211, 217, 228, 0.72);
+}
+
+.previewGrid {
+  height: clamp(220px, 22vw, 310px);
+  overflow: hidden;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  background: #edf1f7;
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.previewImage:first-child {
+  grid-column: 1;
+  grid-row: span 2;
+}
+
+.previewImage:only-child {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+}
+
+.previewImage:nth-child(2):last-child {
+  grid-column: 2;
+  grid-row: span 2;
+}
+
+.previewImage:nth-child(2):not(:last-child) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.previewImage:nth-child(3) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.previewEmpty {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #f0edff 0%, #e9f6ff 100%);
+  color: #746add;
+}
+
+.previewEmpty svg {
+  width: 42px;
+  height: 42px;
+}
+
+.collectionCardExpanded .previewGrid {
+  display: none;
+}
+
+.cardMeta {
+  min-height: 78px;
+  padding: 18px 14px 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.collectionCardExpanded .cardMeta {
+  min-height: 68px;
+  padding: 18px 0 14px;
+  align-items: center;
+}
+
+.cardMeta h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.cardMeta p {
+  margin: 8px 0 0;
+  color: #7b8497;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.cardChevron {
+  width: 22px;
+  height: 22px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  color: #637083;
+  transition: transform 0.18s ease;
+}
+
+.collectionCardExpanded .cardChevron {
+  transform: rotate(180deg);
+}
+
+.expandedPanel {
+  padding: 20px;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.galleryImage {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+  background: #edf1f7;
+}
+
+.state,
+.empty,
+.emptyPanel,
+.notice {
+  color: #7b8497;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.state,
+.empty {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+}
+
+.empty {
+  gap: 10px;
+}
+
+.empty svg {
+  width: 32px;
+  height: 32px;
+}
+
+.emptyPanel {
+  padding: 28px 0 8px;
+  text-align: center;
+}
+
+.notice {
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  text-align: center;
+}
+
+.notice svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1800px) {
+  .collections {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  }
+
+  .imageGrid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding-top: 30px;
+  }
+
+  .header {
+    display: block;
+  }
+
+  .toolbar {
+    margin-top: 22px;
+    justify-content: stretch;
+    flex-wrap: nowrap;
+  }
+
+  .searchForm,
+  .sortControl {
+    min-width: 0;
+  }
+
+  .searchForm {
+    flex: 1 1 auto;
+    width: auto;
+  }
+
+  .sortControl {
+    flex: 0 0 180px;
+  }
+
+  .title {
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 560px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .searchForm,
+  .sortControl {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .collections {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .previewGrid {
+    height: 240px;
+  }
+
+  .imageGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}

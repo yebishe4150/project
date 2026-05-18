@@ -7,8 +7,9 @@ import styles from "./MainLayout.module.css"
 export const MainLayout = () => {
   const location = useLocation()
   const isProfileRoute = /^\/profile\/[^/]+(?:\/me)?$/.test(location.pathname)
+  const isGalleryRoute = location.pathname === "/gallery"
 
-  if (isProfileRoute) {
+  if (isProfileRoute || isGalleryRoute) {
     return (
       <div className={styles.wrapper}>
         <div className={styles.profileFrame}>
