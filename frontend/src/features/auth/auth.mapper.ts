@@ -1,4 +1,10 @@
-import type { ApiResponse, RegisterResponseData, LoginResponseData, RefreshResponseData } from "./model/api.types(raw)";
+import type {
+  ApiResponse,
+  ChangePasswordResponseData,
+  RegisterResponseData,
+  LoginResponseData,
+  RefreshResponseData
+} from "./model/api.types(raw)";
 import type { AuthData, RegisterResult } from "./model/frontTypes";
 
 export function mapRegisterResponse(
@@ -23,6 +29,14 @@ export function mapLoginResponse(
 export function mapRefreshResponse(
   res: ApiResponse<RefreshResponseData>
 ): Pick<AuthData, "accessToken">  {
+  return {
+    accessToken: res.data.accessToken
+  };
+}
+
+export function mapChangePasswordResponse(
+  res: ApiResponse<ChangePasswordResponseData>
+): Pick<AuthData, "accessToken"> {
   return {
     accessToken: res.data.accessToken
   };

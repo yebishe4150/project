@@ -1,11 +1,13 @@
 import type {
   ApiResponse,
+  ChangePasswordResponseData,
   LoginResponseData,
   RegisterResponseData,
   RefreshResponseData
 } from "./model/api.types(raw)";
 
 import {
+  mapChangePasswordResponse,
   mapRegisterResponse,
   mapLoginResponse,
   mapRefreshResponse
@@ -13,7 +15,7 @@ import {
 
 import type { AuthData, RegisterResult } from "./model/frontTypes";
 import { apiFetch } from "@/shared/api/apiClient.ts";
-import type { LoginRequest, RegisterRequest } from "./model/request.types";
+import type { ChangePasswordRequest, LoginRequest, RegisterRequest } from "./model/request.types";
 
 // ================================
 // 🔐 AUTH STATE
@@ -154,6 +156,28 @@ export async function login(
   setAuthFlag();
 
   return mapped;
+}
+
+// ================================
+// CHANGE PASSWORD
+// ================================
+
+export async function changePassword(
+  payload: ChangePasswordRequest
+): Promise<void> {
+  const raw = await apiFetch<ApiResponse<ChangePasswordResponseData>>(
+    "/auth/change-password",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" }
+    }
+  );
+
+  const mapped = mapChangePasswordResponse(raw);
+
+  accessToken = mapped.accessToken;
+  setAuthFlag();
 }
 
 // ================================

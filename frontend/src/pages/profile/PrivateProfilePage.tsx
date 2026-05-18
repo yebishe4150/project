@@ -5,6 +5,7 @@ import { useAuth } from "@/app/providers/AuthProvider"
 import { ProfileHeader } from "@/widgets/profile-header/ProfileHeader"
 import { PrivateProfileContent } from "@/widgets/profile-content/PrivateProfileContent"
 import { ProfileContactInfo, type ContactInfoValues } from "@/widgets/profile-contact-info/ProfileContactInfo"
+import { changePassword } from "@/features/auth/auth"
 import { fetchCurrentUser, updateCurrentUserNickname, updateCurrentUserProfile } from "./profile.api"
 import type { ProfileUserResponse } from "./profile.api"
 import styles from "./ProfilePage.module.css"
@@ -28,7 +29,8 @@ function mapContactInfo(user: ProfileUserResponse): ContactInfoValues {
     login: user.loginName ?? "",
     firstName: user.firstName ?? "",
     secondName: user.secondName ?? "",
-    password: "",
+    currentPassword: "",
+    newPassword: "",
   }
 }
 
@@ -44,7 +46,8 @@ export const PrivateProfilePage = () => {
     login: "",
     firstName: "",
     secondName: "",
-    password: "",
+    currentPassword: "",
+    newPassword: "",
   })
   const [pendingNicknameUser, setPendingNicknameUser] = useState<ProfileUserResponse | null>(null)
 
@@ -133,6 +136,13 @@ export const PrivateProfilePage = () => {
     setActiveSection("content")
   }
 
+  const handleChangePassword = async ({ currentPassword, newPassword }: Pick<ContactInfoValues, "currentPassword" | "newPassword">) => {
+    await changePassword({
+      currentPassword,
+      newPassword,
+    })
+  }
+
   if (isAuth === null) {
     return <div className={styles.loading}>Loading...</div>
   }
@@ -171,6 +181,7 @@ export const PrivateProfilePage = () => {
           initialValues={contactInfo}
           onCancel={handleCloseContactInfo}
           onSave={handleSaveContactInfo}
+          onChangePassword={handleChangePassword}
           isSaving={updateProfileMutation.isPending}
         />
       ) : (
