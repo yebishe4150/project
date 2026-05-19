@@ -115,6 +115,21 @@ class ImageControllerTest extends AbstractWireMockTest {
     }
 
     @Test
+    void when_uploadWithoutFile_then_ReturnBadRequest() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        String response = mockMvc.perform(MockMvcRequestBuilders.multipart("/v1/content/images")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(userId, Role.USER)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JsonNode error = objectMapper.readTree(response);
+        assertThat(error.get("message").asText()).isEqualTo("Файл не передан");
+    }
+
+    @Test
     void when_uploadEmptyFile_then_ReturnBadRequest() throws Exception {
         UUID userId = UUID.randomUUID();
         MockMultipartFile file = new MockMultipartFile(

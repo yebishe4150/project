@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import project.content_service.dto.ErrorResponse;
 
@@ -44,6 +45,22 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .message(message)
                 .status(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestPart(MissingServletRequestPartException ex,
+                                                                  HttpServletRequest request) {
+
+        log.warn("Не передана часть multipart-запроса '{}': {}", ex.getRequestPartName(), request.getRequestURI());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .message("Файл не передан")
+                .status(HttpStatus.BAD_REQUEST.value())
+                .path(request.getRequestURI())
                 .timestamp(LocalDateTime.now())
                 .build();
 
