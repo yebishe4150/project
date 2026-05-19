@@ -92,6 +92,7 @@ public class ImageController {
             )
     })
     @GetMapping
+    //TODO: подумать о смысле ендпоинта или удалить его
     public ImageListResponseWrapper getAll() {
 
         List<ImageResponse> response = service.getAll();
