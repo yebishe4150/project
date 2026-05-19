@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import project.content_service.dto.gallery.GalleryImageResponse;
 import project.content_service.dto.gallery.GalleryImagesResponseWrapper;
 import project.content_service.dto.gallery.GalleryTagResponse;
 import project.content_service.dto.gallery.GalleryTagsResponseWrapper;
+import project.content_service.security.UserPrincipal;
 import project.content_service.service.GalleryService;
 
 import java.util.List;
@@ -74,9 +76,12 @@ public class GalleryController {
     })
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/tags/{tagId}/images")
-    public GalleryImagesResponseWrapper getImagesByTag(@PathVariable UUID tagId) {
+    public GalleryImagesResponseWrapper getImagesByTag(
+            @PathVariable UUID tagId,
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
 
-        List<GalleryImageResponse> response = galleryService.getImagesByTag(tagId);
+        List<GalleryImageResponse> response = galleryService.getImagesByTag(tagId, user.getUserId());
 
         return GalleryImagesResponseWrapper.builder()
                 .data(response)

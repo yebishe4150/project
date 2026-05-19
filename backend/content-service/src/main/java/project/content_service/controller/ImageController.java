@@ -23,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 import project.content_service.dto.ErrorResponse;
 import project.content_service.dto.ImageListResponseWrapper;
 import project.content_service.dto.image.ImageResponse;
+import project.content_service.dto.imagesearch.SearchImageListResponseWrapper;
+import project.content_service.dto.imagesearch.SearchImageResponse;
 import project.content_service.dto.upload.ImageUploadResponseWrapper;
 import project.content_service.dto.upload.UploadImageRequest;
 import project.content_service.dto.upload.UploadImageResponse;
@@ -87,7 +89,7 @@ public class ImageController {
                     description = "Список изображений",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ImageListResponseWrapper.class)
+                            schema = @Schema(implementation = SearchImageListResponseWrapper.class)
                     )
             )
     })
@@ -152,10 +154,11 @@ public class ImageController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/images/users/{nickname}/uploads")
     public UserImageListResponseWrapper getUploadedByUserNickname(
-            @PathVariable String nickname
+            @PathVariable String nickname,
+            @AuthenticationPrincipal UserPrincipal user
     ) {
 
-        List<UserImageResponse> response = service.getUploadedByUserNickname(nickname);
+        List<UserImageResponse> response = service.getUploadedByUserNickname(nickname, user.getUserId());
 
         return UserImageListResponseWrapper.builder()
                 .data(response)
@@ -189,10 +192,11 @@ public class ImageController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/images/users/{nickname}/generated")
     public UserImageListResponseWrapper getGeneratedByUserNickname(
-            @PathVariable String nickname
+            @PathVariable String nickname,
+            @AuthenticationPrincipal UserPrincipal user
     ) {
 
-        List<UserImageResponse> response = service.getGeneratedByUserNickname(nickname);
+        List<UserImageResponse> response = service.getGeneratedByUserNickname(nickname, user.getUserId());
 
         return UserImageListResponseWrapper.builder()
                 .data(response)
@@ -212,14 +216,16 @@ public class ImageController {
             )
     })
     @GetMapping("/search")
-    public ImageListResponseWrapper searchByTags(
-            @RequestParam(required = false) List<String> tags
+    public SearchImageListResponseWrapper searchByTags(
+            @RequestParam(required = false) List<String> tags,
+            @AuthenticationPrincipal UserPrincipal user
     ) {
-        List<ImageResponse> response = service.searchByTags(tags);
+        List<SearchImageResponse> response = service.searchByTags(tags, user.getUserId());
 
-        return ImageListResponseWrapper.builder()
+        return SearchImageListResponseWrapper.builder()
                 .data(response)
                 .message("Поиск по тегам")
                 .build();
     }
+
 }

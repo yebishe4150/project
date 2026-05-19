@@ -1,5 +1,6 @@
-package project.content_service.dto.userimage;
+package project.content_service.dto.imagesearch;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,11 +9,14 @@ import java.util.UUID;
 
 @Data
 @Builder
-public class UserImageResponse {
+@Schema(description = "Изображение из результатов поиска")
+public class SearchImageResponse {
 
     private UUID id;
 
     private String url;
+
+    private UUID userId;
 
     private String description;
 

@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: 06.create-image-likes-table.yaml
+      author: maxim
+      changes:
+
+        - createTable:
+            tableName: image_likes
+            ifNotExists: true
+            remarks: "Лайки изображений"
+            columns:
+
+              - column:
+                  name: image_id
+                  type: uuid
+                  remarks: "Идентификатор изображения"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: user_id
+                  type: uuid
+                  remarks: "Идентификатор пользователя, поставившего лайк"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: create_time
+                  type: timestamp
+                  defaultValue: now()
+                  remarks: "Время создания записи"
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: image_likes
+            columnNames: image_id, user_id
+            constraintName: pk_image_likes
+
+        - addForeignKeyConstraint:
+            baseTableName: image_likes
+            baseColumnNames: image_id
+            referencedTableName: images
+            referencedColumnNames: id
+            constraintName: fk_image_likes_image
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: image_likes
+            indexName: idx_image_likes_user_id
+            columns:
+              - column:
+                  name: user_id

@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changesets/04.create-image-tags-table.yaml
   - include:
       file: db/changelog/changesets/05.add-image-source-column.yaml
+  - include:
+      file: db/changelog/changesets/06.create-image-likes-table.yaml
