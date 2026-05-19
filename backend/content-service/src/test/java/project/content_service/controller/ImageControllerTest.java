@@ -24,6 +24,7 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ImageControllerTest extends AbstractWireMockTest {
@@ -235,8 +236,8 @@ class ImageControllerTest extends AbstractWireMockTest {
     @Test
     void when_getUserSpecificEndpoints_then_FilterByOwnerAndSource() throws Exception {
         UUID userId = UUID.randomUUID();
-        saveImage(userId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
-        saveImage(userId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+        Image uploadedImage = saveImage(userId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
+        Image generatedImage = saveImage(userId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
         saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/foreign.jpg", "foreign");
 
         String auth = "Bearer " + bearerToken(userId, Role.USER);
@@ -254,6 +255,32 @@ class ImageControllerTest extends AbstractWireMockTest {
         assertThat(allByUser.get("data")).hasSize(2);
         assertThat(uploaded.get("data")).hasSize(1);
         assertThat(generated.get("data")).hasSize(1);
+        assertUserImageInList(allByUser.get("data"), uploadedImage, "http://cdn.local:9000/images/upload.jpg", 0, false);
+        assertUserImageInList(allByUser.get("data"), generatedImage, "http://cdn.local:9000/images/generated.jpg", 0, false);
+        assertUserImage(uploaded.get("data").get(0), uploadedImage, "http://cdn.local:9000/images/upload.jpg", 0, false);
+        assertUserImage(generated.get("data").get(0), generatedImage, "http://cdn.local:9000/images/generated.jpg", 0, false);
+    }
+
+    @Test
+    void when_profileImagesRequested_then_ReturnLikeStateForRequester() throws Exception {
+        UUID ownerId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        Image image = saveImage(ownerId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
+
+        mockMvc.perform(put("/v1/content/images/" + image.getId() + "/like")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(requesterId, Role.USER)))
+                .andExpect(status().isOk());
+
+        String auth = "Bearer " + bearerToken(ownerId, Role.USER);
+        JsonNode response = objectMapper.readTree(mockMvc.perform(get(USER_UPLOADED_URL)
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        JsonNode data = response.get("data").get(0);
+        assertUserImage(data, image, "http://cdn.local:9000/images/upload.jpg", 1, false);
     }
 
     @Test
@@ -276,8 +303,8 @@ class ImageControllerTest extends AbstractWireMockTest {
     void when_getUserSpecificEndpointsByNickname_then_ResolveUserAndFilterBySource() throws Exception {
         UUID requesterId = UUID.randomUUID();
         UUID targetUserId = UUID.randomUUID();
-        saveImage(targetUserId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
-        saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+        Image uploadedImage = saveImage(targetUserId, ImageSource.UPLOAD, "http://localhost:9000/images/upload.jpg", "upload");
+        Image generatedImage = saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
         saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/foreign.jpg", "foreign");
 
         String auth = "Bearer " + bearerToken(requesterId, Role.USER);
@@ -302,16 +329,16 @@ class ImageControllerTest extends AbstractWireMockTest {
                 .andReturn().getResponse().getContentAsString());
 
         assertThat(uploaded.get("data")).hasSize(1);
-        assertThat(uploaded.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/upload.jpg");
+        assertUserImage(uploaded.get("data").get(0), uploadedImage, "http://cdn.local:9000/images/upload.jpg", 0, false);
         assertThat(generated.get("data")).hasSize(1);
-        assertThat(generated.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/generated.jpg");
+        assertUserImage(generated.get("data").get(0), generatedImage, "http://cdn.local:9000/images/generated.jpg", 0, false);
     }
 
     @Test
     void when_getUserSpecificEndpointByNickname_whenUserServiceFirstCallTimesOut_then_RetryAndReturnImages() throws Exception {
         UUID requesterId = UUID.randomUUID();
         UUID targetUserId = UUID.randomUUID();
-        saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
+        Image generatedImage = saveImage(targetUserId, ImageSource.GENERATED, "http://localhost:9000/images/generated.jpg", "generated");
 
         String auth = "Bearer " + bearerToken(requesterId, Role.USER);
         String scenario = "USER_SERVICE_RETRY";
@@ -344,7 +371,7 @@ class ImageControllerTest extends AbstractWireMockTest {
                 .andReturn().getResponse().getContentAsString());
 
         assertThat(generated.get("data")).hasSize(1);
-        assertThat(generated.get("data").get(0).get("url").asText()).isEqualTo("http://cdn.local:9000/images/generated.jpg");
+        assertUserImage(generated.get("data").get(0), generatedImage, "http://cdn.local:9000/images/generated.jpg", 0, false);
 
         WireMock.verify(2, getRequestedFor(urlEqualTo(USER_SERVICE_NICKNAME_URL)));
     }
@@ -372,11 +399,16 @@ class ImageControllerTest extends AbstractWireMockTest {
 
     @Test
     void when_searchByTagsWithUserToken_then_ReturnOnlyImagesMatchingAllNormalizedTags() throws Exception {
-        saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/match.jpg", "match", "cat", "art");
+        UUID requesterId = UUID.randomUUID();
+        Image match = saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/match.jpg", "match", "cat", "art");
         saveImage(UUID.randomUUID(), ImageSource.UPLOAD, "http://localhost:9000/images/partial.jpg", "partial", "cat");
 
+        mockMvc.perform(put("/v1/content/images/" + match.getId() + "/like")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(requesterId, Role.USER)))
+                .andExpect(status().isOk());
+
         String response = mockMvc.perform(get("/v1/content/search")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(UUID.randomUUID(), Role.USER))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(requesterId, Role.USER))
                         .param("tags", " CAT ", "art"))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -385,7 +417,7 @@ class ImageControllerTest extends AbstractWireMockTest {
 
         JsonNode json = objectMapper.readTree(response);
         assertThat(json.get("data")).hasSize(1);
-        assertThat(json.get("data").get(0).get("description").asText()).isEqualTo("match");
+        assertSearchImage(json.get("data").get(0), match, "http://cdn.local:9000/images/match.jpg", 1, true);
     }
 
     @Test
@@ -428,5 +460,38 @@ class ImageControllerTest extends AbstractWireMockTest {
                 0x1A,
                 0x0A
         };
+    }
+
+    private void assertUserImage(JsonNode data, Image image, String url, long likesCount, boolean liked) {
+        assertThat(data.get("id").asText()).isEqualTo(image.getId().toString());
+        assertThat(data.get("url").asText()).isEqualTo(url);
+        assertThat(data.get("description").asText()).isEqualTo(image.getDescription());
+        assertThat(data.has("createTime")).isTrue();
+        assertThat(data.get("likesCount").asLong()).isEqualTo(likesCount);
+        assertThat(data.get("liked").asBoolean()).isEqualTo(liked);
+    }
+
+    private void assertUserImageInList(JsonNode images, Image image, String url, long likesCount, boolean liked) {
+        JsonNode found = null;
+
+        for (JsonNode current : images) {
+            if (current.get("id").asText().equals(image.getId().toString())) {
+                found = current;
+                break;
+            }
+        }
+
+        assertThat(found).isNotNull();
+        assertUserImage(found, image, url, likesCount, liked);
+    }
+
+    private void assertSearchImage(JsonNode data, Image image, String url, long likesCount, boolean liked) {
+        assertThat(data.get("id").asText()).isEqualTo(image.getId().toString());
+        assertThat(data.get("url").asText()).isEqualTo(url);
+        assertThat(data.get("userId").asText()).isEqualTo(image.getUserId().toString());
+        assertThat(data.get("description").asText()).isEqualTo(image.getDescription());
+        assertThat(data.has("createTime")).isTrue();
+        assertThat(data.get("likesCount").asLong()).isEqualTo(likesCount);
+        assertThat(data.get("liked").asBoolean()).isEqualTo(liked);
     }
 }

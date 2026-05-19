@@ -18,6 +18,7 @@ import project.content_service.entity.LandingFeed;
 import project.content_service.entity.Role;
 import project.content_service.entity.Tag;
 import project.content_service.repository.ImageRepository;
+import project.content_service.repository.ImageLikeRepository;
 import project.content_service.repository.LandingFeedRepository;
 import project.content_service.repository.TagRepository;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -47,6 +48,9 @@ public abstract class AbstractTest {
 
     @Autowired
     protected ImageRepository imageRepository;
+
+    @Autowired
+    protected ImageLikeRepository imageLikeRepository;
 
     @Autowired
     protected LandingFeedRepository landingFeedRepository;

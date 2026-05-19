@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import project.content_service.dto.image.ImageResponse;
+import project.content_service.dto.imagesearch.SearchImageResponse;
 import project.content_service.dto.upload.UploadImageRequest;
 import project.content_service.dto.upload.UploadImageResponse;
 import project.content_service.dto.userimage.UserImageResponse;
@@ -17,6 +18,8 @@ import project.content_service.util.UrlRewriter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -29,6 +32,7 @@ public class ImageService {
     private final UrlRewriter urlRewriter;
     private final ImageFileValidator imageFileValidator;
     private final UserClientService userClientService;
+    private final ImageLikeService imageLikeService;
 
     @Transactional
     public UploadImageResponse upload(MultipartFile file, UUID userId, UploadImageRequest request) {
@@ -78,37 +82,28 @@ public class ImageService {
     }
 
     public List<UserImageResponse> getByUser(UUID userId) {
-        return repository.findByUserId(userId)
-                .stream()
-                .map(this::mapToUserImageResponse)
-                .toList();
+        return mapToUserImageResponses(repository.findByUserId(userId), userId);
     }
 
     public List<UserImageResponse> getUploadedByUser(UUID userId) {
-        return repository.findByUserIdAndSource(userId, ImageSource.UPLOAD)
-                .stream()
-                .map(this::mapToUserImageResponse)
-                .toList();
+        return mapToUserImageResponses(repository.findByUserIdAndSource(userId, ImageSource.UPLOAD), userId);
     }
 
-    public List<UserImageResponse> getUploadedByUserNickname(String nickname) {
+    public List<UserImageResponse> getUploadedByUserNickname(String nickname, UUID requesterId) {
         UUID userId = userClientService.getUserIdByNickname(nickname);
-        return getUploadedByUser(userId);
+        return mapToUserImageResponses(repository.findByUserIdAndSource(userId, ImageSource.UPLOAD), requesterId);
     }
 
     public List<UserImageResponse> getGeneratedByUser(UUID userId) {
-        return repository.findByUserIdAndSource(userId, ImageSource.GENERATED)
-                .stream()
-                .map(this::mapToUserImageResponse)
-                .toList();
+        return mapToUserImageResponses(repository.findByUserIdAndSource(userId, ImageSource.GENERATED), userId);
     }
 
-    public List<UserImageResponse> getGeneratedByUserNickname(String nickname) {
+    public List<UserImageResponse> getGeneratedByUserNickname(String nickname, UUID requesterId) {
         UUID userId = userClientService.getUserIdByNickname(nickname);
-        return getGeneratedByUser(userId);
+        return mapToUserImageResponses(repository.findByUserIdAndSource(userId, ImageSource.GENERATED), requesterId);
     }
 
-    public List<ImageResponse> searchByTags(List<String> tags) {
+    public List<SearchImageResponse> searchByTags(List<String> tags, UUID requesterId) {
 
         if (tags == null || tags.isEmpty()) {
             log.info("Поиск изображений по тегам завершён без результата: передан пустой список тегов");
@@ -125,16 +120,49 @@ public class ImageService {
             return List.of();
         }
 
-        return repository.findByTags(normalized, normalized.size())
-                .stream()
-                .map(imageStorageService::mapToResponse)
+        return mapToSearchImageResponses(repository.findByTags(normalized, normalized.size()), requesterId);
+    }
+
+    private List<UserImageResponse> mapToUserImageResponses(List<Image> images, UUID requesterId) {
+        List<UUID> imageIds = images.stream()
+                .map(Image::getId)
+                .toList();
+        Map<UUID, Long> likeCounts = imageLikeService.getLikeCounts(imageIds);
+        Set<UUID> likedImageIds = imageLikeService.getLikedImageIds(requesterId, imageIds);
+
+        return images.stream()
+                .map(image -> mapToUserImageResponse(image, likeCounts, likedImageIds))
                 .toList();
     }
 
-    private UserImageResponse mapToUserImageResponse(Image image) {
-        return UserImageResponse.builder()
-                .url(urlRewriter.rewriteForExternalAccess(image.getUrl()))
-                .build();
+    private List<SearchImageResponse> mapToSearchImageResponses(List<Image> images, UUID requesterId) {
+        List<UUID> imageIds = images.stream()
+                .map(Image::getId)
+                .toList();
+        Map<UUID, Long> likeCounts = imageLikeService.getLikeCounts(imageIds);
+        Set<UUID> likedImageIds = imageLikeService.getLikedImageIds(requesterId, imageIds);
+
+        return images.stream()
+                .map(image -> SearchImageResponse.builder()
+                        .id(image.getId())
+                        .url(urlRewriter.rewriteForExternalAccess(image.getUrl()))
+                        .userId(image.getUserId())
+                        .description(image.getDescription())
+                        .createTime(image.getCreateTime())
+                        .likesCount(likeCounts.getOrDefault(image.getId(), 0L))
+                        .liked(likedImageIds.contains(image.getId()))
+                        .build())
+                .toList();
     }
 
+    private UserImageResponse mapToUserImageResponse(Image image, Map<UUID, Long> likeCounts, Set<UUID> likedImageIds) {
+        return UserImageResponse.builder()
+                .id(image.getId())
+                .url(urlRewriter.rewriteForExternalAccess(image.getUrl()))
+                .description(image.getDescription())
+                .createTime(image.getCreateTime())
+                .likesCount(likeCounts.getOrDefault(image.getId(), 0L))
+                .liked(likedImageIds.contains(image.getId()))
+                .build();
+    }
 }

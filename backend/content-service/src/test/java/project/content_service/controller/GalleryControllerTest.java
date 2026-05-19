@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class GalleryControllerTest extends AbstractTest {
@@ -85,15 +86,20 @@ class GalleryControllerTest extends AbstractTest {
     }
 
     @Test
-    void when_galleryTagHasImages_then_ReturnImageUrls() throws Exception {
+    void when_galleryTagHasImages_then_ReturnImagesWithLikeState() throws Exception {
         Tag cat = tagRepository.save(Tag.builder().name("cat").build());
         Tag art = tagRepository.save(Tag.builder().name("art").build());
-        saveImageWithTags("cat-one", "http://localhost:9000/images/cat-one.jpg", cat);
-        saveImageWithTags("cat-art", "http://localhost:9000/images/cat-art.jpg", cat, art);
+        Image catOne = saveImageWithTags("cat-one", "http://localhost:9000/images/cat-one.jpg", cat);
+        Image catArt = saveImageWithTags("cat-art", "http://localhost:9000/images/cat-art.jpg", cat, art);
         saveImageWithTags("art-only", "http://localhost:9000/images/art-only.jpg", art);
+        UUID requesterId = UUID.randomUUID();
+
+        mockMvc.perform(put("/v1/content/images/" + catOne.getId() + "/like")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(requesterId, Role.USER)))
+                .andExpect(status().isOk());
 
         String response = mockMvc.perform(get(GALLERY_TAGS_URL + "/" + cat.getId() + "/images")
-                        .header(HttpHeaders.AUTHORIZATION, bearer(Role.USER)))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken(requesterId, Role.USER)))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -106,6 +112,8 @@ class GalleryControllerTest extends AbstractTest {
                         "http://cdn.local:9000/images/cat-one.jpg",
                         "http://cdn.local:9000/images/cat-art.jpg"
                 );
+        assertGalleryImage(data, catOne.getId().toString(), "http://cdn.local:9000/images/cat-one.jpg", 1, true);
+        assertGalleryImage(data, catArt.getId().toString(), "http://cdn.local:9000/images/cat-art.jpg", 0, false);
     }
 
     @Test
@@ -157,14 +165,30 @@ class GalleryControllerTest extends AbstractTest {
         return "Bearer " + bearerToken(UUID.randomUUID(), role);
     }
 
-    private void saveImageWithTags(String description, String url, Tag... tags) {
-        imageRepository.save(Image.builder()
+    private Image saveImageWithTags(String description, String url, Tag... tags) {
+        return imageRepository.save(Image.builder()
                 .url(url)
                 .userId(UUID.randomUUID())
                 .description(description)
                 .source(ImageSource.UPLOAD)
                 .tags(new HashSet<>(Set.of(tags)))
                 .build());
+    }
+
+    private void assertGalleryImage(JsonNode images, String id, String url, long likesCount, boolean liked) {
+        JsonNode image = null;
+
+        for (JsonNode current : images) {
+            if (current.get("id").asText().equals(id)) {
+                image = current;
+                break;
+            }
+        }
+
+        assertThat(image).isNotNull();
+        assertThat(image.get("url").asText()).isEqualTo(url);
+        assertThat(image.get("likesCount").asLong()).isEqualTo(likesCount);
+        assertThat(image.get("liked").asBoolean()).isEqualTo(liked);
     }
 
     private void assertTag(JsonNode tags, String id, String name) {
