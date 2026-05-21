@@ -6,6 +6,7 @@ import styles from "./Header.module.css";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { LoginModal } from "../../features/auth/ui/LoginModal";
 import { fetchCurrentUser } from "../../pages/profile/profile.api";
+import { logApiError } from "../../shared/api/errors/errorMapper";
 
 const CURRENT_USER_QUERY_KEY = ["current-user"];
 const CURRENT_PROFILE_FALLBACK_SLUG = "current";
@@ -19,7 +20,7 @@ export const Header = () => {
   const [searchValue, setSearchValue] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, error: currentUserError } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: fetchCurrentUser,
     enabled: isAuth === true,
@@ -33,6 +34,12 @@ export const Header = () => {
       searchInputRef.current?.focus();
     }
   }, [isSearchOpen]);
+
+  useEffect(() => {
+    if (currentUserError) {
+      logApiError("Could not load current user for header", currentUserError);
+    }
+  }, [currentUserError]);
 
   useEffect(() => {
     if (!isSearchOpen) {

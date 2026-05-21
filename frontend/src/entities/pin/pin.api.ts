@@ -1,4 +1,5 @@
 import { apiFetch } from "@/shared/api/apiClient"
+import { logApiError } from "@/shared/api/errors/errorMapper"
 import type { FeedResponse, Pin } from "../pinTypes"
 
 const DEV_FALLBACK_IMAGE_IDS = [
@@ -38,6 +39,7 @@ export async function fetchPins(): Promise<Pin[]> {
     return response.data.map((image, index) => mapLandingImageToPin(image.url, index))
   } catch (error) {
     if (import.meta.env.DEV) {
+      logApiError("Could not load public feed, using dev fallback", error, "warn")
       return getDevFallbackPins()
     }
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, CircleUserRound, Ellipsis, Home, LogOut, Search, Settings, Share2 } from "lucide-react"
 import { useAuth } from "@/app/providers/AuthProvider"
+import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import styles from "./ProfileHeader.module.css"
 
 type HeaderUser = {
@@ -53,11 +54,13 @@ export const ProfileHeader = ({
   const [isLinkCopied, setIsLinkCopied] = useState(false)
   const [isShareTooltipHidden, setIsShareTooltipHidden] = useState(false)
   const [nickname, setNickname] = useState(displayNickname)
+  const [nicknameError, setNicknameError] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const actionsRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     setNickname(displayNickname)
+    setNicknameError(null)
   }, [displayNickname])
 
   useEffect(() => {
@@ -134,12 +137,19 @@ export const ProfileHeader = ({
       return
     }
 
-    await onUpdateNickname?.(nextNickname)
-    setIsEditingNickname(false)
+    try {
+      setNicknameError(null)
+      await onUpdateNickname?.(nextNickname)
+      setIsEditingNickname(false)
+    } catch (error) {
+      logApiError("Could not update nickname", error, "warn")
+      setNicknameError(getApiErrorMessage(error, "Could not update nickname. Please try again."))
+    }
   }
 
   const handleCancelNickname = () => {
     setNickname(displayNickname)
+    setNicknameError(null)
     setIsEditingNickname(false)
   }
 
@@ -301,23 +311,31 @@ export const ProfileHeader = ({
       <div className={styles.avatar}>{avatarLetter}</div>
 
       {isPrivate && isEditingNickname ? (
-        <input
-          autoFocus
-          className={styles.nicknameInput}
-          value={nickname}
-          placeholder="Add nickname"
-          onBlur={handleSaveNickname}
-          onChange={(event) => setNickname(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.currentTarget.blur()
-            }
+        <div className={styles.nicknameEdit}>
+          <input
+            autoFocus
+            className={styles.nicknameInput}
+            value={nickname}
+            placeholder="Add nickname"
+            onBlur={handleSaveNickname}
+            onChange={(event) => {
+              setNicknameError(null)
+              setNickname(event.target.value)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.currentTarget.blur()
+              }
 
-            if (event.key === "Escape") {
-              handleCancelNickname()
-            }
-          }}
-        />
+              if (event.key === "Escape") {
+                handleCancelNickname()
+              }
+            }}
+          />
+          {nicknameError && (
+            <span className={styles.nicknameError}>{nicknameError}</span>
+          )}
+        </div>
       ) : isPrivate ? (
         <button
           className={styles.username}

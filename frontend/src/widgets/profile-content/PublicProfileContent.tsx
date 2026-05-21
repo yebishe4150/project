@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import { ProfileTabs } from "./ui/ProfileTabs"
 import {
     fetchPublicProfileImages,
@@ -16,10 +17,16 @@ type Props = {
 export const PublicProfileContent = ({ nickName }: Props) => {
     const [activeTab, setActiveTab] = useState<ProfileImageTab>("photos")
 
-    const { data: images = [], isLoading } = useQuery({
+    const { data: images = [], isLoading, isError, error } = useQuery({
         queryKey: [...PUBLIC_PROFILE_IMAGES_QUERY_KEY, nickName, activeTab],
         queryFn: () => fetchPublicProfileImages(nickName, activeTab),
     })
+
+    useEffect(() => {
+        if (isError) {
+            logApiError("Could not load public profile images", error)
+        }
+    }, [error, isError])
 
     return (
         <section className={styles.content}>
@@ -27,6 +34,8 @@ export const PublicProfileContent = ({ nickName }: Props) => {
 
             {isLoading ? (
                 <div className={styles.status}>Loading images...</div>
+            ) : isError ? (
+                <div className={styles.status}>{getApiErrorMessage(error, "Could not load images. Please try again.")}</div>
             ) : images.length === 0 ? (
                 <div className={styles.status}>No public images yet.</div>
             ) : (

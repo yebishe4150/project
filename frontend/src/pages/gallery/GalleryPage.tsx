@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { ChevronDown, Filter, ImageOff, Info, Search, Tag } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
+import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import {
   fetchAllGalleryImages,
   fetchGalleryImagesByTag,
@@ -173,6 +174,19 @@ export const GalleryPage = () => {
     ]
     : baseCollections
   const isLoading = tagsQuery.isLoading || imageQueries.some((query) => query.isLoading) || allImagesQuery.isLoading
+  const queryError =
+    tagsQuery.error ??
+    allImagesQuery.error ??
+    searchQuery.error ??
+    imageQueries.find((query) => query.error)?.error ??
+    null
+  const isQueryError = tagsQuery.isError || allImagesQuery.isError || searchQuery.isError || imageQueries.some((query) => query.isError)
+
+  useEffect(() => {
+    if (queryError) {
+      logApiError("Could not load gallery data", queryError)
+    }
+  }, [queryError])
 
   const runSearch = () => {
     const nextValue = searchValue.trim()
@@ -250,14 +264,21 @@ export const GalleryPage = () => {
 
       {isLoading && <div className={styles.state}>Loading collections...</div>}
 
-      {!isLoading && visibleCollections.length === 0 && (
+      {!isLoading && isQueryError && (
+        <div className={styles.empty}>
+          <ImageOff aria-hidden="true" />
+          <span>{getApiErrorMessage(queryError, "Could not load gallery. Please try again.")}</span>
+        </div>
+      )}
+
+      {!isLoading && !isQueryError && visibleCollections.length === 0 && (
         <div className={styles.empty}>
           <ImageOff aria-hidden="true" />
           <span>No collections yet</span>
         </div>
       )}
 
-      <section className={styles.collections} aria-label="Gallery collections">
+      {!isQueryError && <section className={styles.collections} aria-label="Gallery collections">
         {visibleCollections.map((collection) => {
           const isExpanded = expandedId === collection.id
           const previewImages = getPreviewImages(collection.images)
@@ -322,7 +343,7 @@ export const GalleryPage = () => {
             </article>
           )
         })}
-      </section>
+      </section>}
 
       <footer className={styles.notice}>
         <Info aria-hidden="true" />
