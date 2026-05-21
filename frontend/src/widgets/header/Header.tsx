@@ -8,6 +8,7 @@ import { LoginModal } from "../../features/auth/ui/LoginModal";
 import { fetchCurrentUser } from "../../pages/profile/profile.api";
 
 const CURRENT_USER_QUERY_KEY = ["current-user"];
+const CURRENT_PROFILE_FALLBACK_SLUG = "current";
 
 export const Header = () => {
   const { isAuth } = useAuth();
@@ -52,9 +53,7 @@ export const Header = () => {
   }, [isSearchOpen]);
 
   const handleOpenProfile = () => {
-    if (!profileSlug) return;
-
-    navigate(`/profile/${encodeURIComponent(profileSlug)}/me`);
+    navigate(`/profile/${encodeURIComponent(profileSlug ?? CURRENT_PROFILE_FALLBACK_SLUG)}/me`);
   };
 
   const submitSearch = () => {
@@ -125,7 +124,6 @@ export const Header = () => {
               className={`${styles.navButton} ${styles.profileButton}`}
               type="button"
               onClick={handleOpenProfile}
-              disabled={!profileSlug}
             >
               <UserRound aria-hidden="true" />
               <span>Profile</span>

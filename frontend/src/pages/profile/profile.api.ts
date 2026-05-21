@@ -1,6 +1,7 @@
 import { apiFetch } from "@/shared/api/apiClient"
 import {
   getDevProfileUser,
+  isDevProfile404MockEnabled,
   isDevProfileMockEnabled,
   updateDevProfile,
   updateDevProfileNickname,
@@ -29,7 +30,18 @@ export type UpdateCurrentUserProfileRequest = {
   phoneNumber?: string
 }
 
+function throwDevProfile404() {
+  throw {
+    status: 404,
+    message: "Dev profile 404 mock",
+  }
+}
+
 export async function fetchCurrentUser() {
+  if (isDevProfile404MockEnabled) {
+    throwDevProfile404()
+  }
+
   if (isDevProfileMockEnabled) {
     return getDevProfileUser()
   }
@@ -40,6 +52,10 @@ export async function fetchCurrentUser() {
 }
 
 export async function updateCurrentUserNickname(nickname: string) {
+  if (isDevProfile404MockEnabled) {
+    throwDevProfile404()
+  }
+
   if (isDevProfileMockEnabled) {
     return updateDevProfileNickname(nickname)
   }
@@ -54,6 +70,10 @@ export async function updateCurrentUserNickname(nickname: string) {
 }
 
 export async function updateCurrentUserProfile(payload: UpdateCurrentUserProfileRequest) {
+  if (isDevProfile404MockEnabled) {
+    throwDevProfile404()
+  }
+
   if (isDevProfileMockEnabled) {
     return updateDevProfile(payload)
   }

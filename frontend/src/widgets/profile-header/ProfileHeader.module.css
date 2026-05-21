@@ -345,6 +345,192 @@
   }
 }
 
+@media (min-width: 641px) and (max-width: 1023px) {
+  .header {
+    min-height: 300px;
+    padding: 34px 36px 42px;
+  }
+
+  .menuWrap {
+    top: 34px;
+    right: 20px;
+    gap: 14px;
+  }
+
+  .navWrap {
+    top: 34px;
+    left: 20px;
+  }
+
+  .backButton,
+  .actionsButton,
+  .navButton,
+  .shareButton,
+  .menu {
+    width: 52px;
+    height: 52px;
+  }
+
+  .menu {
+    gap: 5px;
+  }
+
+  .menu span {
+    width: 18px;
+    height: 2.5px;
+  }
+
+  .backButton svg,
+  .actionsButton svg,
+  .navButton svg,
+  .shareButton svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .actionsButton svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .navButton svg,
+  .shareButton svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .actionsMenu {
+    top: 66px;
+    gap: 14px;
+  }
+
+  .avatar {
+    width: 132px;
+    height: 132px;
+    font-size: 34px;
+  }
+
+  .username {
+    margin-top: 30px;
+    font-size: 25px;
+  }
+}
+
+@media (min-width: 820px) and (max-width: 1023px) and (orientation: portrait) {
+  .header {
+    min-height: 340px;
+  }
+
+  .backButton,
+  .actionsButton,
+  .navButton,
+  .shareButton,
+  .menu {
+    width: 56px;
+    height: 56px;
+  }
+
+  .avatar {
+    width: 150px;
+    height: 150px;
+    font-size: 38px;
+  }
+
+  .username {
+    margin-top: 34px;
+    font-size: 28px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1199px) and (orientation: portrait) {
+  .header {
+    min-height: 340px;
+    padding: 34px 36px 42px;
+  }
+
+  .menuWrap {
+    top: 34px;
+    right: 20px;
+    gap: 14px;
+  }
+
+  .navWrap {
+    top: 34px;
+    left: 20px;
+  }
+
+  .backButton,
+  .actionsButton,
+  .navButton,
+  .shareButton,
+  .menu {
+    width: 52px;
+    height: 52px;
+  }
+
+  .menu {
+    gap: 5px;
+  }
+
+  .menu span {
+    width: 18px;
+    height: 2.5px;
+  }
+
+  .avatar {
+    width: 150px;
+    height: 150px;
+    font-size: 38px;
+  }
+
+  .username {
+    margin-top: 34px;
+    font-size: 28px;
+  }
+}
+
+@media (min-width: 641px) and (max-height: 700px) {
+  .header {
+    min-height: 220px;
+    padding: 22px 28px 28px;
+  }
+
+  .menuWrap {
+    top: 26px;
+    right: 20px;
+    gap: 12px;
+  }
+
+  .navWrap {
+    top: 26px;
+    left: 20px;
+  }
+
+  .backButton,
+  .actionsButton,
+  .navButton,
+  .shareButton,
+  .menu {
+    width: 44px;
+    height: 44px;
+  }
+
+  .menu span {
+    width: 16px;
+  }
+
+  .avatar {
+    width: 104px;
+    height: 104px;
+    font-size: 28px;
+  }
+
+  .username {
+    margin-top: 22px;
+    font-size: 23px;
+  }
+}
+
 @media (min-width: 1536px) {
   .navWrap {
     display: none;

@@ -7,6 +7,7 @@ import { fetchCurrentUser } from "@/pages/profile/profile.api"
 import styles from "./DesktopSideNav.module.css"
 
 const CURRENT_USER_QUERY_KEY = ["current-user"]
+const CURRENT_PROFILE_FALLBACK_SLUG = "current"
 
 export const DesktopSideNav = () => {
   const { isAuth } = useAuth()
@@ -51,9 +52,7 @@ export const DesktopSideNav = () => {
   }, [isSearchOpen])
 
   const openMyProfile = () => {
-    if (!profileSlug) return
-
-    navigate(`/profile/${encodeURIComponent(profileSlug)}/me`)
+    navigate(`/profile/${encodeURIComponent(profileSlug ?? CURRENT_PROFILE_FALLBACK_SLUG)}/me`)
   }
 
   const submitSearch = () => {
@@ -130,7 +129,6 @@ export const DesktopSideNav = () => {
             className={styles.navItem}
             type="button"
             onClick={openMyProfile}
-            disabled={!profileSlug}
           >
             <UserRound aria-hidden="true" />
             <span>Profile</span>
