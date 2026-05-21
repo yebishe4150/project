@@ -1,4 +1,5 @@
 import { apiFetch } from "@/shared/api/apiClient"
+import { logApiError } from "@/shared/api/errors/errorMapper"
 
 export type GalleryTag = {
   id: string
@@ -83,6 +84,7 @@ export async function fetchGalleryTags(): Promise<GalleryTag[]> {
     return response.data
   } catch (error) {
     if (import.meta.env.DEV) {
+      logApiError("Could not load gallery tags, using dev fallback", error, "warn")
       return DEV_TAGS
     }
 
@@ -99,6 +101,7 @@ export async function fetchGalleryImagesByTag(tagId: string): Promise<GalleryIma
     return response.data
   } catch (error) {
     if (import.meta.env.DEV) {
+      logApiError(`Could not load gallery images for tag ${tagId}, using dev fallback`, error, "warn")
       return getDevImages(tagId)
     }
 
@@ -113,6 +116,7 @@ export async function fetchAllGalleryImages(): Promise<GalleryImage[]> {
     return response.data.map((image) => ({ url: image.url }))
   } catch (error) {
     if (import.meta.env.DEV) {
+      logApiError("Could not load all gallery images, using dev fallback", error, "warn")
       return [...Object.values(DEV_IMAGES_BY_TAG).flat(), ...DEV_UNTAGGED_IMAGES]
     }
 
@@ -141,6 +145,7 @@ export async function searchGalleryImages(searchValue: string): Promise<GalleryI
     return response.data.map((image) => ({ url: image.url }))
   } catch (error) {
     if (import.meta.env.DEV) {
+      logApiError("Could not search gallery images, using dev fallback", error, "warn")
       const normalized = tags.map((tag) => tag.toLowerCase())
       const matched = DEV_TAGS.filter((tag) =>
         normalized.some((searchTag) => tag.name.includes(searchTag)),

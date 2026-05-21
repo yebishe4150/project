@@ -15,6 +15,7 @@ import {
 
 import type { AuthData, RegisterResult } from "./model/frontTypes";
 import { apiFetch } from "@/shared/api/apiClient.ts";
+import { logApiError } from "@/shared/api/errors/errorMapper";
 import type { ChangePasswordRequest, LoginRequest, RegisterRequest } from "./model/request.types";
 
 // ================================
@@ -81,7 +82,8 @@ async function refreshRequest(): Promise<boolean> {
     accessToken = data.accessToken;
 
     return true;
-  } catch {
+  } catch (error) {
+    logApiError("Refresh token request failed", error, "warn");
     accessToken = null;
     clearAuthFlag();
     return false;
@@ -191,7 +193,7 @@ export async function logout(): Promise<void> {
       { method: "POST" }
     );
   } catch (e) {
-    console.warn("Logout error:", e);
+    logApiError("Logout error", e, "warn");
   }
 
   accessToken = null;

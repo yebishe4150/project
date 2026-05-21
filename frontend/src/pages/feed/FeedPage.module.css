@@ -54,3 +54,13 @@
   max-width: 1400px;
   margin: 0 auto;
 }
+
+.error {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  color: #b42318;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}

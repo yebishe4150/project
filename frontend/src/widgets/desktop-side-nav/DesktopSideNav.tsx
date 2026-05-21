@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "@/app/providers/AuthProvider"
 import { fetchCurrentUser } from "@/pages/profile/profile.api"
+import { logApiError } from "@/shared/api/errors/errorMapper"
 import styles from "./DesktopSideNav.module.css"
 
 const CURRENT_USER_QUERY_KEY = ["current-user"]
@@ -17,7 +18,7 @@ export const DesktopSideNav = () => {
   const [searchValue, setSearchValue] = useState("")
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const searchWrapRef = useRef<HTMLDivElement | null>(null)
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, error: currentUserError } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: fetchCurrentUser,
     enabled: isAuth === true,
@@ -32,6 +33,12 @@ export const DesktopSideNav = () => {
       searchInputRef.current?.focus()
     }
   }, [isSearchOpen])
+
+  useEffect(() => {
+    if (currentUserError) {
+      logApiError("Could not load current user for desktop navigation", currentUserError)
+    }
+  }, [currentUserError])
 
   useEffect(() => {
     if (!isSearchOpen) {

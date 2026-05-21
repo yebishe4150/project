@@ -13,7 +13,7 @@ import {
   Send,
 } from "lucide-react"
 import { validatePasswordRules } from "@/features/auth/model/validation"
-import { mapChangePasswordError } from "@/shared/api/errors/errorMapper"
+import { logApiError, mapChangePasswordError, mapProfileError } from "@/shared/api/errors/errorMapper"
 import type { ApiError } from "@/shared/api/errors/errorTypes"
 import styles from "./ProfileContactInfo.module.css"
 
@@ -212,6 +212,14 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
     return null
   }
 
+  const getFieldError = (field: keyof ContactInfoValues) => {
+    if (apiError?.field === field) {
+      return apiError.message
+    }
+
+    return null
+  }
+
   const updateField = (field: keyof ContactInfoValues, value: string) => {
     if (apiError) {
       setApiError((current) => {
@@ -253,8 +261,14 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
 
   const handleSave = async () => {
     try {
+      setApiError(null)
       setIsSubmitting(true)
       await onSave(values)
+    } catch (error) {
+      const mappedError = mapProfileError(error)
+
+      logApiError("Could not save profile contact info", mappedError, "warn")
+      setApiError(mappedError)
     } finally {
       setIsSubmitting(false)
     }
@@ -282,7 +296,10 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
       })
       resetPasswordBlock()
     } catch (error) {
-      setApiError(mapChangePasswordError(error))
+      const mappedError = mapChangePasswordError(error)
+
+      logApiError("Could not change password", mappedError, "warn")
+      setApiError(mappedError)
     } finally {
       setIsSubmitting(false)
     }
@@ -294,7 +311,10 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
         <h2 className={styles.title}>Edit Profile</h2>
 
         <div className={styles.fields}>
-          {fields.map((field) => field.key === "currentPassword" ? (
+          {fields.map((field) => {
+            const fieldError = field.key !== "currentPassword" ? getFieldError(field.key) : null
+
+            return field.key === "currentPassword" ? (
             <div className={styles.field} key={field.key} ref={passwordBlockRef}>
               <span className={styles.label}>
                 <span className={styles.labelIcon}>{field.icon}</span>
@@ -385,16 +405,24 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
               </span>
 
               <input
-                className={styles.input}
+                className={`${styles.input} ${fieldError ? styles.inputError : ""}`}
                 type={field.type ?? "text"}
                 placeholder={field.placeholder}
                 value={values[field.key]}
                 disabled={field.disabled || isDisabled}
                 onChange={(event) => updateField(field.key, event.target.value)}
               />
+              {fieldError && (
+                <span className={styles.errorText}>{fieldError}</span>
+              )}
             </label>
-          ))}
+          )
+          })}
         </div>
+
+        {apiError && !apiError.field && (
+          <div className={styles.generalError}>{apiError.message}</div>
+        )}
 
         <div className={styles.socialTitle}>Connect Social Media</div>
 
