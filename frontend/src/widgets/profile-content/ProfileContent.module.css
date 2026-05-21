@@ -30,3 +30,43 @@
   object-fit: cover;
   border-radius: 8px;
 }
+
+@media (max-width: 640px) {
+  .content {
+    height: calc(100dvh - 252px - 50px);
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .content {
+    height: calc(100dvh - 300px - 50px);
+  }
+}
+
+@media (min-width: 820px) and (max-width: 1023px) and (orientation: portrait) {
+  .content {
+    height: calc(100dvh - 340px - 50px);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1199px) and (orientation: portrait) {
+  .content {
+    height: calc(100dvh - 340px - 50px);
+  }
+}
+
+@media (min-width: 641px) and (max-height: 700px) {
+  .content {
+    height: calc(100dvh - 220px - 50px);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 700px) {
+  .content {
+    height: auto;
+    min-height: calc(100dvh - 220px - 50px);
+    overflow: visible;
+  }
+}

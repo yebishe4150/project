@@ -8,14 +8,14 @@ import {
 } from "../../features/auth/auth"
 import type { AuthContextType } from "@/features/auth/model/frontTypes"
 import type { RegisterRequest, LoginRequest } from "@/features/auth/model/request.types"
-import { isDevProfileMockEnabled } from "@/shared/config/devProfileMock"
+import { isDevAuthMockEnabled, isDevProfileMockEnabled } from "@/shared/config/devProfileMock"
 
 const AuthContext = createContext<AuthContextType | null>(null)
 const AUTH_QUERY_KEY = ["auth-status"]
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient()
-  const [isDevAuthorized, setIsDevAuthorized] = useState(isDevProfileMockEnabled)
+  const [isDevAuthorized, setIsDevAuthorized] = useState(isDevAuthMockEnabled)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: AUTH_QUERY_KEY,

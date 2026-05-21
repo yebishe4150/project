@@ -6,6 +6,8 @@ import { ProfileHeader } from "@/widgets/profile-header/ProfileHeader"
 import { PrivateProfileContent } from "@/widgets/profile-content/PrivateProfileContent"
 import { ProfileContactInfo, type ContactInfoValues } from "@/widgets/profile-contact-info/ProfileContactInfo"
 import { changePassword } from "@/features/auth/auth"
+import type { ApiError } from "@/shared/api/errors/errorTypes"
+import { isApiError } from "@/shared/api/errors/typeGuard"
 import { fetchCurrentUser, updateCurrentUserNickname, updateCurrentUserProfile } from "./profile.api"
 import type { ProfileUserResponse } from "./profile.api"
 import styles from "./ProfilePage.module.css"
@@ -15,6 +17,12 @@ type HeaderUser = {
 }
 
 const CURRENT_USER_QUERY_KEY = ["current-user"]
+const CURRENT_PROFILE_FALLBACK_SLUG = "current"
+const PROFILE_SYNC_ERROR_IMAGE_SRC = "/profile-sync-error-background.jpg"
+
+function isNotFoundError(error: unknown): error is ApiError {
+  return isApiError(error) && error.status === 404
+}
 
 function mapHeaderUser(user: ProfileUserResponse): HeaderUser {
   return {
@@ -50,15 +58,18 @@ export const PrivateProfilePage = () => {
     newPassword: "",
   })
   const [pendingNicknameUser, setPendingNicknameUser] = useState<ProfileUserResponse | null>(null)
+  const [isProfileSyncErrorBannerOpen, setIsProfileSyncErrorBannerOpen] = useState(false)
 
   const {
     data: profileResponse,
     isLoading,
     isError,
+    error,
   } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: fetchCurrentUser,
     enabled: isAuth === true,
+    retry: (failureCount, queryError) => !isNotFoundError(queryError) && failureCount < 2,
   })
 
   const updateNicknameMutation = useMutation({
@@ -84,10 +95,12 @@ export const PrivateProfilePage = () => {
     },
   })
 
-  const headerUser = profileResponse ? mapHeaderUser(profileResponse) : null
+  const isProfileSyncError = isNotFoundError(error)
+  const headerUser = profileResponse ? mapHeaderUser(profileResponse) : isProfileSyncError ? { nickname: "" } : null
   const currentUserSlug = profileResponse?.nickname || profileResponse?.loginName
   const normalizedRouteNickname = routeNickname?.toLowerCase()
   const normalizedCurrentUserSlug = currentUserSlug?.toLowerCase()
+  const isFallbackProfileRoute = normalizedRouteNickname === CURRENT_PROFILE_FALLBACK_SLUG
   const pendingNicknameSlug = pendingNicknameUser?.nickname || pendingNicknameUser?.loginName
   const normalizedPendingNicknameSlug = pendingNicknameSlug?.toLowerCase()
 
@@ -107,13 +120,53 @@ export const PrivateProfilePage = () => {
     queryClient,
   ])
 
-  const handleUpdateNickname = async (nickname: string) => {
-    if (!profileResponse) return
+  useEffect(() => {
+    if (!isProfileSyncError) {
+      return
+    }
 
-    await updateNicknameMutation.mutateAsync(nickname)
+    console.warn("Current user profile is not available yet.", {
+      status: error.status,
+      message: error.message,
+      routeNickname,
+      reason: "Auth user exists, but user-service profile returned 404.",
+    })
+  }, [error, isProfileSyncError, routeNickname])
+
+  useEffect(() => {
+    if (!isProfileSyncError) {
+      setIsProfileSyncErrorBannerOpen(false)
+    }
+  }, [isProfileSyncError])
+
+  const handleUpdateNickname = async (nickname: string) => {
+    if (isProfileSyncError) {
+      setIsProfileSyncErrorBannerOpen(true)
+      return
+    }
+
+    if (!profileResponse) {
+      return
+    }
+
+    try {
+      await updateNicknameMutation.mutateAsync(nickname)
+    } catch (mutationError) {
+      if (isNotFoundError(mutationError)) {
+        setIsProfileSyncErrorBannerOpen(true)
+        return
+      }
+
+      throw mutationError
+    }
   }
 
   const handleOpenContactInfo = () => {
+    if (isProfileSyncError || !profileResponse) {
+      setIsProfileSyncErrorBannerOpen(true)
+      return
+    }
+
     if (profileResponse) {
       setContactInfo(mapContactInfo(profileResponse))
     }
@@ -126,12 +179,21 @@ export const PrivateProfilePage = () => {
   }
 
   const handleSaveContactInfo = async (values: ContactInfoValues) => {
-    await updateProfileMutation.mutateAsync({
-      email: values.email,
-      phoneNumber: values.phoneNumber,
-      firstName: values.firstName,
-      secondName: values.secondName,
-    })
+    try {
+      await updateProfileMutation.mutateAsync({
+        email: values.email,
+        phoneNumber: values.phoneNumber,
+        firstName: values.firstName,
+        secondName: values.secondName,
+      })
+    } catch (mutationError) {
+      if (isNotFoundError(mutationError)) {
+        setIsProfileSyncErrorBannerOpen(true)
+        return
+      }
+
+      throw mutationError
+    }
 
     setActiveSection("content")
   }
@@ -155,12 +217,42 @@ export const PrivateProfilePage = () => {
     return <div className={styles.loading}>Loading...</div>
   }
 
-  if (!headerUser || isError) {
+  if (isProfileSyncErrorBannerOpen) {
+    return (
+      <div className={styles.profileError}>
+        <div className={styles.profileErrorFrame}>
+          <img
+            className={styles.profileErrorImage}
+            src={PROFILE_SYNC_ERROR_IMAGE_SRC}
+            alt="Profile data is unavailable"
+            onError={(event) => {
+              event.currentTarget.style.display = "none"
+            }}
+          />
+          <button
+            className={styles.profileErrorButton}
+            type="button"
+            onClick={() => {
+              setIsProfileSyncErrorBannerOpen(false)
+            }}
+          >
+            Back to Profile
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!headerUser || (isError && !isProfileSyncError)) {
     return <div className={styles.loading}>Profile API data is unavailable</div>
   }
 
   if (pendingNicknameUser) {
     return <div className={styles.loading}>Loading...</div>
+  }
+
+  if (isFallbackProfileRoute && currentUserSlug) {
+    return <Navigate to={`/profile/${encodeURIComponent(currentUserSlug)}/me`} replace />
   }
 
   if (routeNickname && normalizedCurrentUserSlug && normalizedRouteNickname !== normalizedCurrentUserSlug) {
