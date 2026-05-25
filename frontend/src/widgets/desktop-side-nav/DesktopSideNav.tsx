@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "@/app/providers/useAuth"
 import { TagSearchBox } from "@/features/tag-search/TagSearchBox"
 import { fetchCurrentUser } from "@/pages/profile/profile.api"
+import { logApiError } from "@/shared/api/errors/errorMapper"
 import styles from "./DesktopSideNav.module.css"
 
 const CURRENT_USER_QUERY_KEY = ["current-user"]
@@ -16,7 +17,7 @@ export const DesktopSideNav = () => {
   const navigate = useNavigate()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const searchWrapRef = useRef<HTMLDivElement | null>(null)
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, error: currentUserError } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: fetchCurrentUser,
     enabled: isAuth === true,
@@ -26,6 +27,12 @@ export const DesktopSideNav = () => {
   const showProfile = isAuth === true
   const isGalleryRoute = location.pathname === "/gallery"
   const isProfileRoute = /^\/profile\/[^/]+(?:\/me)?$/.test(location.pathname)
+
+  useEffect(() => {
+    if (currentUserError) {
+      logApiError("Could not load current user for desktop navigation", currentUserError)
+    }
+  }, [currentUserError])
 
   useEffect(() => {
     if (!isSearchOpen) {

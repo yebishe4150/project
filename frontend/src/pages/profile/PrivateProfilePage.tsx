@@ -7,6 +7,7 @@ import { PrivateProfileContent } from "@/widgets/profile-content/PrivateProfileC
 import { ProfileContactInfo, type ContactInfoValues } from "@/widgets/profile-contact-info/ProfileContactInfo"
 import { changePassword } from "@/features/auth/auth"
 import type { ApiError } from "@/shared/api/errors/errorTypes"
+import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import { isApiError } from "@/shared/api/errors/typeGuard"
 import { fetchCurrentUser, updateCurrentUserNickname, updateCurrentUserProfile } from "./profile.api"
 import type { ProfileUserResponse } from "./profile.api"
@@ -147,6 +148,12 @@ export const PrivateProfilePage = () => {
     }
   }, [isProfileSyncError])
 
+  useEffect(() => {
+    if (isError && error && !isProfileSyncError) {
+      logApiError("Could not load current profile", error)
+    }
+  }, [error, isError, isProfileSyncError])
+
   const handleUpdateNickname = async (nickname: string) => {
     if (isProfileSyncError) {
       setIsProfileSyncErrorBannerOpen(true)
@@ -161,6 +168,7 @@ export const PrivateProfilePage = () => {
       await updateNicknameMutation.mutateAsync(nickname)
     } catch (mutationError) {
       if (isNotFoundError(mutationError)) {
+        logApiError("Could not update nickname because profile is not available", mutationError, "warn")
         setIsProfileSyncErrorBannerOpen(true)
         return
       }
@@ -196,6 +204,7 @@ export const PrivateProfilePage = () => {
       })
     } catch (mutationError) {
       if (isNotFoundError(mutationError)) {
+        logApiError("Could not save profile because profile is not available", mutationError, "warn")
         setIsProfileSyncErrorBannerOpen(true)
         return
       }
@@ -252,7 +261,7 @@ export const PrivateProfilePage = () => {
   }
 
   if (!headerUser || (isError && !isProfileSyncError)) {
-    return <div className={styles.loading}>Profile API data is unavailable</div>
+    return <div className={styles.loading}>{getApiErrorMessage(error, "Profile API data is unavailable")}</div>
   }
 
   if (pendingNicknameUser) {

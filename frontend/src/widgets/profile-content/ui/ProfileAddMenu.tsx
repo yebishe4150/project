@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { UploadImageButton } from "@/features/upload-image/ui/UploadImageButton"
 import type { UploadImageData } from "@/features/upload-image/model/uploadImage.types"
+import {
+  logApiError,
+  mapGenerateImageError,
+  mapUploadImageError,
+} from "@/shared/api/errors/errorMapper"
 import styles from "./ProfileAddMenu.module.css"
 
 type GeneratePayload = {
@@ -25,6 +30,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
   const [isGenerateFormOpen, setIsGenerateFormOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
   const resetUploadForm = useCallback(() => {
@@ -42,6 +48,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
 
   const closeMenu = useCallback(() => {
     setIsOpen(false)
+    setFormError(null)
     resetUploadForm()
     resetGenerateForm()
   }, [resetGenerateForm, resetUploadForm])
@@ -64,11 +71,13 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
 
   const handleSelectFile = (file: File) => {
     resetGenerateForm()
+    setFormError(null)
     setSelectedFile(file)
   }
 
   const openGenerateForm = () => {
     resetUploadForm()
+    setFormError(null)
     setIsGenerateFormOpen(true)
   }
 
@@ -81,6 +90,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
       .filter(Boolean)
 
     setIsUploading(true)
+    setFormError(null)
 
     try {
       await onUpload({
@@ -89,6 +99,11 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
         tags: parsedTags.length > 0 ? parsedTags : undefined,
       })
       closeMenu()
+    } catch (error) {
+      const apiError = mapUploadImageError(error)
+
+      logApiError("Could not upload image", apiError, "warn")
+      setFormError(apiError.message)
     } finally {
       setIsUploading(false)
     }
@@ -104,6 +119,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
     if (!normalizedPrompt || isGenerating) return
 
     setIsGenerating(true)
+    setFormError(null)
 
     try {
       await onGenerate({
@@ -112,6 +128,11 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
         tags: parsedTags.length > 0 ? parsedTags : undefined,
       })
       closeMenu()
+    } catch (error) {
+      const apiError = mapGenerateImageError(error)
+
+      logApiError("Could not generate image", apiError, "warn")
+      setFormError(apiError.message)
     } finally {
       setIsGenerating(false)
     }
@@ -146,6 +167,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
           {selectedFile && (
             <div className={styles.form}>
               <div className={styles.fileName}>{selectedFile.name}</div>
+              {formError && <div className={styles.formError}>{formError}</div>}
 
               <textarea
                 className={styles.textarea}
@@ -175,6 +197,8 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
 
           {isGenerateFormOpen && (
             <div className={styles.form}>
+              {formError && <div className={styles.formError}>{formError}</div>}
+
               <textarea
                 className={styles.textarea}
                 placeholder="Prompt"

@@ -7,6 +7,7 @@ import styles from "./Header.module.css";
 import { useAuth } from "../../app/providers/useAuth";
 import { LoginModal } from "../../features/auth/ui/LoginModal";
 import { fetchCurrentUser } from "../../pages/profile/profile.api";
+import { logApiError } from "../../shared/api/errors/errorMapper";
 
 const CURRENT_USER_QUERY_KEY = ["current-user"];
 const CURRENT_PROFILE_FALLBACK_SLUG = "current";
@@ -18,7 +19,7 @@ export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, error: currentUserError } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: fetchCurrentUser,
     enabled: isAuth === true,
@@ -26,6 +27,12 @@ export const Header = () => {
 
   const profileSlug = currentUser?.nickname || currentUser?.loginName;
   const isProfileRoute = /^\/profile\/[^/]+(?:\/me)?$/.test(location.pathname);
+
+  useEffect(() => {
+    if (currentUserError) {
+      logApiError("Could not load current user for header", currentUserError);
+    }
+  }, [currentUserError]);
 
   useEffect(() => {
     if (!isSearchOpen) {

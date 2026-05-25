@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom"
 import { ImageCard } from "@/entities/image-card/ImageCard"
 import { TagSearchBox } from "@/features/tag-search/TagSearchBox"
 import { useInView } from "@/shared/lib/useInView"
+import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import {
   fetchGalleryTags,
   type GalleryImage,
@@ -115,6 +116,12 @@ const CollectionCard = ({
   const visibleImages = useMemo(() => images.slice(0, renderedCount), [images, renderedCount])
   const hasMoreImages = renderedCount < images.length
   const displayedCount = imagesQuery.data ? images.length : imageCount
+
+  useEffect(() => {
+    if (imagesQuery.error) {
+      logApiError(`Could not load gallery images for ${collection.name}`, imagesQuery.error)
+    }
+  }, [collection.name, imagesQuery.error])
 
   useEffect(() => {
     const imageGrid = imageGridRef.current
@@ -357,7 +364,16 @@ export const GalleryPage = () => {
       ...baseCollections.filter((collection) => collection.id !== expandedCollection.id),
     ]
     : baseCollections
+
   const isLoading = tagsQuery.isLoading
+  const queryError = tagsQuery.error
+  const isQueryError = tagsQuery.isError
+
+  useEffect(() => {
+    if (queryError) {
+      logApiError("Could not load gallery data", queryError)
+    }
+  }, [queryError])
 
   const handleDebouncedSearchChange = useCallback((nextValue: string) => {
     setDebouncedSearchValue(nextValue)
@@ -462,14 +478,21 @@ export const GalleryPage = () => {
 
       {isLoading && <div className={styles.state}>Loading collections...</div>}
 
-      {!isLoading && visibleCollections.length === 0 && (
+      {!isLoading && isQueryError && (
+        <div className={styles.empty}>
+          <ImageOff aria-hidden="true" />
+          <span>{getApiErrorMessage(queryError, "Could not load gallery. Please try again.")}</span>
+        </div>
+      )}
+
+      {!isLoading && !isQueryError && visibleCollections.length === 0 && (
         <div className={styles.empty}>
           <ImageOff aria-hidden="true" />
           <span>No collections yet</span>
         </div>
       )}
 
-      <section className={styles.collections} aria-label="Gallery collections">
+      {!isQueryError && <section className={styles.collections} aria-label="Gallery collections">
         {visibleCollections.map((collection) => (
           <CollectionCard
             collection={collection}
@@ -481,7 +504,7 @@ export const GalleryPage = () => {
             onToggle={toggleCollection}
           />
         ))}
-      </section>
+      </section>}
 
       <footer className={styles.notice}>
         <Info aria-hidden="true" />

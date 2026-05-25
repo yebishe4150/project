@@ -4,7 +4,7 @@ import styles from "./LoginModal.module.css";
 import { useAuth } from "../../../app/providers/useAuth";
 import { useToast } from "../../../app/providers/useToast";
 import type { RegisterRequest } from "../model/request.types";
-import { mapAuthError } from "../../../shared/api/errors/errorMapper";
+import { logApiError, mapAuthError } from "../../../shared/api/errors/errorMapper";
 import type { ApiError } from "../../../shared/api/errors/errorTypes";
 import {
   validateLoginForm,
@@ -58,7 +58,7 @@ export const LoginModal = ({ onClose }: Props) => {
     return null;
   };
 
-  const updateField = (field: AuthField, value: string) => {
+  const clearApiErrorForField = (field: string) => {
     if (apiError) {
       setApiError((current) => {
         if (!current) {
@@ -72,6 +72,10 @@ export const LoginModal = ({ onClose }: Props) => {
         return current;
       });
     }
+  };
+
+  const updateField = (field: AuthField, value: string) => {
+    clearApiErrorForField(field);
 
     setForm((prev) => ({
       ...prev,
@@ -121,7 +125,10 @@ export const LoginModal = ({ onClose }: Props) => {
 
       onClose();
     } catch (error) {
-      setApiError(mapAuthError(error, mode));
+      const mappedError = mapAuthError(error, mode);
+
+      logApiError(`Auth ${mode} failed`, mappedError, "warn");
+      setApiError(mappedError);
     }
   };
 
@@ -134,6 +141,8 @@ export const LoginModal = ({ onClose }: Props) => {
 
   const loginNameError = getFieldError("loginName");
   const passwordError = getFieldError("password");
+  const emailError = apiError?.field === "email" ? apiError.message : null;
+  const isKnownFieldError = apiError?.field === "loginName" || apiError?.field === "password" || apiError?.field === "email";
 
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>
@@ -187,32 +196,37 @@ export const LoginModal = ({ onClose }: Props) => {
           {mode === "signup" && (
             <>
               <input
-                className={styles.input}
+                className={`${styles.input} ${emailError ? styles.inputError : ""}`}
                 placeholder="Email"
                 value={form.email}
-                onChange={(e) =>
+                onChange={(e) => {
+                  clearApiErrorForField("email");
                   setForm((prev) => ({
                     ...prev,
                     email: e.target.value,
-                  }))
-                }
+                  }));
+                }}
               />
+              {emailError && (
+                <div className={styles.errorText}>{emailError}</div>
+              )}
 
               <input
                 className={styles.input}
                 placeholder="Phone"
                 value={form.phone}
-                onChange={(e) =>
+                onChange={(e) => {
+                  clearApiErrorForField("phoneNumber");
                   setForm((prev) => ({
                     ...prev,
                     phone: e.target.value,
-                  }))
-                }
+                  }));
+                }}
               />
             </>
           )}
 
-          {apiError && !apiError.field && (
+          {apiError && !isKnownFieldError && (
             <div className={styles.generalError}>{apiError.message}</div>
           )}
 

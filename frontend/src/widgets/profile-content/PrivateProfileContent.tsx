@@ -1,10 +1,11 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useSearchParams } from "react-router-dom"
 import { ImageCard } from "@/entities/image-card/ImageCard"
 import { generateImage } from "@/features/upload-image/api/generateImage"
 import { uploadImage } from "@/features/upload-image/api/uploadImage"
 import type { UploadImageData } from "@/features/upload-image/model/uploadImage.types"
+import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import { ProfileAddMenu } from "./ui/ProfileAddMenu"
 import { ProfileEmptyState } from "./ui/ProfileEmptyState"
 import { ProfileTabs } from "./ui/ProfileTabs"
@@ -23,10 +24,16 @@ export const PrivateProfileContent = () => {
     searchParams.get("tab") === "ai" ? "ai" : "photos",
   )
   const queryClient = useQueryClient()
-  const { data: images = [], isLoading } = useQuery({
+  const { data: images = [], isLoading, isError, error } = useQuery({
     queryKey: [...PROFILE_IMAGES_QUERY_KEY, activeTab],
     queryFn: () => fetchPrivateProfileImages(activeTab),
   })
+
+  useEffect(() => {
+    if (isError) {
+      logApiError("Could not load private profile images", error)
+    }
+  }, [error, isError])
 
   const refreshImages = async () => {
     await Promise.all([
@@ -101,6 +108,10 @@ export const PrivateProfileContent = () => {
 
       {isLoading ? (
         <div className={styles.status}>Loading images...</div>
+      ) : isError ? (
+        <div className={styles.status}>
+          {getApiErrorMessage(error, "Could not load images. Please try again.")}
+        </div>
       ) : images.length === 0 ? (
         <ProfileEmptyState onUpload={handleUpload} onGenerate={handleGenerate} />
       ) : (
