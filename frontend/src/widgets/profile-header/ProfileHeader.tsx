@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, CircleUserRound, Ellipsis, Home, LogOut, Search, Settings, Share2 } from "lucide-react"
-import { useAuth } from "@/app/providers/AuthProvider"
+import { useAuth } from "@/app/providers/useAuth"
 import styles from "./ProfileHeader.module.css"
 
 type HeaderUser = {

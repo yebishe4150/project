@@ -10,6 +10,8 @@ type ProfileImageApiResponse = {
   url: string
   description?: string | null
   createTime: string
+  likesCount: number
+  liked: boolean
 }
 
 export type ProfileImage = {
@@ -17,6 +19,8 @@ export type ProfileImage = {
   url: string
   description: string | null
   createTime: string
+  likesCount: number
+  liked: boolean
 }
 
 export type ProfileImageTab = "photos" | "ai"
@@ -27,6 +31,8 @@ function mapProfileImage(image: ProfileImageApiResponse): ProfileImage {
     url: image.url,
     description: image.description ?? null,
     createTime: image.createTime,
+    likesCount: image.likesCount,
+    liked: image.liked,
   }
 }
 

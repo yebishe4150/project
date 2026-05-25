@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./LoginModal.module.css";
-import { useAuth } from "../../../app/providers/AuthProvider";
+import { useAuth } from "../../../app/providers/useAuth";
 import { useToast } from "../../../app/providers/useToast";
 import type { RegisterRequest } from "../model/request.types";
 import { mapAuthError } from "../../../shared/api/errors/errorMapper";

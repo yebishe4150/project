@@ -1,15 +1,10 @@
 # PinPet Frontend
 
-Frontend part of the `PinPet` project built with React, TypeScript, and Vite.
+Фронтенд PinPet на React. Приложение работает с лентой изображений,
+профилями пользователей, галереей коллекций, загрузкой фотографий,
+AI-генерацией изображений, поиском по тегам и лайками.
 
-At the moment this is an early application skeleton with:
-
-- feed page and basic layout
-- auth flow foundation with context/provider
-- separated project layers close to FSD style
-- mock pin feed data for the main page
-
-## Stack
+## Стек
 
 - React 19
 - TypeScript
@@ -17,86 +12,118 @@ At the moment this is an early application skeleton with:
 - React Router
 - TanStack Query
 - CSS Modules
+- Axios и Fetch API helpers
+- Lucide React
 
-## Project Structure
+## Требования
 
-```text
-frontend/
-  public/
-  src/
-    app/        # app providers, layout, global styles
-    pages/      # route-level pages
-    widgets/    # large UI blocks like header/footer
-    features/   # user scenarios and feature logic
-    entities/   # domain entities such as pin
-    shared/     # shared api helpers and common logic
-```
-
-## Getting Started
-
-Requirements:
-
-- Node.js 20+ recommended
+- Node.js 20 или новее
 - npm
+- запущенный backend gateway для сценариев с авторизацией
 
-Install dependencies:
+## Запуск
+
+Установить зависимости:
 
 ```bash
 npm install
 ```
 
-Run the development server:
+При необходимости создать локальный `.env` из примера:
+
+```bash
+copy .env.example .env
+```
+
+Запустить dev-сервер:
 
 ```bash
 npm run dev
 ```
 
-Build the project:
+Собрать production-бандл:
 
 ```bash
 npm run build
 ```
 
-Run linter:
+Запустить ESLint:
 
 ```bash
 npm run lint
 ```
 
-Preview production build:
+Открыть preview production-сборки:
 
 ```bash
 npm run preview
 ```
 
-## Current Functionality
+## Структура проекта
 
-- Main route `/`
-- Header and footer layout
-- Feed page with pin cards
-- Login/signup modal UI
-- Auth context with `login`, `register`, `logout`, `checkAuth`, and token refresh helpers
+```text
+frontend/
+  public/       статические браузерные файлы
+  src/
+    app/        оболочка приложения, роутинг, провайдеры, глобальные стили
+    pages/      страницы верхнего уровня
+    widgets/    крупные составные UI-блоки
+    features/   пользовательские сценарии и feature-логика
+    entities/   доменные UI- и data-модули
+    shared/     общие API helpers, конфиги и утилиты
+```
 
-## Notes About API
+## Маршруты
 
-The project currently mixes two modes:
+- `/` - главная лента
+- `/gallery` - коллекции галереи с поиском по тегам и раскрывающимися сетками изображений
+- `/profile/:nickname` - публичная страница профиля
+- `/profile/:nickname/me` - приватная страница профиля
 
-- feed data is mocked in `src/entities/pin/pin.api.ts`
-- auth requests use a real backend URL from `src/shared/api/apiClient.ts`
+## Основные возможности
 
-Because of that, local development may require backend availability only for auth-related actions.
+- модальное окно авторизации, refresh-сессии, logout и helpers для защищенных API-запросов
+- главная лента с карточками пинов
+- публичный и приватный профиль пользователя
+- загрузка изображений и входная точка для AI-генерации
+- вкладки контента профиля и empty states
+- коллекции галереи, загружаемые по тегам
+- отдельная коллекция изображений без тегов
+- поиск тегов с debounce и синхронизацией с query-параметрами URL
+- ленивая загрузка изображений в галерее с ограничением параллельных запросов
+- карточки изображений с лайками и снятием лайков
+- dev fallback-данные для галереи, если backend временно недоступен
 
-## Important Technical Notes
+## API
 
-- `BASE_URL` for backend requests is hardcoded in `src/shared/api/apiClient.ts`
-- some auth and error-handling files are still in progress
-- the current `README` replaces the default Vite template and documents the actual project state
-- build and lint may require additional cleanup before the project is production-ready
+Фронтовые API-запросы идут через `/api/v1` в `src/shared/api/apiClient.ts`.
+В локальной разработке proxy Vite должен направлять `/api` на backend gateway.
+Авторизованные запросы добавляют access token, если он есть, и один раз
+повторяются после успешного refresh.
 
-## Recommended Next Steps
+Эндпоинты галереи, которые использует фронтенд:
 
-- move backend URL to environment variables
-- unify API response and error handling
-- finish replacing mock feed data with real API integration
-- clean up duplicated auth utilities
-- update build and lint configuration to a fully green state
+- `GET /content/tags`
+- `GET /content/tag/{tagId}`
+- `GET /content`
+- `GET /content/search`
+- `PUT /content/images/{imageId}/like`
+- `DELETE /content/images/{imageId}/like`
+
+## Переменные окружения
+
+В `.env.example` лежат опциональные dev-флаги:
+
+```text
+VITE_ENABLE_DEV_PROFILE_MOCK=false
+VITE_ENABLE_DEV_PROFILE_404_MOCK=false
+```
+
+## Заметки
+
+- Проект следует облегченной Feature-Sliced Design структуре.
+- CSS изолирован через CSS Modules, кроме глобальных стилей приложения.
+- Неиспользуемые шаблонные assets от Vite удалены.
+- Часть dev fallback-данных галереи использует Picsum images и состояние
+  лайков в localStorage, чтобы UI можно было проверять без полностью
+  доступного backend.

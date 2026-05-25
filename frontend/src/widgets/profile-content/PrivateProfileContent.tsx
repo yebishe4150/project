@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useSearchParams } from "react-router-dom"
+import { ImageCard } from "@/entities/image-card/ImageCard"
 import { generateImage } from "@/features/upload-image/api/generateImage"
 import { uploadImage } from "@/features/upload-image/api/uploadImage"
 import type { UploadImageData } from "@/features/upload-image/model/uploadImage.types"
@@ -8,6 +10,7 @@ import { ProfileEmptyState } from "./ui/ProfileEmptyState"
 import { ProfileTabs } from "./ui/ProfileTabs"
 import {
   fetchPrivateProfileImages,
+  type ProfileImage,
   type ProfileImageTab,
 } from "./profileContent.api"
 import styles from "./ProfileContent.module.css"
@@ -15,7 +18,10 @@ import styles from "./ProfileContent.module.css"
 const PROFILE_IMAGES_QUERY_KEY = ["profile-images"]
 
 export const PrivateProfileContent = () => {
-  const [activeTab, setActiveTab] = useState<ProfileImageTab>("photos")
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<ProfileImageTab>(
+    searchParams.get("tab") === "ai" ? "ai" : "photos",
+  )
   const queryClient = useQueryClient()
   const { data: images = [], isLoading } = useQuery({
     queryKey: [...PROFILE_IMAGES_QUERY_KEY, activeTab],
@@ -31,6 +37,20 @@ export const PrivateProfileContent = () => {
         queryKey: [...PROFILE_IMAGES_QUERY_KEY, "ai"],
       }),
     ])
+  }
+
+  const updateImageLike = (imageId: string, liked: boolean, likesCount: number) => {
+    queryClient.setQueriesData<ProfileImage[]>({ queryKey: PROFILE_IMAGES_QUERY_KEY }, (current) =>
+      current?.map((image) =>
+        image.id === imageId
+          ? {
+            ...image,
+            liked,
+            likesCount,
+          }
+          : image,
+      ),
+    )
   }
 
   const handleUpload = async (data: UploadImageData) => {
@@ -53,11 +73,25 @@ export const PrivateProfileContent = () => {
     setActiveTab("ai")
   }
 
+  const changeTab = (tab: ProfileImageTab) => {
+    const nextParams = new URLSearchParams(searchParams)
+
+    if (tab === "ai") {
+      nextParams.set("tab", "ai")
+    } else {
+      nextParams.delete("tab")
+    }
+
+    nextParams.delete("photo")
+    setSearchParams(nextParams)
+    setActiveTab(tab)
+  }
+
   return (
     <section className={styles.content}>
       <ProfileTabs
         activeTab={activeTab}
-        onChange={setActiveTab}
+        onChange={changeTab}
         centerSlot={
           images.length > 0 ? (
             <ProfileAddMenu onUpload={handleUpload} onGenerate={handleGenerate} />
@@ -72,7 +106,13 @@ export const PrivateProfileContent = () => {
       ) : (
         <div className={styles.grid}>
           {images.map((image) => (
-            <img className={styles.image} key={image.id} src={image.url} alt={image.description ?? ""} />
+            <ImageCard
+              image={image}
+              imageClassName={styles.image}
+              shareParams={{ tab: activeTab === "ai" ? "ai" : null }}
+              key={image.id}
+              onLikeChange={updateImageLike}
+            />
           ))}
         </div>
       )}

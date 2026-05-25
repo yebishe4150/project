@@ -36,7 +36,6 @@
   flex-wrap: wrap;
 }
 
-.searchForm,
 .sortControl {
   height: 58px;
   border: 1px solid rgba(204, 211, 224, 0.9);
@@ -46,36 +45,11 @@
   color: #687386;
 }
 
-.searchForm {
-  width: min(360px, 42vw);
-  padding: 0 18px;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-}
-
-.searchForm svg,
 .sortControl svg {
   width: 22px;
   height: 22px;
   flex-shrink: 0;
   stroke-width: 2.2;
-}
-
-.searchForm input {
-  min-width: 0;
-  width: 100%;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #111827;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.searchForm input::placeholder {
-  color: #8b95a8;
 }
 
 .sortControl {
@@ -255,7 +229,6 @@
 .galleryImage {
   width: 100%;
   aspect-ratio: 4 / 5;
-  border-radius: 12px;
   object-fit: cover;
   display: block;
   background: #edf1f7;
@@ -289,6 +262,10 @@
 .emptyPanel {
   padding: 28px 0 8px;
   text-align: center;
+}
+
+.loadMoreSentinel {
+  height: 1px;
 }
 
 .notice {
@@ -332,14 +309,8 @@
     flex-wrap: nowrap;
   }
 
-  .searchForm,
   .sortControl {
     min-width: 0;
-  }
-
-  .searchForm {
-    flex: 1 1 auto;
-    width: auto;
   }
 
   .sortControl {
@@ -356,7 +327,6 @@
     flex-wrap: wrap;
   }
 
-  .searchForm,
   .sortControl {
     width: 100%;
     flex-basis: 100%;
