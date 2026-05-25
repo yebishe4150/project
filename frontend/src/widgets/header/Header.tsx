@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Image, Search, UserRound } from "lucide-react";
+import { TagSearchBox } from "@/features/tag-search/TagSearchBox";
 import styles from "./Header.module.css";
-import { useAuth } from "../../app/providers/AuthProvider";
+import { useAuth } from "../../app/providers/useAuth";
 import { LoginModal } from "../../features/auth/ui/LoginModal";
 import { fetchCurrentUser } from "../../pages/profile/profile.api";
 import { logApiError } from "../../shared/api/errors/errorMapper";
@@ -17,8 +18,6 @@ export const Header = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
   const { data: currentUser, error: currentUserError } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
@@ -28,12 +27,6 @@ export const Header = () => {
 
   const profileSlug = currentUser?.nickname || currentUser?.loginName;
   const isProfileRoute = /^\/profile\/[^/]+(?:\/me)?$/.test(location.pathname);
-
-  useEffect(() => {
-    if (isSearchOpen) {
-      searchInputRef.current?.focus();
-    }
-  }, [isSearchOpen]);
 
   useEffect(() => {
     if (currentUserError) {
@@ -61,20 +54,6 @@ export const Header = () => {
 
   const handleOpenProfile = () => {
     navigate(`/profile/${encodeURIComponent(profileSlug ?? CURRENT_PROFILE_FALLBACK_SLUG)}/me`);
-  };
-
-  const submitSearch = () => {
-    const nextValue = searchValue.trim();
-
-    setIsSearchOpen(false);
-
-    if (!nextValue) {
-      navigate("/gallery");
-      return;
-    }
-
-    navigate(`/gallery?search=${encodeURIComponent(nextValue)}`);
-    setSearchValue("");
   };
 
   return (
@@ -109,20 +88,11 @@ export const Header = () => {
               </button>
 
               {isSearchOpen && (
-                <input
-                  ref={searchInputRef}
-                  className={styles.searchInput}
-                  type="search"
-                  aria-label="Search"
+                <TagSearchBox
+                  variant="header"
                   placeholder="Search"
-                  value={searchValue}
-                  onChange={(event) => setSearchValue(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      submitSearch();
-                      event.currentTarget.blur();
-                    }
-                  }}
+                  autoFocus
+                  onComplete={() => setIsSearchOpen(false)}
                 />
               )}
             </div>

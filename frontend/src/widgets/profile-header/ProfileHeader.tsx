@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, CircleUserRound, Ellipsis, Home, LogOut, Search, Settings, Share2 } from "lucide-react"
-import { useAuth } from "@/app/providers/AuthProvider"
+import { useAuth } from "@/app/providers/useAuth"
 import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import styles from "./ProfileHeader.module.css"
 
@@ -59,8 +59,12 @@ export const ProfileHeader = ({
   const actionsRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    setNickname(displayNickname)
-    setNicknameError(null)
+    const timeoutId = window.setTimeout(() => {
+      setNickname(displayNickname)
+      setNicknameError(null)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [displayNickname])
 
   useEffect(() => {
@@ -246,9 +250,8 @@ export const ProfileHeader = ({
               <Share2 aria-hidden="true" />
             </button>
             <span
-              className={`${styles.shareTooltip} ${isLinkCopied ? styles.shareTooltipVisible : ""} ${
-                isShareTooltipHidden ? styles.shareTooltipHidden : ""
-              }`}
+              className={`${styles.shareTooltip} ${isLinkCopied ? styles.shareTooltipVisible : ""} ${isShareTooltipHidden ? styles.shareTooltipHidden : ""
+                }`}
               role="status"
             >
               {isLinkCopied ? "Link copied" : "Share profile link"}

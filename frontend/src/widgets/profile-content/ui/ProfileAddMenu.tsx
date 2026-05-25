@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { UploadImageButton } from "@/features/upload-image/ui/UploadImageButton"
 import type { UploadImageData } from "@/features/upload-image/model/uploadImage.types"
 import {
@@ -33,25 +33,25 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
   const [formError, setFormError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
-  const resetUploadForm = () => {
+  const resetUploadForm = useCallback(() => {
     setSelectedFile(null)
     setDescription("")
     setTags("")
-  }
+  }, [])
 
-  const resetGenerateForm = () => {
+  const resetGenerateForm = useCallback(() => {
     setIsGenerateFormOpen(false)
     setPrompt("")
     setGenerateDescription("")
     setGenerateTags("")
-  }
+  }, [])
 
-  const closeMenu = () => {
+  const closeMenu = useCallback(() => {
     setIsOpen(false)
     setFormError(null)
     resetUploadForm()
     resetGenerateForm()
-  }
+  }, [resetGenerateForm, resetUploadForm])
 
   useEffect(() => {
     if (!isOpen) return
@@ -67,7 +67,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
     return () => {
       document.removeEventListener("mousedown", handlePointerDown)
     }
-  }, [isOpen])
+  }, [closeMenu, isOpen])
 
   const handleSelectFile = (file: File) => {
     resetGenerateForm()

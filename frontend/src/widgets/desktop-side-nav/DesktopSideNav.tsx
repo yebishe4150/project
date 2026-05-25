@@ -2,7 +2,8 @@ import { Image, Search, UserRound, Home } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useLocation, useNavigate } from "react-router-dom"
-import { useAuth } from "@/app/providers/AuthProvider"
+import { useAuth } from "@/app/providers/useAuth"
+import { TagSearchBox } from "@/features/tag-search/TagSearchBox"
 import { fetchCurrentUser } from "@/pages/profile/profile.api"
 import { logApiError } from "@/shared/api/errors/errorMapper"
 import styles from "./DesktopSideNav.module.css"
@@ -15,8 +16,6 @@ export const DesktopSideNav = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [searchValue, setSearchValue] = useState("")
-  const searchInputRef = useRef<HTMLInputElement | null>(null)
   const searchWrapRef = useRef<HTMLDivElement | null>(null)
   const { data: currentUser, error: currentUserError } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
@@ -27,12 +26,7 @@ export const DesktopSideNav = () => {
   const profileSlug = currentUser?.nickname || currentUser?.loginName
   const showProfile = isAuth === true
   const isGalleryRoute = location.pathname === "/gallery"
-
-  useEffect(() => {
-    if (isSearchOpen) {
-      searchInputRef.current?.focus()
-    }
-  }, [isSearchOpen])
+  const isProfileRoute = /^\/profile\/[^/]+(?:\/me)?$/.test(location.pathname)
 
   useEffect(() => {
     if (currentUserError) {
@@ -62,20 +56,6 @@ export const DesktopSideNav = () => {
     navigate(`/profile/${encodeURIComponent(profileSlug ?? CURRENT_PROFILE_FALLBACK_SLUG)}/me`)
   }
 
-  const submitSearch = () => {
-    const nextValue = searchValue.trim()
-
-    setIsSearchOpen(false)
-
-    if (!nextValue) {
-      navigate("/gallery")
-      return
-    }
-
-    navigate(`/gallery?search=${encodeURIComponent(nextValue)}`)
-    setSearchValue("")
-  }
-
   return (
     <aside className={styles.sideNav} aria-label="Desktop navigation">
       <div className={styles.navList}>
@@ -102,20 +82,11 @@ export const DesktopSideNav = () => {
               </button>
 
               {isSearchOpen && (
-                <input
-                  ref={searchInputRef}
-                  className={styles.searchInput}
-                  type="search"
-                  aria-label="Search"
+                <TagSearchBox
+                  variant="sideNav"
                   placeholder="Search"
-                  value={searchValue}
-                  onChange={(event) => setSearchValue(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      submitSearch()
-                      event.currentTarget.blur()
-                    }
-                  }}
+                  autoFocus
+                  onComplete={() => setIsSearchOpen(false)}
                 />
               )}
             </div>
@@ -131,7 +102,7 @@ export const DesktopSideNav = () => {
           </>
         )}
 
-        {showProfile && (
+        {showProfile && !isProfileRoute && (
           <button
             className={styles.navItem}
             type="button"

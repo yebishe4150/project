@@ -1,8 +1,7 @@
-import { createContext, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import styles from "./ToastProvider.module.css";
 import type { Toast, ToastContextType } from "./toast.types";
-
-export const ToastContext = createContext<ToastContextType | null>(null);
+import { ToastContext } from "./ToastContext";
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);

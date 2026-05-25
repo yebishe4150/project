@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useAuth } from "@/app/providers/AuthProvider"
+import { useAuth } from "@/app/providers/useAuth"
 import { ProfileHeader } from "@/widgets/profile-header/ProfileHeader"
 import { PrivateProfileContent } from "@/widgets/profile-content/PrivateProfileContent"
 import { ProfileContactInfo, type ContactInfoValues } from "@/widgets/profile-contact-info/ProfileContactInfo"
@@ -112,7 +112,11 @@ export const PrivateProfilePage = () => {
       normalizedPendingNicknameSlug === normalizedRouteNickname
     ) {
       queryClient.setQueryData(CURRENT_USER_QUERY_KEY, pendingNicknameUser)
-      setPendingNicknameUser(null)
+      const timeoutId = window.setTimeout(() => setPendingNicknameUser(null), 0)
+
+      return () => {
+        window.clearTimeout(timeoutId)
+      }
     }
   }, [
     normalizedPendingNicknameSlug,
@@ -136,7 +140,11 @@ export const PrivateProfilePage = () => {
 
   useEffect(() => {
     if (!isProfileSyncError) {
-      setIsProfileSyncErrorBannerOpen(false)
+      const timeoutId = window.setTimeout(() => setIsProfileSyncErrorBannerOpen(false), 0)
+
+      return () => {
+        window.clearTimeout(timeoutId)
+      }
     }
   }, [isProfileSyncError])
 

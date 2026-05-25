@@ -1,25 +1,27 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react"
-import { useQueries, useQuery } from "@tanstack/react-query"
-import { ChevronDown, Filter, ImageOff, Info, Search, Tag } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { ChevronDown, Filter, ImageOff, Info, Tag } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
+import { ImageCard } from "@/entities/image-card/ImageCard"
+import { TagSearchBox } from "@/features/tag-search/TagSearchBox"
+import { useInView } from "@/shared/lib/useInView"
 import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import {
-  fetchAllGalleryImages,
-  fetchGalleryImagesByTag,
   fetchGalleryTags,
-  searchGalleryImages,
   type GalleryImage,
   type GalleryTag,
 } from "./gallery.api"
+import {
+  fetchGalleryCollectionImages,
+  GALLERY_IMAGES_STALE_TIME,
+  galleryImagesQueryKey,
+  UNTAGGED_COLLECTION_ID,
+} from "./galleryQuery"
 import styles from "./GalleryPage.module.css"
 
 type SortMode = "name" | "count"
 
-type Collection = GalleryTag & {
-  images: GalleryImage[]
-}
-
-const UNTAGGED_COLLECTION_ID = "__untagged"
+type Collection = GalleryTag
 
 function formatTagName(name: string) {
   const trimmed = name.trim()
@@ -39,77 +41,271 @@ function pluralizePhotos(count: number) {
   return `${count} ${count === 1 ? "photo" : "photos"}`
 }
 
-function getPreviewImages(images: GalleryImage[]) {
-  return images.slice(0, 3)
+function getStableRandomPreviewImages(images: GalleryImage[]) {
+  const shuffledImages = [...images]
+
+  for (let index = shuffledImages.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    const currentImage = shuffledImages[index]
+    const randomImage = shuffledImages[randomIndex]
+
+    if (!currentImage || !randomImage) {
+      continue
+    }
+
+    shuffledImages[index] = randomImage
+    shuffledImages[randomIndex] = currentImage
+  }
+
+  return shuffledImages.slice(0, 3)
+}
+
+function isGalleryImageList(value: unknown): value is GalleryImage[] {
+  return Array.isArray(value) && value.every((item) =>
+    typeof item === "object" &&
+    item !== null &&
+    "id" in item &&
+    "url" in item &&
+    "liked" in item &&
+    "likesCount" in item,
+  )
+}
+
+const DEFAULT_IMAGE_BATCH_SIZE = 24
+const MIN_GRID_COLUMN_WIDTH = 240
+const MOBILE_MIN_GRID_COLUMN_WIDTH = 120
+const GRID_BATCH_ROWS = 4
+const EMPTY_GALLERY_IMAGES: GalleryImage[] = []
+const EMPTY_GALLERY_TAGS: GalleryTag[] = []
+
+type CollectionCardProps = {
+  collection: Collection
+  isExpanded: boolean
+  imageCount?: number
+  onToggle: (collectionId: string) => void
+  onImagesLoaded: (collectionId: string, imageCount: number) => void
+  onLikeChange: (imageId: string, liked: boolean, likesCount: number) => void
+}
+
+const CollectionCard = ({
+  collection,
+  isExpanded,
+  imageCount,
+  onToggle,
+  onImagesLoaded,
+  onLikeChange,
+}: CollectionCardProps) => {
+  const [cardRef, isCardInView] = useInView<HTMLElement>({ rootMargin: "200px" })
+  const imageGridRef = useRef<HTMLDivElement | null>(null)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [imageBatchSize, setImageBatchSize] = useState(DEFAULT_IMAGE_BATCH_SIZE)
+  const [visibleCount, setVisibleCount] = useState(DEFAULT_IMAGE_BATCH_SIZE)
+  const collectionName = formatTagName(collection.name)
+  const shouldLoadImages = isCardInView || isExpanded
+  const imagesQuery = useQuery({
+    queryKey: galleryImagesQueryKey(collection.id),
+    queryFn: () => fetchGalleryCollectionImages(collection.id),
+    enabled: shouldLoadImages,
+    staleTime: GALLERY_IMAGES_STALE_TIME,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  })
+  const images = imagesQuery.data ?? EMPTY_GALLERY_IMAGES
+  const previewImages = useMemo(() => getStableRandomPreviewImages(images), [images])
+  const renderedCount = Math.max(visibleCount, imageBatchSize)
+  const visibleImages = useMemo(() => images.slice(0, renderedCount), [images, renderedCount])
+  const hasMoreImages = renderedCount < images.length
+  const displayedCount = imagesQuery.data ? images.length : imageCount
+
+  useEffect(() => {
+    if (imagesQuery.error) {
+      logApiError(`Could not load gallery images for ${collection.name}`, imagesQuery.error)
+    }
+  }, [collection.name, imagesQuery.error])
+
+  useEffect(() => {
+    const imageGrid = imageGridRef.current
+
+    if (!imageGrid) {
+      return
+    }
+
+    const calculateBatchSize = (width: number) => {
+      const minColumnWidth = window.matchMedia("(max-width: 560px)").matches
+        ? MOBILE_MIN_GRID_COLUMN_WIDTH
+        : MIN_GRID_COLUMN_WIDTH
+      const columns = Math.max(1, Math.floor(width / minColumnWidth))
+
+      return columns * GRID_BATCH_ROWS
+    }
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) {
+        return
+      }
+
+      setImageBatchSize(calculateBatchSize(entry.contentRect.width))
+    })
+
+    setImageBatchSize(calculateBatchSize(imageGrid.getBoundingClientRect().width))
+    observer.observe(imageGrid)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [isExpanded])
+
+  useEffect(() => {
+    if (imagesQuery.data) {
+      onImagesLoaded(collection.id, imagesQuery.data.length)
+    }
+  }, [collection.id, imagesQuery.data, onImagesLoaded])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+
+    if (!sentinel || !hasMoreImages) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisibleCount((current) =>
+            Math.min(Math.max(current, imageBatchSize) + imageBatchSize, images.length),
+          )
+        }
+      },
+      { rootMargin: "260px" },
+    )
+
+    observer.observe(sentinel)
+
+    return () => {
+      observer.unobserve(sentinel)
+      observer.disconnect()
+    }
+  }, [hasMoreImages, imageBatchSize, images.length])
+
+  return (
+    <article
+      ref={cardRef}
+      className={`${styles.collectionCard} ${isExpanded ? styles.collectionCardExpanded : ""}`}
+    >
+      <button
+        className={styles.collectionButton}
+        type="button"
+        aria-expanded={isExpanded}
+        onClick={() => onToggle(collection.id)}
+      >
+        <div className={styles.previewGrid}>
+          {previewImages.length > 0 ? (
+            previewImages.map((image, index) => (
+              <img
+                className={styles.previewImage}
+                src={image.url}
+                alt=""
+                key={`${image.id}-${index}`}
+                loading="lazy"
+                decoding="async"
+              />
+            ))
+          ) : (
+            <div className={styles.previewEmpty}>
+              <Tag aria-hidden="true" />
+            </div>
+          )}
+        </div>
+
+        <div className={styles.cardMeta}>
+          <div>
+            <h2>{collectionName}</h2>
+            <p>{displayedCount === undefined ? "Preview loads on view" : pluralizePhotos(displayedCount)}</p>
+          </div>
+          <ChevronDown className={styles.cardChevron} aria-hidden="true" />
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className={styles.expandedPanel}>
+          {imagesQuery.isLoading ? (
+            <div className={styles.emptyPanel}>Loading photos...</div>
+          ) : images.length > 0 ? (
+            <>
+              <div ref={imageGridRef} className={styles.imageGrid}>
+                {visibleImages.map((image, index) => (
+                  <ImageCard
+                    image={image}
+                    imageClassName={styles.galleryImage}
+                    alt={`${collectionName} ${index + 1}`}
+                    previewTags={
+                      collection.id === UNTAGGED_COLLECTION_ID
+                        ? []
+                        : [collectionName]
+                    }
+                    key={`${collection.id}-${image.id}`}
+                    onLikeChange={onLikeChange}
+                  />
+                ))}
+              </div>
+              {hasMoreImages && <div ref={sentinelRef} className={styles.loadMoreSentinel} />}
+            </>
+          ) : (
+            <div className={styles.emptyPanel}>No photos in this collection yet</div>
+          )}
+        </div>
+      )}
+    </article>
+  )
 }
 
 export const GalleryPage = () => {
+  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedSearch = searchParams.get("search")?.trim() ?? ""
   const requestedTag = searchParams.get("tag")?.trim() ?? ""
-  const [searchValue, setSearchValue] = useState("")
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState(requestedTag || requestedSearch)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>("name")
   const [suppressedAutoExpandKey, setSuppressedAutoExpandKey] = useState<string | null>(null)
+  const [collectionImageCounts, setCollectionImageCounts] = useState<Record<string, number>>({})
 
   const tagsQuery = useQuery({
     queryKey: ["gallery", "tags"],
     queryFn: fetchGalleryTags,
-    staleTime: 30_000,
+    staleTime: GALLERY_IMAGES_STALE_TIME,
+    refetchOnWindowFocus: false,
   })
 
-  const tags = tagsQuery.data ?? []
-  const allImagesQuery = useQuery({
-    queryKey: ["gallery", "all-images"],
-    queryFn: fetchAllGalleryImages,
-    staleTime: 30_000,
-  })
-  const imageQueries = useQueries({
-    queries: tags.map((tag) => ({
-      queryKey: ["gallery", "tag-images", tag.id],
-      queryFn: () => fetchGalleryImagesByTag(tag.id),
-      staleTime: 30_000,
-    })),
-  })
-
-  const searchQuery = useQuery({
-    queryKey: ["gallery", "search", requestedSearch],
-    queryFn: () => searchGalleryImages(requestedSearch),
-    enabled: requestedSearch.length > 0,
-    staleTime: 30_000,
-  })
+  const tags = tagsQuery.data ?? EMPTY_GALLERY_TAGS
+  const activeSearchTerm = debouncedSearchValue.trim()
 
   const collections = useMemo<Collection[]>(() => {
-    const nextCollections = tags.map((tag, index) => ({
-      ...tag,
-      images: imageQueries[index]?.data ?? [],
-    }))
-    const taggedUrls = new Set(nextCollections.flatMap((collection) =>
-      collection.images.map((image) => image.url),
-    ))
-    const untaggedImages = (allImagesQuery.data ?? []).filter((image) => !taggedUrls.has(image.url))
-    const collectionsWithUntagged = untaggedImages.length > 0
-      ? [
-        ...nextCollections,
-        {
-          id: UNTAGGED_COLLECTION_ID,
-          name: "untagged",
-          images: untaggedImages,
-        },
-      ]
-      : nextCollections
+    const normalizedSearch = activeSearchTerm.toLowerCase()
+    const untaggedCollection: Collection = {
+      id: UNTAGGED_COLLECTION_ID,
+      name: "untagged",
+    }
+    const filteredTags = normalizedSearch
+      ? tags.filter((tag) => tag.name.toLowerCase().includes(normalizedSearch))
+      : tags
+    const shouldShowUntagged = !normalizedSearch || untaggedCollection.name.includes(normalizedSearch)
+    const nextCollections = shouldShowUntagged
+      ? [...filteredTags, untaggedCollection]
+      : filteredTags
 
-    return [...collectionsWithUntagged].sort((left, right) => {
+    return [...nextCollections].sort((left, right) => {
       if (sortMode === "count") {
-        return right.images.length - left.images.length || left.name.localeCompare(right.name)
+        return (collectionImageCounts[right.id] ?? 0) - (collectionImageCounts[left.id] ?? 0) ||
+          left.name.localeCompare(right.name)
       }
 
       return left.name.localeCompare(right.name)
     })
-  }, [allImagesQuery.data, imageQueries, sortMode, tags])
+  }, [activeSearchTerm, collectionImageCounts, sortMode, tags])
 
   const matchingCollection = useMemo(() => {
-    const normalizedSearch = requestedSearch.toLowerCase()
+    const normalizedSearch = activeSearchTerm.toLowerCase()
     const normalizedTag = requestedTag.toLowerCase()
 
     if (normalizedTag) {
@@ -125,31 +321,22 @@ export const GalleryPage = () => {
 
       return name === normalizedSearch || name.includes(normalizedSearch)
     }) ?? null
-  }, [collections, requestedSearch, requestedTag])
-
-  const searchCollection = useMemo<Collection | null>(() => {
-    if (!requestedSearch || matchingCollection) {
-      return null
-    }
-
-    return {
-      id: "search-results",
-      name: `Search: ${requestedSearch}`,
-      images: searchQuery.data ?? [],
-    }
-  }, [matchingCollection, requestedSearch, searchQuery.data])
+  }, [activeSearchTerm, collections, requestedTag])
 
   const autoExpandKey = requestedTag
     ? `tag:${requestedTag.toLowerCase()}`
-    : requestedSearch
-      ? `search:${requestedSearch.toLowerCase()}`
+    : activeSearchTerm
+      ? `search:${activeSearchTerm.toLowerCase()}`
       : null
-  const autoExpandTargetId = matchingCollection?.id ?? searchCollection?.id ?? null
+  const autoExpandTargetId = matchingCollection?.id ?? null
 
   useEffect(() => {
     if (!autoExpandKey) {
-      setSuppressedAutoExpandKey(null)
-      return
+      const timeoutId = window.setTimeout(() => setSuppressedAutoExpandKey(null), 0)
+
+      return () => {
+        window.clearTimeout(timeoutId)
+      }
     }
 
     if (
@@ -160,10 +347,14 @@ export const GalleryPage = () => {
       return
     }
 
-    setExpandedId(autoExpandTargetId)
+    const timeoutId = window.setTimeout(() => setExpandedId(autoExpandTargetId), 0)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
   }, [autoExpandKey, autoExpandTargetId, expandedId, suppressedAutoExpandKey])
 
-  const baseCollections = searchCollection ? [searchCollection, ...collections] : collections
+  const baseCollections = collections
   const expandedCollection = expandedId
     ? baseCollections.find((collection) => collection.id === expandedId) ?? null
     : null
@@ -173,14 +364,10 @@ export const GalleryPage = () => {
       ...baseCollections.filter((collection) => collection.id !== expandedCollection.id),
     ]
     : baseCollections
-  const isLoading = tagsQuery.isLoading || imageQueries.some((query) => query.isLoading) || allImagesQuery.isLoading
-  const queryError =
-    tagsQuery.error ??
-    allImagesQuery.error ??
-    searchQuery.error ??
-    imageQueries.find((query) => query.error)?.error ??
-    null
-  const isQueryError = tagsQuery.isError || allImagesQuery.isError || searchQuery.isError || imageQueries.some((query) => query.isError)
+
+  const isLoading = tagsQuery.isLoading
+  const queryError = tagsQuery.error
+  const isQueryError = tagsQuery.isError
 
   useEffect(() => {
     if (queryError) {
@@ -188,8 +375,13 @@ export const GalleryPage = () => {
     }
   }, [queryError])
 
-  const runSearch = () => {
-    const nextValue = searchValue.trim()
+  const handleDebouncedSearchChange = useCallback((nextValue: string) => {
+    setDebouncedSearchValue(nextValue)
+    setSuppressedAutoExpandKey(null)
+  }, [])
+
+  const runSearch = (searchTerm: string) => {
+    const nextValue = searchTerm.trim()
 
     if (!nextValue) {
       setSearchParams({})
@@ -198,12 +390,6 @@ export const GalleryPage = () => {
 
     setSuppressedAutoExpandKey(null)
     setSearchParams({ search: nextValue })
-    setSearchValue("")
-  }
-
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    runSearch()
   }
 
   const toggleCollection = (collectionId: string) => {
@@ -220,6 +406,44 @@ export const GalleryPage = () => {
     })
   }
 
+  const selectTagSuggestion = (tag: GalleryTag) => {
+    setDebouncedSearchValue(tag.name)
+    setSuppressedAutoExpandKey(null)
+    setExpandedId(tag.id)
+    setSearchParams({ tag: tag.name })
+  }
+
+  const handleImagesLoaded = useCallback((collectionId: string, imageCount: number) => {
+    setCollectionImageCounts((current) => {
+      if (current[collectionId] === imageCount) {
+        return current
+      }
+
+      return {
+        ...current,
+        [collectionId]: imageCount,
+      }
+    })
+  }, [])
+
+  const updateImageLike = (imageId: string, liked: boolean, likesCount: number) => {
+    queryClient.setQueriesData<unknown>({ queryKey: ["gallery-images"] }, (current: unknown) => {
+      if (!isGalleryImageList(current)) {
+        return current
+      }
+
+      return current.map((image) =>
+        image.id === imageId
+          ? {
+            ...image,
+            liked,
+            likesCount,
+          }
+          : image,
+      )
+    })
+  }
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -229,22 +453,12 @@ export const GalleryPage = () => {
         </div>
 
         <div className={styles.toolbar}>
-          <form className={styles.searchForm} onSubmit={submitSearch}>
-            <Search aria-hidden="true" />
-            <input
-              type="search"
-              aria-label="Search collections"
-              placeholder="Search collections"
-              value={searchValue}
-              onChange={(event) => setSearchValue(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault()
-                  runSearch()
-                }
-              }}
-            />
-          </form>
+          <TagSearchBox
+            initialValue={requestedTag ? formatTagName(requestedTag) : requestedSearch}
+            onDebouncedSearchChange={handleDebouncedSearchChange}
+            onSearchSubmit={runSearch}
+            onTagSelect={selectTagSuggestion}
+          />
 
           <label className={styles.sortControl}>
             <Filter aria-hidden="true" />
@@ -279,70 +493,17 @@ export const GalleryPage = () => {
       )}
 
       {!isQueryError && <section className={styles.collections} aria-label="Gallery collections">
-        {visibleCollections.map((collection) => {
-          const isExpanded = expandedId === collection.id
-          const previewImages = getPreviewImages(collection.images)
-
-          return (
-            <article
-              className={`${styles.collectionCard} ${isExpanded ? styles.collectionCardExpanded : ""}`}
-              key={collection.id}
-            >
-              <button
-                className={styles.collectionButton}
-                type="button"
-                aria-expanded={isExpanded}
-                onClick={() => toggleCollection(collection.id)}
-              >
-                <div className={styles.previewGrid}>
-                  {previewImages.length > 0 ? (
-                    previewImages.map((image, index) => (
-                      <img
-                        className={styles.previewImage}
-                        src={image.url}
-                        alt=""
-                        key={`${image.url}-${index}`}
-                        loading="lazy"
-                      />
-                    ))
-                  ) : (
-                    <div className={styles.previewEmpty}>
-                      <Tag aria-hidden="true" />
-                    </div>
-                  )}
-                </div>
-
-                <div className={styles.cardMeta}>
-                  <div>
-                    <h2>{formatTagName(collection.name)}</h2>
-                    <p>{pluralizePhotos(collection.images.length)}</p>
-                  </div>
-                  <ChevronDown className={styles.cardChevron} aria-hidden="true" />
-                </div>
-              </button>
-
-              {isExpanded && (
-                <div className={styles.expandedPanel}>
-                  {collection.images.length > 0 ? (
-                    <div className={styles.imageGrid}>
-                      {collection.images.map((image, index) => (
-                        <img
-                          className={styles.galleryImage}
-                          src={image.url}
-                          alt={`${formatTagName(collection.name)} ${index + 1}`}
-                          key={`${collection.id}-${image.url}-${index}`}
-                          loading="lazy"
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className={styles.emptyPanel}>No photos in this collection yet</div>
-                  )}
-                </div>
-              )}
-            </article>
-          )
-        })}
+        {visibleCollections.map((collection) => (
+          <CollectionCard
+            collection={collection}
+            imageCount={collectionImageCounts[collection.id]}
+            isExpanded={expandedId === collection.id}
+            key={collection.id}
+            onImagesLoaded={handleImagesLoaded}
+            onLikeChange={updateImageLike}
+            onToggle={toggleCollection}
+          />
+        ))}
       </section>}
 
       <footer className={styles.notice}>

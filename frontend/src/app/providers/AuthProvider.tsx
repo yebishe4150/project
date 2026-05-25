@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react"
+import { useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   checkAuth,
@@ -6,11 +6,10 @@ import {
   login as loginApi,
   logout as logoutApi,
 } from "../../features/auth/auth"
-import type { AuthContextType } from "@/features/auth/model/frontTypes"
 import type { RegisterRequest, LoginRequest } from "@/features/auth/model/request.types"
 import { isDevAuthMockEnabled, isDevProfileMockEnabled } from "@/shared/config/devProfileMock"
+import { AuthContext } from "./AuthContext"
 
-const AuthContext = createContext<AuthContextType | null>(null)
 const AUTH_QUERY_KEY = ["auth-status"]
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -69,14 +68,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider")
-  }
-
-  return context
 }
