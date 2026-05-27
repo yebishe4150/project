@@ -1,100 +1,35 @@
-import { useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./LoginModal.module.css";
 import { useAuth } from "../../../app/providers/useAuth";
 import { useToast } from "../../../app/providers/useToast";
-import type { RegisterRequest } from "../model/request.types";
 import { logApiError, mapAuthError } from "../../../shared/api/errors/errorMapper";
-import type { ApiError } from "../../../shared/api/errors/errorTypes";
-import {
-  validateLoginForm,
-  validateRegisterForm,
-} from "../model/validation";
-import type {
-  AuthField,
-  AuthValidationErrors,
-} from "../model/validation.types";
+import { useLoginModalForm } from "./useLoginModalForm";
 
 type Props = {
   onClose: () => void;
 };
 
-type TouchedState = Record<AuthField, boolean>;
-
-const INITIAL_TOUCHED: TouchedState = {
-  loginName: false,
-  password: false,
-};
-
 export const LoginModal = ({ onClose }: Props) => {
   const { login, register } = useAuth();
   const { showToast } = useToast();
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [apiError, setApiError] = useState<ApiError | null>(null);
-  const [touched, setTouched] = useState<TouchedState>(INITIAL_TOUCHED);
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [form, setForm] = useState<RegisterRequest>({
-    loginName: "",
-    password: "",
-    email: "",
-    phone: "",
-  });
-
-  const validationErrors: AuthValidationErrors =
-    mode === "login" ? validateLoginForm(form) : validateRegisterForm(form);
-
-  const hasValidationErrors = Object.keys(validationErrors).length > 0;
-
-  const getFieldError = (field: AuthField) => {
-    if (touched[field] && validationErrors[field]) {
-      return validationErrors[field];
-    }
-
-    if (apiError?.field === field) {
-      return apiError.message;
-    }
-
-    return null;
-  };
-
-  const clearApiErrorForField = (field: string) => {
-    if (apiError) {
-      setApiError((current) => {
-        if (!current) {
-          return current;
-        }
-
-        if (!current.field || current.field === field) {
-          return null;
-        }
-
-        return current;
-      });
-    }
-  };
-
-  const updateField = (field: AuthField, value: string) => {
-    clearApiErrorForField(field);
-
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleBlur = (field: AuthField) => {
-    setTouched((prev) => ({
-      ...prev,
-      [field]: true,
-    }));
-  };
+  const {
+    apiError,
+    form,
+    hasValidationErrors,
+    mode,
+    showPassword,
+    getFieldError,
+    handleBlur,
+    setApiError,
+    setShowPassword,
+    switchMode,
+    touchRequiredFields,
+    updateField,
+    updateOptionalField,
+  } = useLoginModalForm();
 
   const handleSubmit = async () => {
-    setTouched({
-      loginName: true,
-      password: true,
-    });
+    touchRequiredFields();
 
     if (hasValidationErrors) {
       setApiError(null);
@@ -130,13 +65,6 @@ export const LoginModal = ({ onClose }: Props) => {
       logApiError(`Auth ${mode} failed`, mappedError, "warn");
       setApiError(mappedError);
     }
-  };
-
-  const switchMode = (nextMode: "login" | "signup") => {
-    setApiError(null);
-    setTouched(INITIAL_TOUCHED);
-    setShowPassword(false);
-    setMode(nextMode);
   };
 
   const loginNameError = getFieldError("loginName");
@@ -199,13 +127,7 @@ export const LoginModal = ({ onClose }: Props) => {
                 className={`${styles.input} ${emailError ? styles.inputError : ""}`}
                 placeholder="Email"
                 value={form.email}
-                onChange={(e) => {
-                  clearApiErrorForField("email");
-                  setForm((prev) => ({
-                    ...prev,
-                    email: e.target.value,
-                  }));
-                }}
+                onChange={(e) => updateOptionalField("email", "email", e.target.value)}
               />
               {emailError && (
                 <div className={styles.errorText}>{emailError}</div>
@@ -215,13 +137,7 @@ export const LoginModal = ({ onClose }: Props) => {
                 className={styles.input}
                 placeholder="Phone"
                 value={form.phone}
-                onChange={(e) => {
-                  clearApiErrorForField("phoneNumber");
-                  setForm((prev) => ({
-                    ...prev,
-                    phone: e.target.value,
-                  }));
-                }}
+                onChange={(e) => updateOptionalField("phone", "phoneNumber", e.target.value)}
               />
             </>
           )}
