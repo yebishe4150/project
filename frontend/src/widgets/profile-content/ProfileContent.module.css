@@ -30,6 +30,24 @@
   object-fit: cover;
 }
 
+:global(html[data-theme="dark"]) .content {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(133, 62, 166, 0.24), transparent 30%),
+    linear-gradient(180deg, rgba(74, 52, 91, 0.96) 0%, #050307 26%, #140b1e 100%);
+}
+
+:global(html[data-theme="dark"]) .status {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .grid {
+  scrollbar-color: rgba(200, 87, 255, 0.58) rgba(255, 255, 255, 0.08);
+}
+
+:global(html[data-theme="dark"]) .image {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.34), 0 0 18px rgba(164, 50, 255, 0.14);
+}
+
 @media (max-width: 640px) {
   .content {
     height: calc(100dvh - 252px - 50px);

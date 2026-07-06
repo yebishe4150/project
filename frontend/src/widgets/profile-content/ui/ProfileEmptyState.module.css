@@ -428,3 +428,57 @@
     font-size: 14px;
   }
 }
+
+:global(html[data-theme="dark"]) .icon {
+  background:
+    radial-gradient(circle at 45% 42%, rgba(255, 255, 255, 0.12) 0 38%, transparent 39%),
+    var(--dark-gradient-purple);
+  box-shadow: 0 20px 38px rgba(171, 43, 255, 0.32);
+}
+
+:global(html[data-theme="dark"]) .icon svg {
+  stroke: #46e8ff;
+}
+
+:global(html[data-theme="dark"]) .title {
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .text {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .uploadForm {
+  border-color: var(--dark-border);
+  background: rgba(25, 12, 36, 0.76);
+  box-shadow: var(--dark-glow);
+}
+
+:global(html[data-theme="dark"]) .fileName {
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .formError,
+:global(html[data-theme="dark"]) .errorText {
+  color: #ff91be;
+}
+
+:global(html[data-theme="dark"]) .textarea,
+:global(html[data-theme="dark"]) .input {
+  border-color: rgba(224, 178, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .textarea::placeholder,
+:global(html[data-theme="dark"]) .input::placeholder {
+  color: var(--dark-text-soft);
+}
+
+:global(html[data-theme="dark"]) .cancelButton {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .submitButton {
+  background: var(--dark-gradient);
+}

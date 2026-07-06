@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { AuthProvider } from "./AuthProvider"
+import { ThemeProvider } from "./ThemeProvider"
 import { ToastProvider } from "./ToastProvider"
 
 function shouldRetryQuery(failureCount: number, error: unknown) {
@@ -31,10 +32,12 @@ const queryClient = new QueryClient({
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
-    <ToastProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>{children}</AuthProvider>
-      </QueryClientProvider>
-    </ToastProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+      </ToastProvider>
+    </ThemeProvider>
   )
 }

@@ -44,3 +44,11 @@
     width: 100%;
   }
 }
+
+:global(html[data-theme="dark"]) .toast {
+  border-color: rgba(78, 222, 132, 0.28);
+  border-left-color: #47f08c;
+  background: rgba(25, 12, 36, 0.98);
+  box-shadow: var(--dark-glow);
+  color: #d7ffe4;
+}

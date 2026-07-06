@@ -15,8 +15,37 @@ body {
   margin: 0;
   font-family: sans-serif;
   overflow-x: hidden;
+  background: var(--app-bg, #fbfbef);
+  color: var(--app-text, #111827);
 }
 
 button {
   cursor: pointer;
+}
+
+:root {
+  color-scheme: light;
+  --dark-page: #08050d;
+  --dark-page-soft: #12091d;
+  --dark-panel: rgba(28, 15, 42, 0.94);
+  --dark-panel-strong: rgba(18, 10, 28, 0.98);
+  --dark-surface: rgba(40, 24, 55, 0.92);
+  --dark-surface-muted: rgba(73, 55, 91, 0.72);
+  --dark-border: rgba(174, 92, 255, 0.28);
+  --dark-border-soft: rgba(214, 177, 255, 0.16);
+  --dark-text: #fff8ff;
+  --dark-text-muted: #c7addb;
+  --dark-text-soft: #a894ba;
+  --dark-accent: #c02bff;
+  --dark-accent-pink: #ff44bb;
+  --dark-accent-cyan: #21d7ff;
+  --dark-gradient: linear-gradient(90deg, #7a2cff 0%, #ff2fad 58%, #21d7ff 100%);
+  --dark-gradient-purple: linear-gradient(135deg, #5f168c 0%, #9d1fd7 52%, #ff45af 100%);
+  --dark-glow: 0 0 22px rgba(184, 59, 255, 0.42), 0 18px 46px rgba(8, 5, 13, 0.46);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: var(--dark-page);
+  --app-text: var(--dark-text);
 }

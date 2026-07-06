@@ -130,3 +130,68 @@
 .switch span:hover {
   text-decoration: underline;
 }
+
+:global(html[data-theme="dark"]) .overlay {
+  background: rgba(5, 3, 7, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+:global(html[data-theme="dark"]) .modal {
+  border: 1px solid var(--dark-border);
+  background:
+    radial-gradient(circle at 70% 0%, rgba(255, 68, 187, 0.14), transparent 32%),
+    rgba(25, 12, 36, 0.98);
+  box-shadow: var(--dark-glow);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .close {
+  color: #e9c8ff;
+}
+
+:global(html[data-theme="dark"]) .input {
+  border-color: rgba(224, 178, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .input::placeholder {
+  color: var(--dark-text-soft);
+}
+
+:global(html[data-theme="dark"]) .inputError {
+  border-color: rgba(255, 68, 187, 0.58);
+  background: rgba(255, 68, 187, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 68, 187, 0.15);
+}
+
+:global(html[data-theme="dark"]) .passwordToggle {
+  color: #d8b8ed;
+}
+
+:global(html[data-theme="dark"]) .errorText {
+  color: #ff91be;
+}
+
+:global(html[data-theme="dark"]) .generalError {
+  background: rgba(255, 68, 187, 0.1);
+  color: #ffb6d3;
+}
+
+:global(html[data-theme="dark"]) .button {
+  background: var(--dark-gradient);
+  box-shadow: 0 14px 28px rgba(255, 47, 173, 0.24);
+}
+
+:global(html[data-theme="dark"]) .button:disabled {
+  background: rgba(107, 114, 128, 0.58);
+  color: #c3b0d0;
+}
+
+:global(html[data-theme="dark"]) .switch {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .switch span {
+  color: #66ddff;
+}

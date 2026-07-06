@@ -19,6 +19,19 @@
   min-height: 100vh;
 }
 
+:global(html[data-theme="dark"]) .wrapper {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(126, 44, 189, 0.2), transparent 32%),
+    linear-gradient(180deg, var(--dark-page) 0%, var(--dark-page-soft) 100%);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .profileFrame {
+  background:
+    radial-gradient(circle at 66% 12%, rgba(197, 43, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, #050307 0%, #160a20 100%);
+}
+
 @media (min-width: 1024px) {
   .profileFrame {
     flex: 1;

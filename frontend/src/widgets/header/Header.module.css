@@ -162,3 +162,49 @@
     opacity: 0.7;
   }
 }
+
+:global(html[data-theme="dark"]) .header {
+  border-bottom-color: rgba(174, 92, 255, 0.28);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(126, 44, 189, 0.32), transparent 34%),
+    linear-gradient(180deg, rgba(18, 8, 28, 0.96) 0%, rgba(6, 4, 10, 0.94) 100%);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+}
+
+:global(html[data-theme="dark"]) .logo {
+  color: var(--dark-text);
+  text-shadow: 0 0 18px rgba(255, 68, 187, 0.28);
+}
+
+:global(html[data-theme="dark"]) .navButton {
+  color: #d8b8ed;
+}
+
+:global(html[data-theme="dark"]) .navButton:hover:not(:disabled),
+:global(html[data-theme="dark"]) .navButton:focus-visible:not(:disabled) {
+  background: var(--dark-gradient);
+  box-shadow: var(--dark-glow);
+  color: #ffffff;
+}
+
+:global(html[data-theme="dark"]) .searchWrapOpen {
+  background: rgba(119, 48, 164, 0.24);
+}
+
+:global(html[data-theme="dark"]) .searchInput {
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .searchInput::placeholder {
+  color: var(--dark-text-soft);
+}
+
+:global(html[data-theme="dark"]) .authLoading {
+  background: rgba(119, 48, 164, 0.22);
+  color: #e5c9f7;
+}
+
+:global(html[data-theme="dark"]) .actions>button:not(.navButton) {
+  background: var(--dark-gradient);
+  box-shadow: 0 12px 26px rgba(255, 47, 173, 0.28);
+}

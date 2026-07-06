@@ -184,3 +184,45 @@
     flex-basis: 100%;
   }
 }
+
+:global(html[data-theme="dark"]) .searchForm input {
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .searchForm input::placeholder {
+  color: var(--dark-text-soft);
+}
+
+:global(html[data-theme="dark"]) .gallery .searchForm {
+  border-color: var(--dark-border);
+  background: rgba(40, 24, 55, 0.86);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  color: #dec3f3;
+}
+
+:global(html[data-theme="dark"]) .sideNav .searchForm {
+  border-bottom-color: rgba(224, 178, 255, 0.22);
+}
+
+:global(html[data-theme="dark"]) .suggestions {
+  border-color: var(--dark-border);
+  background: rgba(25, 12, 36, 0.98);
+  box-shadow: var(--dark-glow);
+}
+
+:global(html[data-theme="dark"]) .suggestionItem {
+  border-bottom-color: rgba(224, 178, 255, 0.14);
+  background: rgba(25, 12, 36, 0.98);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .suggestionItem:hover,
+:global(html[data-theme="dark"]) .suggestionItem:focus-visible {
+  background: rgba(119, 48, 164, 0.26);
+}
+
+:global(html[data-theme="dark"]) .suggestionItem svg,
+:global(html[data-theme="dark"]) .suggestionItem small,
+:global(html[data-theme="dark"]) .suggestionStatus {
+  color: var(--dark-text-muted);
+}

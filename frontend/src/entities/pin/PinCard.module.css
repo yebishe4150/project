@@ -15,3 +15,7 @@
 .image:hover {
   opacity: 0.85;
 }
+
+:global(html[data-theme="dark"]) .image {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32), 0 0 16px rgba(164, 50, 255, 0.12);
+}

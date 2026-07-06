@@ -64,3 +64,35 @@
   font-weight: 700;
   text-align: center;
 }
+
+:global(html[data-theme="dark"]) .page {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(142, 42, 213, 0.28), transparent 32%),
+    linear-gradient(180deg, #050307 0%, #140b1e 100%);
+}
+
+:global(html[data-theme="dark"]) .hero {
+  background:
+    radial-gradient(circle at 52% 26%, rgba(171, 43, 255, 0.3), transparent 24%),
+    linear-gradient(180deg, #050307 0%, #110719 48%, rgba(77, 50, 96, 0.74) 100%);
+  border-bottom: 1px solid rgba(174, 92, 255, 0.24);
+}
+
+:global(html[data-theme="dark"]) .badge {
+  background: rgba(95, 30, 137, 0.72);
+  color: #f0cfff;
+  box-shadow: var(--dark-glow);
+}
+
+:global(html[data-theme="dark"]) .title {
+  color: var(--dark-text);
+  text-shadow: 0 0 22px rgba(255, 68, 187, 0.22);
+}
+
+:global(html[data-theme="dark"]) .text {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .error {
+  color: #ff91be;
+}

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, CircleUserRound, Ellipsis, Home, LogOut, Search, Settings, Share2 } from "lucide-react"
+import { ArrowLeft, CircleUserRound, Ellipsis, Home, Image, LogOut, Search, Settings, Share2 } from "lucide-react"
 import { useAuth } from "@/app/providers/useAuth"
 import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
+import { SettingsModal } from "./SettingsModal"
 import styles from "./ProfileHeader.module.css"
 
 type HeaderUser = {
@@ -51,6 +52,7 @@ export const ProfileHeader = ({
   const [isEditingNickname, setIsEditingNickname] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isLinkCopied, setIsLinkCopied] = useState(false)
   const [isShareTooltipHidden, setIsShareTooltipHidden] = useState(false)
   const [nickname, setNickname] = useState(displayNickname)
@@ -179,181 +181,203 @@ export const ProfileHeader = ({
   }
 
   return (
-    <div className={styles.header}>
-      <div className={styles.navWrap} ref={actionsRef}>
-        <button
-          className={styles.actionsButton}
-          type="button"
-          aria-label="Actions"
-          aria-expanded={isActionsOpen}
-          aria-haspopup="menu"
-          onClick={(event) => {
-            setIsActionsOpen((current) => !current)
-            event.currentTarget.blur()
-          }}
-        >
-          <Ellipsis aria-hidden="true" />
-        </button>
-        <span className={styles.actionTooltip}>Actions</span>
+    <>
+      <div className={styles.header}>
+        <div className={styles.navWrap} ref={actionsRef}>
+          <button
+            className={styles.actionsButton}
+            type="button"
+            aria-label="Actions"
+            aria-expanded={isActionsOpen}
+            aria-haspopup="menu"
+            onClick={(event) => {
+              setIsActionsOpen((current) => !current)
+              event.currentTarget.blur()
+            }}
+          >
+            <Ellipsis aria-hidden="true" />
+          </button>
+          <span className={styles.actionTooltip}>Actions</span>
 
-        {isActionsOpen && (
-          <div className={styles.actionsMenu} role="menu" aria-label="Profile actions">
-            <div className={styles.navItemWrap}>
+          {isActionsOpen && (
+            <div className={styles.actionsMenu} role="menu" aria-label="Profile actions">
+              <div className={styles.navItemWrap}>
+                <button
+                  className={styles.navButton}
+                  type="button"
+                  role="menuitem"
+                  aria-label="Back to feed"
+                  onClick={() => navigate("/")}
+                >
+                  <Home aria-hidden="true" />
+                </button>
+                <span className={styles.actionTooltip}>Back to feed</span>
+              </div>
               <button
                 className={styles.navButton}
                 type="button"
                 role="menuitem"
-                aria-label="Back to feed"
-                onClick={() => navigate("/")}
+                aria-label="Open gallery"
+                onClick={() => navigate("/gallery")}
               >
-                <Home aria-hidden="true" />
+                <Image aria-hidden="true" />
               </button>
-              <span className={styles.actionTooltip}>Back to feed</span>
-            </div>
-            <button
-              className={styles.navButton}
-              type="button"
-              role="menuitem"
-              aria-label="Search is coming soon"
-              title="Search is coming soon"
-              disabled
-            >
-              <Search aria-hidden="true" />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {isPrivate && (
-        <div className={styles.menuWrap} ref={menuRef}>
-          {isSecondaryView && onBackToProfile && (
-            <button
-              className={styles.backButton}
-              type="button"
-              aria-label="Back to profile"
-              onClick={onBackToProfile}
-            >
-              <ArrowLeft aria-hidden="true" />
-            </button>
-          )}
-
-          <div className={styles.shareWrap}>
-            <button
-              className={styles.shareButton}
-              type="button"
-              aria-label="Share profile link"
-              onPointerEnter={handleSharePointerEnter}
-              onFocus={handleSharePointerEnter}
-              onClick={handleShareProfile}
-              disabled={!displayNickname}
-            >
-              <Share2 aria-hidden="true" />
-            </button>
-            <span
-              className={`${styles.shareTooltip} ${isLinkCopied ? styles.shareTooltipVisible : ""} ${isShareTooltipHidden ? styles.shareTooltipHidden : ""
-                }`}
-              role="status"
-            >
-              {isLinkCopied ? "Link copied" : "Share profile link"}
-            </span>
-          </div>
-
-          <button
-            className={styles.menu}
-            type="button"
-            aria-label="Open profile menu"
-            aria-expanded={isMenuOpen}
-            aria-haspopup="menu"
-            onClick={() => setIsMenuOpen((current) => !current)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-
-          {isMenuOpen && (
-            <div className={styles.dropdown} role="menu" aria-label="Profile menu">
               <button
-                className={styles.menuItem}
+                className={styles.navButton}
                 type="button"
                 role="menuitem"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  onOpenContactInfo?.()
-                }}
+                aria-label="Search is coming soon"
+                title="Search is coming soon"
+                disabled
               >
-                <span className={styles.menuItemIcon}>
-                  <CircleUserRound aria-hidden="true" />
-                </span>
-                <span className={styles.menuLabel}>Contact info</span>
+                <Search aria-hidden="true" />
               </button>
-              <button className={styles.menuItem} type="button" role="menuitem">
-                <span className={styles.menuItemIcon}>
-                  <Settings aria-hidden="true" />
-                </span>
-                <span className={styles.menuLabel}>Settings</span>
-              </button>
-
-              <div className={styles.menuDivider} />
-
-              <div className={styles.actionRow}>
-                <button className={styles.secondaryAction} type="button" role="menuitem" onClick={handleLogout}>
-                  <span className={styles.actionIcon}>
-                    <LogOut aria-hidden="true" />
-                  </span>
-                  Log out
-                </button>
-                <button className={styles.dangerAction} type="button" role="menuitem">
-                  Delete account
-                </button>
-              </div>
             </div>
           )}
         </div>
-      )}
-      <div className={styles.avatar}>{avatarLetter}</div>
 
-      {isPrivate && isEditingNickname ? (
-        <div className={styles.nicknameEdit}>
-          <input
-            autoFocus
-            className={styles.nicknameInput}
-            value={nickname}
-            placeholder="Add nickname"
-            onBlur={handleSaveNickname}
-            onChange={(event) => {
-              setNicknameError(null)
-              setNickname(event.target.value)
+        {isPrivate && (
+          <div className={styles.menuWrap} ref={menuRef}>
+            {isSecondaryView && onBackToProfile && (
+              <button
+                className={styles.backButton}
+                type="button"
+                aria-label="Back to profile"
+                onClick={onBackToProfile}
+              >
+                <ArrowLeft aria-hidden="true" />
+              </button>
+            )}
+
+            <div className={styles.shareWrap}>
+              <button
+                className={styles.shareButton}
+                type="button"
+                aria-label="Share profile link"
+                onPointerEnter={handleSharePointerEnter}
+                onFocus={handleSharePointerEnter}
+                onClick={handleShareProfile}
+                disabled={!displayNickname}
+              >
+                <Share2 aria-hidden="true" />
+              </button>
+              <span
+                className={`${styles.shareTooltip} ${isLinkCopied ? styles.shareTooltipVisible : ""} ${isShareTooltipHidden ? styles.shareTooltipHidden : ""
+                  }`}
+                role="status"
+              >
+                {isLinkCopied ? "Link copied" : "Share profile link"}
+              </span>
+            </div>
+
+            <button
+              className={styles.menu}
+              type="button"
+              aria-label="Open profile menu"
+              aria-expanded={isMenuOpen}
+              aria-haspopup="menu"
+              onClick={() => setIsMenuOpen((current) => !current)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+
+            {isMenuOpen && (
+              <div className={styles.dropdown} role="menu" aria-label="Profile menu">
+                <button
+                  className={styles.menuItem}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false)
+                    onOpenContactInfo?.()
+                  }}
+                >
+                  <span className={styles.menuItemIcon}>
+                    <CircleUserRound aria-hidden="true" />
+                  </span>
+                  <span className={styles.menuLabel}>Contact info</span>
+                </button>
+                <button
+                  className={styles.menuItem}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false)
+                    setIsSettingsOpen(true)
+                  }}
+                >
+                  <span className={styles.menuItemIcon}>
+                    <Settings aria-hidden="true" />
+                  </span>
+                  <span className={styles.menuLabel}>Settings</span>
+                </button>
+
+                <div className={styles.menuDivider} />
+
+                <div className={styles.actionRow}>
+                  <button className={styles.secondaryAction} type="button" role="menuitem" onClick={handleLogout}>
+                    <span className={styles.actionIcon}>
+                      <LogOut aria-hidden="true" />
+                    </span>
+                    Log out
+                  </button>
+                  <button className={styles.dangerAction} type="button" role="menuitem">
+                    Delete account
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        <div className={styles.avatar}>{avatarLetter}</div>
+
+        {isPrivate && isEditingNickname ? (
+          <div className={styles.nicknameEdit}>
+            <input
+              autoFocus
+              className={styles.nicknameInput}
+              value={nickname}
+              placeholder="Add nickname"
+              onBlur={handleSaveNickname}
+              onChange={(event) => {
+                setNicknameError(null)
+                setNickname(event.target.value)
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.currentTarget.blur()
+                }
+
+                if (event.key === "Escape") {
+                  handleCancelNickname()
+                }
+              }}
+            />
+            {nicknameError && (
+              <span className={styles.nicknameError}>{nicknameError}</span>
+            )}
+          </div>
+        ) : isPrivate ? (
+          <button
+            className={styles.username}
+            type="button"
+            onClick={() => {
+              setNickname(displayNickname)
+              setIsEditingNickname(true)
             }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.currentTarget.blur()
-              }
+          >
+            {displayNickname || "Add nickname"}
+          </button>
+        ) : (
+          <div className={`${styles.username} ${styles.publicUsername}`}>{displayNickname || "Unknown user"}</div>
+        )}
 
-              if (event.key === "Escape") {
-                handleCancelNickname()
-              }
-            }}
-          />
-          {nicknameError && (
-            <span className={styles.nicknameError}>{nicknameError}</span>
-          )}
-        </div>
-      ) : isPrivate ? (
-        <button
-          className={styles.username}
-          type="button"
-          onClick={() => {
-            setNickname(displayNickname)
-            setIsEditingNickname(true)
-          }}
-        >
-          {displayNickname || "Add nickname"}
-        </button>
-      ) : (
-        <div className={`${styles.username} ${styles.publicUsername}`}>{displayNickname || "Unknown user"}</div>
+      </div>
+      {isSettingsOpen && (
+        <SettingsModal onClose={() => setIsSettingsOpen(false)} />
       )}
-
-    </div>
+    </>
   )
 }
