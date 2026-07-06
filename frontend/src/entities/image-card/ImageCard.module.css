@@ -313,3 +313,74 @@
     max-height: calc(100dvh - 210px);
   }
 }
+
+:global(html[data-theme="dark"]) .card {
+  border-color: var(--dark-border-soft);
+  background: rgba(28, 15, 42, 0.92);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28), 0 0 18px rgba(164, 50, 255, 0.12);
+}
+
+:global(html[data-theme="dark"]) .image {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global(html[data-theme="dark"]) .caption,
+:global(html[data-theme="dark"]) .previewFrame,
+:global(html[data-theme="dark"]) .previewMedia,
+:global(html[data-theme="dark"]) .previewImage,
+:global(html[data-theme="dark"]) .previewDetails {
+  background: rgba(18, 10, 28, 0.98);
+}
+
+:global(html[data-theme="dark"]) .actionButton,
+:global(html[data-theme="dark"]) .iconButton {
+  color: #d6b7ec;
+}
+
+:global(html[data-theme="dark"]) .actionButton:hover,
+:global(html[data-theme="dark"]) .iconButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+:global(html[data-theme="dark"]) .actionButton svg {
+  fill: rgba(18, 10, 28, 0.98);
+}
+
+:global(html[data-theme="dark"]) .liked {
+  color: #ff5aa9;
+}
+
+:global(html[data-theme="dark"]) .description,
+:global(html[data-theme="dark"]) .previewSection .description {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .previewOverlay {
+  background: rgba(5, 3, 7, 0.86);
+  backdrop-filter: blur(8px);
+}
+
+:global(html[data-theme="dark"]) .previewFrame {
+  border-color: var(--dark-border);
+  box-shadow: var(--dark-glow);
+}
+
+:global(html[data-theme="dark"]) .previewSection h2 {
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .previewDetails .actions {
+  border-bottom-color: rgba(224, 178, 255, 0.18);
+}
+
+:global(html[data-theme="dark"]) .tag {
+  background: rgba(119, 48, 164, 0.24);
+  color: #e5c9f7;
+}
+
+:global(html[data-theme="dark"]) .closeButton {
+  border-color: rgba(224, 178, 255, 0.24);
+  background: rgba(95, 30, 137, 0.78);
+  box-shadow: 0 12px 28px rgba(152, 56, 255, 0.28);
+}

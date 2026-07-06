@@ -6,11 +6,88 @@
 }
 
 .header {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 28px;
   margin-bottom: 34px;
+}
+
+.mobileNavWrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  display: none;
+}
+
+.actionsButton {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: #5f6673;
+  box-shadow: 0 12px 28px rgba(37, 42, 54, 0.12);
+}
+
+.actionsButton svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.5;
+}
+
+.actionsMenu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(220px, calc(100vw - 36px));
+  padding: 10px;
+  border: 1px solid rgba(216, 219, 226, 0.9);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 56px rgba(37, 42, 54, 0.16);
+  backdrop-filter: blur(14px);
+}
+
+.menuItem {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: #2f3a4f;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.menuItem svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  stroke-width: 2.25;
+}
+
+.menuItem:hover:not(:disabled),
+.menuItem:focus-visible:not(:disabled) {
+  outline: none;
+  background: linear-gradient(90deg, #626dff 0%, #f72e96 100%);
+  color: #ffffff;
+}
+
+.menuItem:disabled {
+  cursor: not-allowed;
+  opacity: 0.54;
 }
 
 .title {
@@ -294,13 +371,14 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .page {
     padding-top: 30px;
   }
 
   .header {
     display: block;
+    padding-top: 56px;
   }
 
   .toolbar {
@@ -320,16 +398,20 @@
   .title {
     font-size: 34px;
   }
+
+  .mobileNavWrap {
+    display: block;
+  }
 }
 
 @media (max-width: 560px) {
   .toolbar {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .sortControl {
-    width: 100%;
-    flex-basis: 100%;
+    flex: 0 0 132px;
+    min-width: 0;
   }
 
   .collections {
@@ -345,4 +427,87 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
+}
+
+:global(html[data-theme="dark"]) .page {
+  background:
+    radial-gradient(circle at 28% 0%, rgba(142, 42, 213, 0.24), transparent 30%),
+    linear-gradient(180deg, #050307 0%, #140b1e 100%);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .title {
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .subtitle {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .actionsButton {
+  background: rgba(95, 30, 137, 0.78);
+  color: #e9c8ff;
+  box-shadow: 0 12px 30px rgba(152, 56, 255, 0.36);
+}
+
+:global(html[data-theme="dark"]) .actionsMenu {
+  border-color: var(--dark-border);
+  background: rgba(26, 12, 38, 0.96);
+  box-shadow: var(--dark-glow);
+}
+
+:global(html[data-theme="dark"]) .menuItem {
+  color: #dfc5f3;
+}
+
+:global(html[data-theme="dark"]) .menuItem:hover:not(:disabled),
+:global(html[data-theme="dark"]) .menuItem:focus-visible:not(:disabled) {
+  background: var(--dark-gradient);
+  box-shadow: 0 12px 24px rgba(255, 47, 173, 0.22);
+  color: #ffffff;
+}
+
+:global(html[data-theme="dark"]) .sortControl {
+  border-color: var(--dark-border);
+  background: rgba(40, 24, 55, 0.86);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  color: #dec3f3;
+}
+
+:global(html[data-theme="dark"]) .collectionCard {
+  border-color: var(--dark-border-soft);
+  background: rgba(28, 15, 42, 0.92);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+}
+
+:global(html[data-theme="dark"]) .collectionCardExpanded {
+  border-color: rgba(255, 68, 187, 0.34);
+  box-shadow: var(--dark-glow);
+}
+
+:global(html[data-theme="dark"]) .collectionCardExpanded .collectionButton {
+  border-bottom-color: rgba(224, 178, 255, 0.16);
+}
+
+:global(html[data-theme="dark"]) .previewGrid,
+:global(html[data-theme="dark"]) .galleryImage {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global(html[data-theme="dark"]) .previewEmpty {
+  background: var(--dark-gradient-purple);
+  color: #eecbff;
+}
+
+:global(html[data-theme="dark"]) .cardMeta h2 {
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .cardMeta p,
+:global(html[data-theme="dark"]) .cardChevron,
+:global(html[data-theme="dark"]) .state,
+:global(html[data-theme="dark"]) .empty,
+:global(html[data-theme="dark"]) .emptyPanel,
+:global(html[data-theme="dark"]) .notice {
+  color: var(--dark-text-muted);
 }

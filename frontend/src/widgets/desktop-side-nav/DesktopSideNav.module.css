@@ -105,3 +105,34 @@
     display: block;
   }
 }
+
+:global(html[data-theme="dark"]) .sideNav {
+  background:
+    linear-gradient(180deg, rgba(42, 12, 62, 0.94) 0%, rgba(10, 6, 15, 0.98) 42%, rgba(31, 15, 43, 0.98) 100%);
+  border-right-color: rgba(174, 92, 255, 0.32);
+  box-shadow: inset -1px 0 0 rgba(255, 58, 188, 0.1);
+}
+
+:global(html[data-theme="dark"]) .navItem {
+  color: #d9b9ef;
+}
+
+:global(html[data-theme="dark"]) .navItem:hover:not(:disabled),
+:global(html[data-theme="dark"]) .navItem:focus-visible:not(:disabled) {
+  background: var(--dark-gradient);
+  box-shadow: 0 14px 30px rgba(185, 54, 255, 0.32), 0 0 24px rgba(33, 215, 255, 0.16);
+  color: #ffffff;
+}
+
+:global(html[data-theme="dark"]) .searchWrapOpen {
+  background: rgba(119, 48, 164, 0.18);
+}
+
+:global(html[data-theme="dark"]) .searchInput {
+  border-bottom-color: rgba(224, 178, 255, 0.22);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .searchInput::placeholder {
+  color: var(--dark-text-soft);
+}

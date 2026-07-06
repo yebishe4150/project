@@ -69,6 +69,31 @@
   outline-offset: 4px;
 }
 
+:global(html[data-theme="dark"]) .page,
+:global(html[data-theme="dark"]) .loading {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(142, 42, 213, 0.28), transparent 32%),
+    linear-gradient(180deg, #050307 0%, #180d22 100%);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .loading {
+  color: var(--dark-text-muted);
+}
+
+:global(html[data-theme="dark"]) .profileError {
+  background: var(--dark-page);
+}
+
+:global(html[data-theme="dark"]) .profileErrorButton {
+  background: var(--dark-gradient);
+  box-shadow: var(--dark-glow);
+}
+
+:global(html[data-theme="dark"]) .profileErrorButton:hover {
+  background: linear-gradient(90deg, #8b37ff 0%, #ff49c2 100%);
+}
+
 @media (max-width: 640px) {
   .profileError {
     padding: 16px;

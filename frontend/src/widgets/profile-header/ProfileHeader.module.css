@@ -593,3 +593,87 @@
   opacity: 0;
   transform: translate(-50%, -4px);
 }
+
+:global(html[data-theme="dark"]) .header {
+  background:
+    radial-gradient(circle at 50% 34%, rgba(171, 43, 255, 0.24), transparent 20%),
+    linear-gradient(180deg, #050307 0%, #06040a 42%, rgba(77, 50, 96, 0.96) 100%);
+  border-bottom: 1px solid rgba(174, 92, 255, 0.28);
+  box-shadow: inset 0 -90px 90px rgba(126, 80, 151, 0.5);
+}
+
+:global(html[data-theme="dark"]) .backButton,
+:global(html[data-theme="dark"]) .actionsButton,
+:global(html[data-theme="dark"]) .navButton,
+:global(html[data-theme="dark"]) .shareButton,
+:global(html[data-theme="dark"]) .menu {
+  background: rgba(95, 30, 137, 0.78);
+  color: #e9c8ff;
+  box-shadow: 0 12px 30px rgba(152, 56, 255, 0.36);
+}
+
+:global(html[data-theme="dark"]) .menu span {
+  background: #e9c8ff;
+}
+
+:global(html[data-theme="dark"]) .actionTooltip,
+:global(html[data-theme="dark"]) .shareTooltip,
+:global(html[data-theme="dark"]) .dropdown {
+  border-color: var(--dark-border);
+  background: rgba(26, 12, 38, 0.96);
+  box-shadow: var(--dark-glow);
+  color: var(--dark-text);
+}
+
+:global(html[data-theme="dark"]) .menuItem {
+  color: #dfc5f3;
+}
+
+:global(html[data-theme="dark"]) .menuItem:hover {
+  color: #ffffff;
+}
+
+:global(html[data-theme="dark"]) .menuItemIcon {
+  color: #cfa9ea;
+}
+
+:global(html[data-theme="dark"]) .menuDivider {
+  background: linear-gradient(90deg, rgba(122, 44, 255, 0.18), rgba(255, 68, 187, 0.42), rgba(33, 215, 255, 0.2));
+}
+
+:global(html[data-theme="dark"]) .secondaryAction {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+}
+
+:global(html[data-theme="dark"]) .dangerAction {
+  background: linear-gradient(135deg, #ff4fc3 0%, #8a2bff 100%);
+  box-shadow: 0 12px 28px rgba(255, 68, 187, 0.3);
+}
+
+:global(html[data-theme="dark"]) .avatar {
+  background:
+    var(--dark-gradient-purple) padding-box,
+    linear-gradient(135deg, #c36dff, #ff48b4) border-box;
+  box-shadow: 0 0 28px rgba(189, 72, 255, 0.7), 0 18px 34px rgba(0, 0, 0, 0.44);
+  color: #f3d7ff;
+}
+
+:global(html[data-theme="dark"]) .username {
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+
+:global(html[data-theme="dark"]) .fullname {
+  color: #e5c9f7;
+}
+
+:global(html[data-theme="dark"]) .nicknameInput {
+  border-bottom-color: rgba(229, 201, 247, 0.42);
+  color: #ffffff;
+}
+
+:global(html[data-theme="dark"]) .nicknameError {
+  color: #ff91be;
+}

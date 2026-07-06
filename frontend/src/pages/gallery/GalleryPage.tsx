@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { ChevronDown, Filter, ImageOff, Info } from "lucide-react"
-import { useSearchParams } from "react-router-dom"
+import { ChevronDown, Ellipsis, Filter, Home, ImageOff, Info, UserRound } from "lucide-react"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { useAuth } from "@/app/providers/useAuth"
 import { TagSearchBox } from "@/features/tag-search/TagSearchBox"
 import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
+import { fetchCurrentUser } from "@/pages/profile/profile.api"
 import { CollectionCard } from "./CollectionCard"
 import { fetchGalleryTags, type GalleryTag } from "./gallery.api"
 import { GALLERY_IMAGES_STALE_TIME, UNTAGGED_COLLECTION_ID } from "./galleryQuery"
@@ -15,8 +17,12 @@ type SortMode = "name" | "count"
 type Collection = GalleryTag
 
 const EMPTY_GALLERY_TAGS: GalleryTag[] = []
+const CURRENT_USER_QUERY_KEY = ["current-user"]
+const CURRENT_PROFILE_FALLBACK_SLUG = "current"
 
 export const GalleryPage = () => {
+  const { isAuth } = useAuth()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedSearch = searchParams.get("search")?.trim() ?? ""
@@ -24,8 +30,16 @@ export const GalleryPage = () => {
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(requestedTag || requestedSearch)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>("name")
+  const [isActionsOpen, setIsActionsOpen] = useState(false)
   const [suppressedAutoExpandKey, setSuppressedAutoExpandKey] = useState<string | null>(null)
   const [collectionImageCounts, setCollectionImageCounts] = useState<Record<string, number>>({})
+  const actionsRef = useRef<HTMLDivElement | null>(null)
+
+  const { data: currentUser, error: currentUserError } = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: fetchCurrentUser,
+    enabled: isAuth === true,
+  })
 
   const tagsQuery = useQuery({
     queryKey: ["gallery", "tags"],
@@ -132,6 +146,38 @@ export const GalleryPage = () => {
     }
   }, [queryError])
 
+  useEffect(() => {
+    if (currentUserError) {
+      logApiError("Could not load current user for gallery navigation", currentUserError)
+    }
+  }, [currentUserError])
+
+  useEffect(() => {
+    if (!isActionsOpen) {
+      return
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!actionsRef.current?.contains(event.target as Node)) {
+        setIsActionsOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsActionsOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+    document.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isActionsOpen])
+
   const handleDebouncedSearchChange = useCallback((nextValue: string) => {
     setDebouncedSearchValue(nextValue)
     setSuppressedAutoExpandKey(null)
@@ -201,9 +247,62 @@ export const GalleryPage = () => {
     })
   }
 
+  const openFeed = () => {
+    setIsActionsOpen(false)
+    navigate("/")
+  }
+
+  const openProfile = () => {
+    setIsActionsOpen(false)
+    const profileSlug = currentUser?.nickname || currentUser?.loginName || CURRENT_PROFILE_FALLBACK_SLUG
+
+    navigate(`/profile/${encodeURIComponent(profileSlug)}/me`)
+  }
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
+        <div className={styles.mobileNavWrap} ref={actionsRef}>
+          <button
+            className={styles.actionsButton}
+            type="button"
+            aria-label="Open gallery navigation"
+            aria-expanded={isActionsOpen}
+            aria-haspopup="menu"
+            onClick={(event) => {
+              setIsActionsOpen((current) => !current)
+              event.currentTarget.blur()
+            }}
+          >
+            <Ellipsis aria-hidden="true" />
+          </button>
+
+          {isActionsOpen && (
+            <div className={styles.actionsMenu} role="menu" aria-label="Gallery navigation">
+              <button
+                className={styles.menuItem}
+                type="button"
+                role="menuitem"
+                onClick={openFeed}
+              >
+                <Home aria-hidden="true" />
+                <span>Feed</span>
+              </button>
+
+              <button
+                className={styles.menuItem}
+                type="button"
+                role="menuitem"
+                disabled={isAuth !== true}
+                onClick={openProfile}
+              >
+                <UserRound aria-hidden="true" />
+                <span>Profile</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         <div>
           <h1 className={styles.title}>Collections</h1>
           <p className={styles.subtitle}>Photos are grouped automatically by tags</p>

@@ -131,3 +131,21 @@
     width: 64px;
   }
 }
+
+:global(html[data-theme="dark"]) .tabs {
+  border-bottom-color: rgba(174, 92, 255, 0.28);
+  background: rgba(79, 55, 98, 0.88);
+}
+
+:global(html[data-theme="dark"]) .tabButton {
+  color: #a99ab6;
+}
+
+:global(html[data-theme="dark"]) .active {
+  color: #cf76ff !important;
+}
+
+:global(html[data-theme="dark"]) .active::after {
+  background: var(--dark-gradient);
+  box-shadow: 0 0 14px rgba(255, 47, 173, 0.5);
+}
