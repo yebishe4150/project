@@ -1,0 +1,38 @@
+{
+  "brand": {
+    "name": "PinPet",
+    "copyright": "© 2026 PinPet"
+  },
+  "navigation": {
+    "feed": "Лента",
+    "search": "Поиск",
+    "profile": "Профиль",
+    "gallery": "Галерея",
+    "back": "Назад"
+  },
+  "actions": {
+    "login": "Войти",
+    "logout": "Выйти",
+    "signup": "Зарегистрироваться",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "sort": "Сортировать"
+  },
+  "status": {
+    "loading": "Загрузка...",
+    "checkingSession": "Проверяем сессию",
+    "checkingAuthorization": "Проверка авторизации"
+  },
+  "search": {
+    "placeholder": "Поиск",
+    "searchByTag": "Поиск по тегу",
+    "suggestionsLabel": "Подсказки поиска по тегам",
+    "searching": "Поиск...",
+    "searchFor": "Искать «{{term}}»",
+    "noMatchingTags": "Подходящие теги не найдены"
+  },
+  "accessibility": {
+    "desktopNavigation": "Навигация для компьютера"
+  }
+}

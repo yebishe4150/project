@@ -3,6 +3,7 @@ import { useToast } from "@/app/providers/useToast"
 import { setImageLike } from "@/features/image-actions/api/imageLikes"
 import type { ImageCardData } from "./ImageCard"
 import { toggleLikeState, type LikeState } from "./imageCard.utils"
+import { useTranslation } from "react-i18next"
 
 type UseImageLikeOptions = {
   image: ImageCardData
@@ -10,6 +11,7 @@ type UseImageLikeOptions = {
 }
 
 export function useImageLike({ image, onLikeChange }: UseImageLikeOptions) {
+  const { t } = useTranslation("notifications")
   const { showToast } = useToast()
   const [likeState, setLikeState] = useState<LikeState>({
     liked: image.liked,
@@ -43,8 +45,8 @@ export function useImageLike({ image, onLikeChange }: UseImageLikeOptions) {
     } catch {
       setLikeState(previousState)
       showToast({
-        title: "Like was not saved",
-        message: "Please try again in a moment.",
+        title: t("like.saveFailed.title"),
+        message: t("like.saveFailed.message"),
       })
     } finally {
       isLikePending.current = false

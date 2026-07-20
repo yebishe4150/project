@@ -16,6 +16,7 @@ import { validatePasswordRules } from "@/features/auth/model/validation"
 import { logApiError, mapChangePasswordError, mapProfileError } from "@/shared/api/errors/errorMapper"
 import type { ApiError } from "@/shared/api/errors/errorTypes"
 import styles from "./ProfileContactInfo.module.css"
+import { useTranslation } from "react-i18next"
 
 export type ContactInfoValues = {
   email: string
@@ -39,8 +40,6 @@ type Props = {
 
 type Field = {
   key: keyof ContactInfoValues
-  label: string
-  placeholder: string
   icon: ReactNode
   type?: "text" | "email" | "tel" | "password"
   disabled?: boolean
@@ -49,81 +48,88 @@ type Field = {
 const fields: Field[] = [
   {
     key: "email",
-    label: "Email",
-    placeholder: "your.email@example.com",
     type: "email",
     icon: <Mail aria-hidden="true" />,
   },
   {
     key: "phoneNumber",
-    label: "Phone Number",
-    placeholder: "+1 (555) 000-0000",
     type: "tel",
     icon: <Phone aria-hidden="true" />,
   },
   {
     key: "firstName",
-    label: "First Name",
-    placeholder: "John",
     icon: <CircleUserRound />,
   },
   {
     key: "secondName",
-    label: "Last Name",
-    placeholder: "Doe",
     icon: <CircleUserRound />,
   },
   {
     key: "login",
-    label: "Login",
-    placeholder: "username",
     icon: <CircleUserRound aria-hidden="true" />,
     disabled: true,
   },
   {
     key: "currentPassword",
-    label: "Password",
-    placeholder: "********",
     type: "password",
     icon: <Lock aria-hidden="true" />,
   },
 ]
 
 type SocialItem = {
-  label: string
+  key: "instagram" | "telegram" | "vk" | "youtube" | "facebook"
   className: string
   icon: ReactNode
 }
 
 const socialItems: SocialItem[] = [
   {
-    label: "Instagram",
+    key: "instagram",
     className: styles.instagram,
     icon: <Camera aria-hidden="true" />,
   },
   {
-    label: "Telegram",
+    key: "telegram",
     className: styles.telegram,
     icon: <Send aria-hidden="true" />,
   },
   {
-    label: "VK",
+    key: "vk",
     className: styles.vk,
     icon: <MessageCircle aria-hidden="true" />,
   },
   {
-    label: "YouTube",
+    key: "youtube",
     className: styles.youtube,
     icon: <Play aria-hidden="true" />,
   },
   {
-    label: "Facebook",
+    key: "facebook",
     className: styles.facebook,
     icon: <Globe aria-hidden="true" />,
   },
 ]
 
 export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePassword, isSaving = false }: Props) => {
+  const { t } = useTranslation(["profile", "common", "errors"])
+  const fieldLabels: Record<keyof ContactInfoValues, string> = {
+    email: t("profile:contactInfo.fields.email"),
+    phoneNumber: t("profile:contactInfo.fields.phoneNumber"),
+    firstName: t("profile:contactInfo.fields.firstName"),
+    secondName: t("profile:contactInfo.fields.lastName"),
+    login: t("profile:contactInfo.fields.login"),
+    currentPassword: t("profile:contactInfo.fields.password"),
+    newPassword: t("profile:contactInfo.placeholders.newPassword"),
+  }
+  const fieldPlaceholders: Record<keyof ContactInfoValues, string> = {
+    email: t("profile:contactInfo.placeholders.email"),
+    phoneNumber: t("profile:contactInfo.placeholders.phoneNumber"),
+    firstName: t("profile:contactInfo.placeholders.firstName"),
+    secondName: t("profile:contactInfo.placeholders.lastName"),
+    login: t("profile:contactInfo.placeholders.login"),
+    currentPassword: t("profile:contactInfo.placeholders.password"),
+    newPassword: t("profile:contactInfo.placeholders.newPassword"),
+  }
   const passwordBlockRef = useRef<HTMLDivElement | null>(null)
   const [values, setValues] = useState(initialValues)
   const [isPasswordExpanded, setIsPasswordExpanded] = useState(false)
@@ -195,7 +201,7 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
     newPassword: isPasswordExpanded
       ? validatePasswordRules(values.newPassword) ||
         (values.currentPassword && values.newPassword && values.currentPassword === values.newPassword
-          ? "New password must be different from current password."
+          ? t("errors:validation.passwordDifferent")
           : undefined)
       : undefined,
   }
@@ -308,7 +314,7 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
   return (
     <section className={styles.section}>
       <div className={styles.card}>
-        <h2 className={styles.title}>Edit Profile</h2>
+        <h2 className={styles.title}>{t("profile:contactInfo.title")}</h2>
 
         <div className={styles.fields}>
           {fields.map((field) => {
@@ -318,14 +324,14 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
             <div className={styles.field} key={field.key} ref={passwordBlockRef}>
               <span className={styles.label}>
                 <span className={styles.labelIcon}>{field.icon}</span>
-                {field.label}
+                {fieldLabels[field.key]}
               </span>
 
               {!isPasswordExpanded ? (
                 <input
                   className={styles.input}
                   type="password"
-                  placeholder={field.placeholder}
+                  placeholder={fieldPlaceholders[field.key]}
                   value=""
                   disabled={isDisabled}
                   onFocus={handlePasswordFocus}
@@ -334,12 +340,12 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
               ) : (
                 <div className={styles.passwordPanel}>
                   <label className={styles.passwordField}>
-                    <span className={styles.passwordLabel}>Enter your current password</span>
+                    <span className={styles.passwordLabel}>{t("profile:contactInfo.password.currentPrompt")}</span>
                     <div className={styles.passwordInputWrap}>
                       <input
                         className={`${styles.input} ${styles.passwordInput} ${getPasswordError("currentPassword") ? styles.inputError : ""}`}
                         type={visiblePasswords.currentPassword ? "text" : "password"}
-                        placeholder="Current password"
+                        placeholder={t("profile:contactInfo.placeholders.currentPassword")}
                         value={values.currentPassword}
                         disabled={isDisabled}
                         onChange={(event) => updateField("currentPassword", event.target.value)}
@@ -348,7 +354,7 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
                       <button
                         className={styles.passwordPreviewButton}
                         type="button"
-                        aria-label={visiblePasswords.currentPassword ? "Hide current password" : "Show current password"}
+                        aria-label={visiblePasswords.currentPassword ? t("profile:contactInfo.password.hideCurrent") : t("profile:contactInfo.password.showCurrent")}
                         disabled={isDisabled}
                         onClick={() => togglePasswordVisibility("currentPassword")}
                       >
@@ -361,12 +367,12 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
                   </label>
 
                   <label className={styles.passwordField}>
-                    <span className={styles.passwordLabel}>Set a new password</span>
+                    <span className={styles.passwordLabel}>{t("profile:contactInfo.password.newPrompt")}</span>
                     <div className={styles.passwordInputWrap}>
                       <input
                         className={`${styles.input} ${styles.passwordInput} ${getPasswordError("newPassword") ? styles.inputError : ""}`}
                         type={visiblePasswords.newPassword ? "text" : "password"}
-                        placeholder="New password"
+                        placeholder={t("profile:contactInfo.placeholders.newPassword")}
                         value={values.newPassword}
                         disabled={isDisabled}
                         onChange={(event) => updateField("newPassword", event.target.value)}
@@ -375,7 +381,7 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
                       <button
                         className={styles.passwordPreviewButton}
                         type="button"
-                        aria-label={visiblePasswords.newPassword ? "Hide new password" : "Show new password"}
+                        aria-label={visiblePasswords.newPassword ? t("profile:contactInfo.password.hideNew") : t("profile:contactInfo.password.showNew")}
                         disabled={isDisabled}
                         onClick={() => togglePasswordVisibility("newPassword")}
                       >
@@ -392,7 +398,7 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
                   )}
 
                   <button className={styles.passwordSubmitButton} type="button" onClick={handlePasswordSubmit} disabled={isDisabled}>
-                    {isDisabled ? "Submitting..." : "Submit"}
+                    {isDisabled ? t("profile:contactInfo.password.submitting") : t("profile:contactInfo.password.submit")}
                   </button>
                 </div>
               )}
@@ -401,13 +407,13 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
             <label className={styles.field} key={field.key}>
               <span className={styles.label}>
                 <span className={styles.labelIcon}>{field.icon}</span>
-                {field.label}
+                {fieldLabels[field.key]}
               </span>
 
               <input
                 className={`${styles.input} ${fieldError ? styles.inputError : ""}`}
                 type={field.type ?? "text"}
-                placeholder={field.placeholder}
+                placeholder={fieldPlaceholders[field.key]}
                 value={values[field.key]}
                 disabled={field.disabled || isDisabled}
                 onChange={(event) => updateField(field.key, event.target.value)}
@@ -424,11 +430,11 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
           <div className={styles.generalError}>{apiError.message}</div>
         )}
 
-        <div className={styles.socialTitle}>Connect Social Media</div>
+        <div className={styles.socialTitle}>{t("profile:contactInfo.social.title")}</div>
 
         <div className={styles.socialRow}>
           {socialItems.map((item) => (
-            <button key={item.label} className={`${styles.socialButton} ${item.className}`} type="button" aria-label={item.label}>
+            <button key={item.key} className={`${styles.socialButton} ${item.className}`} type="button" aria-label={t(`profile:contactInfo.social.${item.key}`)}>
               {item.icon}
             </button>
           ))}
@@ -436,10 +442,10 @@ export const ProfileContactInfo = ({ initialValues, onCancel, onSave, onChangePa
 
         <div className={styles.actions}>
           <button className={styles.cancelButton} type="button" onClick={onCancel} disabled={isDisabled}>
-            Cancel
+            {t("common:actions.cancel")}
           </button>
           <button className={styles.saveButton} type="button" onClick={handleSave} disabled={isDisabled}>
-            {isDisabled ? "Saving..." : "Save Changes"}
+            {isDisabled ? t("profile:contactInfo.saving") : t("profile:contactInfo.save")}
           </button>
         </div>
       </div>

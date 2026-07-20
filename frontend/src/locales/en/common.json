@@ -1,0 +1,38 @@
+{
+  "brand": {
+    "name": "PinPet",
+    "copyright": "© 2026 PinPet"
+  },
+  "navigation": {
+    "feed": "Feed",
+    "search": "Search",
+    "profile": "Profile",
+    "gallery": "Gallery",
+    "back": "Back"
+  },
+  "actions": {
+    "login": "Login",
+    "logout": "Log out",
+    "signup": "Sign up",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "sort": "Sort"
+  },
+  "status": {
+    "loading": "Loading...",
+    "checkingSession": "Checking session",
+    "checkingAuthorization": "Checking authorization"
+  },
+  "search": {
+    "placeholder": "Search",
+    "searchByTag": "Search by tag",
+    "suggestionsLabel": "Tag search suggestions",
+    "searching": "Searching...",
+    "searchFor": "Search \"{{term}}\"",
+    "noMatchingTags": "No matching tags"
+  },
+  "accessibility": {
+    "desktopNavigation": "Desktop navigation"
+  }
+}

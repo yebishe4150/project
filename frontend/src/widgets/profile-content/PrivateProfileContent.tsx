@@ -15,10 +15,12 @@ import {
   type ProfileImageTab,
 } from "./profileContent.api"
 import styles from "./ProfileContent.module.css"
+import { useTranslation } from "react-i18next"
 
 const PROFILE_IMAGES_QUERY_KEY = ["profile-images"]
 
 export const PrivateProfileContent = () => {
+  const { t } = useTranslation("profile")
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<ProfileImageTab>(
     searchParams.get("tab") === "ai" ? "ai" : "photos",
@@ -107,10 +109,10 @@ export const PrivateProfileContent = () => {
       />
 
       {isLoading ? (
-        <div className={styles.status}>Loading images...</div>
+        <div className={styles.status}>{t("content.loadingImages")}</div>
       ) : isError ? (
         <div className={styles.status}>
-          {getApiErrorMessage(error, "Could not load images. Please try again.")}
+          {getApiErrorMessage(error, t("content.imagesLoadFailed"))}
         </div>
       ) : images.length === 0 ? (
         <ProfileEmptyState onUpload={handleUpload} onGenerate={handleGenerate} />

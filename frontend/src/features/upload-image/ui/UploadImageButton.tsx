@@ -1,6 +1,7 @@
 import { useRef } from "react"
 import type { ChangeEvent, ReactNode } from "react"
 import { compressImageFile } from "../lib/compressImageFile"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   children?: ReactNode
@@ -9,10 +10,11 @@ type Props = {
 }
 
 export const UploadImageButton = ({
-  children = "Add first photo",
+  children,
   className,
   onSelect,
 }: Props) => {
+  const { t } = useTranslation("media")
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +42,7 @@ export const UploadImageButton = ({
             strokeWidth="2"
           />
         </svg>
-        {children}
+        {children ?? t("actions.addFirstPhoto")}
       </button>
     </>
   )

@@ -7,6 +7,7 @@ import {
   type GalleryTag,
 } from "@/pages/gallery/gallery.api"
 import styles from "./TagSearchBox.module.css"
+import { useTranslation } from "react-i18next"
 
 type Variant = "gallery" | "header" | "sideNav"
 
@@ -34,7 +35,7 @@ function formatTagName(name: string) {
 
 export const TagSearchBox = ({
   initialValue = "",
-  placeholder = "Search collections",
+  placeholder,
   variant = "gallery",
   onDebouncedSearchChange,
   onSearchSubmit,
@@ -42,6 +43,8 @@ export const TagSearchBox = ({
   onComplete,
   autoFocus = false,
 }: TagSearchBoxProps) => {
+  const { t } = useTranslation(["common", "gallery"])
+  const resolvedPlaceholder = placeholder ?? t("gallery:searchPlaceholder")
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [searchValue, setSearchValue] = useState(initialValue)
@@ -141,8 +144,8 @@ export const TagSearchBox = ({
         <input
           ref={inputRef}
           type="search"
-          aria-label="Search by tag"
-          placeholder={placeholder}
+          aria-label={t("common:search.searchByTag")}
+          placeholder={resolvedPlaceholder}
           value={searchValue}
           onChange={(event) => {
             setSearchValue(event.target.value)
@@ -160,9 +163,9 @@ export const TagSearchBox = ({
       </form>
 
       {showSuggestions && (
-        <div className={styles.suggestions} role="listbox" aria-label="Tag search suggestions">
+        <div className={styles.suggestions} role="listbox" aria-label={t("common:search.suggestionsLabel")}>
           {tagsQuery.isFetching && (
-            <div className={styles.suggestionStatus}>Searching...</div>
+            <div className={styles.suggestionStatus}>{t("common:search.searching")}</div>
           )}
 
           {!tagsQuery.isFetching && activeSearchTerm && (
@@ -173,7 +176,7 @@ export const TagSearchBox = ({
               onClick={submitSearch}
             >
               <Search aria-hidden="true" />
-              <span>Search "{activeSearchTerm}"</span>
+              <span>{t("common:search.searchFor", { term: activeSearchTerm })}</span>
             </button>
           )}
 
@@ -192,7 +195,7 @@ export const TagSearchBox = ({
           ))}
 
           {!tagsQuery.isFetching && tagSuggestions.length === 0 && (
-            <div className={styles.suggestionStatus}>No matching tags</div>
+            <div className={styles.suggestionStatus}>{t("common:search.noMatchingTags")}</div>
           )}
         </div>
       )}

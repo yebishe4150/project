@@ -7,6 +7,7 @@ import {
   mapUploadImageError,
 } from "@/shared/api/errors/errorMapper"
 import styles from "./ProfileEmptyState.module.css"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   onUpload: (data: UploadImageData) => Promise<void>
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
+  const { t } = useTranslation(["media", "common"])
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isGenerateFormOpen, setIsGenerateFormOpen] = useState(false)
   const [description, setDescription] = useState("")
@@ -122,11 +124,10 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
         </svg>
       </div>
 
-      <h2 className={styles.title}>No photos yet</h2>
+      <h2 className={styles.title}>{t("media:empty.title")}</h2>
 
       <p className={styles.text}>
-        Start building your collection by uploading photos or generating them
-        with AI
+        {t("media:empty.description")}
       </p>
 
       {selectedFile && (
@@ -136,24 +137,24 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
 
           <textarea
             className={styles.textarea}
-            placeholder="Description"
+            placeholder={t("media:fields.description")}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
           />
 
           <input
             className={styles.input}
-            placeholder="Tags, separated by commas"
+            placeholder={t("media:fields.tags")}
             value={tags}
             onChange={(event) => setTags(event.target.value)}
           />
 
           <div className={styles.formActions}>
             <button className={styles.cancelButton} type="button" onClick={resetUploadForm}>
-              Cancel
+              {t("common:actions.cancel")}
             </button>
             <button className={styles.submitButton} type="button" onClick={handleSubmit}>
-              {isUploading ? "Uploading..." : "Save photo"}
+              {isUploading ? t("media:actions.uploading") : t("media:actions.savePhoto")}
             </button>
           </div>
         </div>
@@ -165,28 +166,28 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
 
           <textarea
             className={styles.textarea}
-            placeholder="Prompt"
+            placeholder={t("media:fields.prompt")}
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
           />
 
           <textarea
             className={styles.textarea}
-            placeholder="Description"
+            placeholder={t("media:fields.description")}
             value={generateDescription}
             onChange={(event) => setGenerateDescription(event.target.value)}
           />
 
           <input
             className={styles.input}
-            placeholder="Tags, separated by commas"
+            placeholder={t("media:fields.tags")}
             value={generateTags}
             onChange={(event) => setGenerateTags(event.target.value)}
           />
 
           <div className={styles.formActions}>
             <button className={styles.cancelButton} type="button" onClick={resetGenerateForm}>
-              Cancel
+              {t("common:actions.cancel")}
             </button>
             <button
               className={styles.submitButton}
@@ -194,7 +195,7 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
               onClick={handleGenerateSubmit}
               disabled={!prompt.trim() || isGenerating}
             >
-              {isGenerating ? "Generating..." : "Generate image"}
+              {isGenerating ? t("media:actions.generating") : t("media:actions.generateImage")}
             </button>
           </div>
         </div>
@@ -202,7 +203,7 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
 
       <div className={styles.buttons}>
         <UploadImageButton className={styles.upload} onSelect={handleSelectFile}>
-          Upload Photo
+          {t("media:actions.uploadPhoto")}
         </UploadImageButton>
         <button
           className={styles.generate}
@@ -210,7 +211,7 @@ export const ProfileEmptyState = ({ onUpload, onGenerate }: Props) => {
           onClick={openGenerateForm}
         >
           <span className={styles.buttonIcon}>+</span>
-          Generate with AI
+          {t("media:actions.generateWithAi")}
         </button>
       </div>
     </div>

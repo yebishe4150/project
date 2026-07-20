@@ -1,0 +1,36 @@
+{
+  "empty": {
+    "title": "No photos yet",
+    "description": "Start building your collection by uploading photos or generating them with AI"
+  },
+  "actions": {
+    "addImage": "Add image",
+    "addFirstPhoto": "Add first photo",
+    "uploadPhoto": "Upload Photo",
+    "savePhoto": "Save photo",
+    "uploading": "Uploading...",
+    "generateWithAi": "Generate with AI",
+    "generateImage": "Generate image",
+    "generating": "Generating..."
+  },
+  "fields": {
+    "prompt": "Prompt",
+    "description": "Description",
+    "tags": "Tags, separated by commas"
+  },
+  "card": {
+    "openPreview": "Open photo preview",
+    "photoActions": "Photo actions",
+    "previewActions": "Preview photo actions",
+    "like": "Like photo",
+    "removeLike": "Remove like",
+    "openComments": "Open comments",
+    "copyLink": "Copy photo link"
+  },
+  "preview": {
+    "label": "Photo preview",
+    "close": "Close photo preview",
+    "description": "Description",
+    "tags": "Tags"
+  }
+}

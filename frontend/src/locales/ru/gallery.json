@@ -1,0 +1,28 @@
+{
+  "title": "Коллекции",
+  "subtitle": "Фотографии автоматически группируются по тегам",
+  "navigation": {
+    "open": "Открыть навигацию по галерее",
+    "label": "Навигация по галерее"
+  },
+  "searchPlaceholder": "Поиск по коллекциям",
+  "sort": {
+    "label": "Сортировка коллекций",
+    "byName": "По названию",
+    "byPhotoCount": "По количеству фотографий"
+  },
+  "states": {
+    "loadingCollections": "Загрузка коллекций...",
+    "loadFailed": "Не удалось загрузить галерею. Повторите попытку.",
+    "noCollections": "Коллекций пока нет",
+    "loadingPhotos": "Загрузка фотографий...",
+    "noPhotosInCollection": "В этой коллекции пока нет фотографий"
+  },
+  "collectionsLabel": "Коллекции галереи",
+  "autoUpdateHint": "Коллекции обновляются автоматически при добавлении новых фотографий",
+  "untagged": "Без тегов",
+  "photoCount_one": "{{count}} фотография",
+  "photoCount_few": "{{count}} фотографии",
+  "photoCount_many": "{{count}} фотографий",
+  "photoCount_other": "{{count}} фотографии"
+}

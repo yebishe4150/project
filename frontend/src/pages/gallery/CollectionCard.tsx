@@ -17,6 +17,7 @@ import {
   pluralizePhotos,
 } from "./gallery.utils"
 import styles from "./GalleryPage.module.css"
+import { useTranslation } from "react-i18next"
 
 const DEFAULT_IMAGE_BATCH_SIZE = 24
 const MIN_GRID_COLUMN_WIDTH = 240
@@ -41,6 +42,7 @@ export const CollectionCard = ({
   onImagesLoaded,
   onLikeChange,
 }: Props) => {
+  const { t } = useTranslation("gallery")
   const [cardRef, isCardInView] = useInView<HTMLElement>({ rootMargin: "200px" })
   const imageGridRef = useRef<HTMLDivElement | null>(null)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
@@ -175,7 +177,7 @@ export const CollectionCard = ({
       {isExpanded && (
         <div className={styles.expandedPanel}>
           {imagesQuery.isLoading ? (
-            <div className={styles.emptyPanel}>Loading photos...</div>
+            <div className={styles.emptyPanel}>{t("states.loadingPhotos")}</div>
           ) : images.length > 0 ? (
             <>
               <div ref={imageGridRef} className={styles.imageGrid}>
@@ -197,7 +199,7 @@ export const CollectionCard = ({
               {hasMoreImages && <div ref={sentinelRef} className={styles.loadMoreSentinel} />}
             </>
           ) : (
-            <div className={styles.emptyPanel}>No photos in this collection yet</div>
+            <div className={styles.emptyPanel}>{t("states.noPhotosInCollection")}</div>
           )}
         </div>
       )}

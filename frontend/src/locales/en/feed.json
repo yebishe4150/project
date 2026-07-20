@@ -1,0 +1,10 @@
+{
+  "hero": {
+    "badge": "PinPet Gallery",
+    "title": "Discover cozy pet inspiration",
+    "description": "Browse fresh uploads and AI-generated ideas in one soft little feed."
+  },
+  "feedLabel": "Public feed",
+  "empty": "No images yet",
+  "unavailable": "Feed is temporarily unavailable."
+}

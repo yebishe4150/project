@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import { Moon, Sun, X } from "lucide-react"
 import { useTheme } from "@/app/providers/useTheme"
+import { useTranslation } from "react-i18next"
 import styles from "./SettingsModal.module.css"
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
 
 export const SettingsModal = ({ onClose }: Props) => {
     const { theme, setTheme } = useTheme()
+    const { t, i18n } = useTranslation("profile")
     const closeButtonRef = useRef<HTMLButtonElement | null>(null)
 
     useEffect(() => {
@@ -28,6 +30,12 @@ export const SettingsModal = ({ onClose }: Props) => {
     }, [onClose])
 
     const isDarkTheme = theme === "dark"
+    const selectedLanguage = i18n.resolvedLanguage === "en" ? "en" : "ru"
+
+    const handleLanguageChange = (language: string) => {
+        window.localStorage.setItem("language", language)
+        void i18n.changeLanguage(language)
+    }
 
     return (
         <div className={styles.overlay} onMouseDown={onClose}>
@@ -40,14 +48,14 @@ export const SettingsModal = ({ onClose }: Props) => {
             >
                 <div className={styles.header}>
                     <h2 className={styles.title} id="settings-title">
-                        Settings
+                        {t("settings.title")}
                     </h2>
 
                     <button
                         ref={closeButtonRef}
                         className={styles.closeButton}
                         type="button"
-                        aria-label="Close settings"
+                        aria-label={t("settings.close")}
                         onClick={onClose}
                     >
                         <X aria-hidden="true" />
@@ -58,7 +66,7 @@ export const SettingsModal = ({ onClose }: Props) => {
                     <section className={styles.settingSection} aria-labelledby="appearance-title">
                         <div className={styles.settingText}>
                             <h3 className={styles.settingTitle} id="appearance-title">
-                                Choose Theme
+                                {t("settings.chooseTheme")}
                             </h3>
                         </div>
 
@@ -73,7 +81,7 @@ export const SettingsModal = ({ onClose }: Props) => {
                                 type="button"
                                 role="switch"
                                 aria-checked={isDarkTheme}
-                                aria-label={`Switch to ${isDarkTheme ? "light" : "dark"} theme`}
+                                aria-label={isDarkTheme ? t("settings.switchToLightTheme") : t("settings.switchToDarkTheme")}
                                 onClick={() => setTheme(isDarkTheme ? "light" : "dark")}
                             >
                                 <span className={styles.themeThumb} />
@@ -86,25 +94,25 @@ export const SettingsModal = ({ onClose }: Props) => {
                         </div>
 
                         <p className={styles.themeValue}>
-                            {isDarkTheme ? "Dark theme" : "Light theme"}
+                            {isDarkTheme ? t("settings.darkTheme") : t("settings.lightTheme")}
                         </p>
                     </section>
 
                     <section className={styles.settingSection} aria-labelledby="language-title">
                         <div className={styles.settingText}>
                             <h3 className={styles.settingTitle} id="language-title">
-                                Language
+                                {t("settings.language")}
                             </h3>
                         </div>
 
                         <select
                             className={styles.languageSelect}
-                            aria-label="Application language"
-                            value="en"
-                            disabled
+                            aria-label={t("settings.applicationLanguage")}
+                            value={selectedLanguage}
+                            onChange={(event) => handleLanguageChange(event.target.value)}
                         >
-                            <option value="en">English</option>
-                            <option value="ru">Русский</option>
+                            <option value="en">{t("settings.languages.en")}</option>
+                            <option value="ru">{t("settings.languages.ru")}</option>
                         </select>
                     </section>
                 </div>

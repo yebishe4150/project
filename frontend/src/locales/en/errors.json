@@ -1,0 +1,45 @@
+{
+  "validation": {
+    "loginRequired": "Login is required.",
+    "passwordRequired": "Password is required.",
+    "passwordMinLength": "Password must be at least 8 characters long.",
+    "passwordUppercase": "Password must contain at least one uppercase letter.",
+    "passwordDigit": "Password must contain at least one digit.",
+    "passwordDifferent": "New password must be different from current password.",
+    "passwordRequirements": "Password must be at least 8 characters long and include at least one uppercase letter and one digit."
+  },
+  "common": {
+    "requestFailed": "Request failed. Please try again.",
+    "unknown": "Unknown error.",
+    "network": "Network error. Please check your connection and try again.",
+    "unauthorized": "Unauthorized",
+    "notFound": "Not found",
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "forbidden": "You do not have permission to perform this action.",
+    "server": "Server error. Please try again later.",
+    "serviceUnavailable": "Service is temporarily unavailable. Please try again later.",
+    "tooManyRequests": "Too many requests. Please try again later.",
+    "tooManyRequestsWithDelay": "Too many requests. Please try again in {{seconds}} seconds."
+  },
+  "auth": {
+    "requestFailed": "Could not complete the request. Please try again.",
+    "invalidCredentials": "Invalid login or password.",
+    "loginExists": "A user with this login already exists."
+  },
+  "profile": {
+    "updateFailed": "Could not update the profile. Please try again.",
+    "nicknameUpdateFailed": "Could not update nickname. Please try again.",
+    "invalidData": "Please check the profile data and try again.",
+    "nicknameTaken": "This nickname is already taken.",
+    "notFound": "Profile was not found.",
+    "passwordChangeFailed": "Could not change the password. Please try again.",
+    "currentPasswordIncorrect": "Current password is incorrect."
+  },
+  "media": {
+    "uploadFailed": "Could not upload the image. Please try again.",
+    "invalidFile": "Please choose a valid image file.",
+    "fileTooLarge": "File is too large.",
+    "generationFailed": "Could not generate the image. Please try again.",
+    "invalidPrompt": "Please enter a valid prompt."
+  }
+}

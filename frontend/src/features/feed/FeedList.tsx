@@ -2,6 +2,7 @@ import type { CSSProperties } from "react"
 import type { Pin } from "@/entities/pinTypes"
 import { PinCard } from "../../entities/pin/PinCard"
 import styles from "./FeedList.module.css"
+import { useTranslation } from "react-i18next"
 
 const MIN_PINS_PER_ROW_LOOP = 8
 
@@ -12,8 +13,9 @@ function buildLoopSegment(rowPins: Pin[]) {
 }
 
 export const FeedList = ({ pins }: { pins: Pin[] }) => {
+  const { t } = useTranslation("feed")
   if (pins.length === 0) {
-    return <div className={styles.empty}>No images yet</div>
+    return <div className={styles.empty}>{t("empty")}</div>
   }
 
   const rows = [0, 1].map((rowIndex) =>
@@ -22,7 +24,7 @@ export const FeedList = ({ pins }: { pins: Pin[] }) => {
   const populatedRows = rows.filter((rowPins) => rowPins.length > 0)
 
   return (
-    <div className={styles.feedViewport} aria-label="Public feed">
+    <div className={styles.feedViewport} aria-label={t("feedLabel")}>
       {populatedRows.map((rowPins, rowIndex) => {
         const loopSegment = buildLoopSegment(rowPins)
 

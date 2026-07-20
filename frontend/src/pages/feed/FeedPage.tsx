@@ -4,9 +4,11 @@ import { FeedList } from "@/features/feed/FeedList"
 import { fetchPins } from "@/entities/pin/pin.api.ts"
 import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import styles from "./FeedPage.module.css"
+import { useTranslation } from "react-i18next"
 
 
 export const FeedPage = () => {
+  const { t } = useTranslation("feed")
   const { data: pins = [], isError, error } = useQuery({
     queryKey: ["feed", "pins"],
     queryFn: fetchPins,
@@ -23,17 +25,17 @@ export const FeedPage = () => {
     <div className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <div className={styles.badge}>PinPet Gallery</div>
-          <h1 className={styles.title}>Discover cozy pet inspiration</h1>
+          <div className={styles.badge}>{t("hero.badge")}</div>
+          <h1 className={styles.title}>{t("hero.title")}</h1>
           <p className={styles.text}>
-            Browse fresh uploads and AI-generated ideas in one soft little feed.
+            {t("hero.description")}
           </p>
         </div>
       </section>
 
       <section className={styles.container}>
         {isError ? (
-          <div className={styles.error}>{getApiErrorMessage(error, "Feed is temporarily unavailable.")}</div>
+          <div className={styles.error}>{getApiErrorMessage(error, t("unavailable"))}</div>
         ) : (
           <FeedList pins={pins} />
         )}

@@ -11,6 +11,7 @@ import { fetchGalleryTags, type GalleryTag } from "./gallery.api"
 import { GALLERY_IMAGES_STALE_TIME, UNTAGGED_COLLECTION_ID } from "./galleryQuery"
 import { formatTagName, isGalleryImageList } from "./gallery.utils"
 import styles from "./GalleryPage.module.css"
+import { useTranslation } from "react-i18next"
 
 type SortMode = "name" | "count"
 
@@ -21,6 +22,7 @@ const CURRENT_USER_QUERY_KEY = ["current-user"]
 const CURRENT_PROFILE_FALLBACK_SLUG = "current"
 
 export const GalleryPage = () => {
+  const { t } = useTranslation(["gallery", "common"])
   const { isAuth } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -266,7 +268,7 @@ export const GalleryPage = () => {
           <button
             className={styles.actionsButton}
             type="button"
-            aria-label="Open gallery navigation"
+            aria-label={t("gallery:navigation.open")}
             aria-expanded={isActionsOpen}
             aria-haspopup="menu"
             onClick={(event) => {
@@ -278,7 +280,7 @@ export const GalleryPage = () => {
           </button>
 
           {isActionsOpen && (
-            <div className={styles.actionsMenu} role="menu" aria-label="Gallery navigation">
+            <div className={styles.actionsMenu} role="menu" aria-label={t("gallery:navigation.label")}>
               <button
                 className={styles.menuItem}
                 type="button"
@@ -286,7 +288,7 @@ export const GalleryPage = () => {
                 onClick={openFeed}
               >
                 <Home aria-hidden="true" />
-                <span>Feed</span>
+                <span>{t("common:navigation.feed")}</span>
               </button>
 
               <button
@@ -297,15 +299,15 @@ export const GalleryPage = () => {
                 onClick={openProfile}
               >
                 <UserRound aria-hidden="true" />
-                <span>Profile</span>
+                <span>{t("common:navigation.profile")}</span>
               </button>
             </div>
           )}
         </div>
 
         <div>
-          <h1 className={styles.title}>Collections</h1>
-          <p className={styles.subtitle}>Photos are grouped automatically by tags</p>
+          <h1 className={styles.title}>{t("gallery:title")}</h1>
+          <p className={styles.subtitle}>{t("gallery:subtitle")}</p>
         </div>
 
         <div className={styles.toolbar}>
@@ -318,37 +320,37 @@ export const GalleryPage = () => {
 
           <label className={styles.sortControl}>
             <Filter aria-hidden="true" />
-            <span>Sort</span>
+            <span>{t("common:actions.sort")}</span>
             <select
-              aria-label="Sort collections"
+              aria-label={t("gallery:sort.label")}
               value={sortMode}
               onChange={(event) => setSortMode(event.target.value as SortMode)}
             >
-              <option value="name">Name</option>
-              <option value="count">Photo count</option>
+              <option value="name">{t("gallery:sort.byName")}</option>
+              <option value="count">{t("gallery:sort.byPhotoCount")}</option>
             </select>
             <ChevronDown aria-hidden="true" />
           </label>
         </div>
       </header>
 
-      {isLoading && <div className={styles.state}>Loading collections...</div>}
+      {isLoading && <div className={styles.state}>{t("gallery:states.loadingCollections")}</div>}
 
       {!isLoading && isQueryError && (
         <div className={styles.empty}>
           <ImageOff aria-hidden="true" />
-          <span>{getApiErrorMessage(queryError, "Could not load gallery. Please try again.")}</span>
+          <span>{getApiErrorMessage(queryError, t("gallery:states.loadFailed"))}</span>
         </div>
       )}
 
       {!isLoading && !isQueryError && visibleCollections.length === 0 && (
         <div className={styles.empty}>
           <ImageOff aria-hidden="true" />
-          <span>No collections yet</span>
+          <span>{t("gallery:states.noCollections")}</span>
         </div>
       )}
 
-      {!isQueryError && <section className={styles.collections} aria-label="Gallery collections">
+      {!isQueryError && <section className={styles.collections} aria-label={t("gallery:collectionsLabel")}>
         {visibleCollections.map((collection) => (
           <CollectionCard
             collection={collection}
@@ -364,7 +366,7 @@ export const GalleryPage = () => {
 
       <footer className={styles.notice}>
         <Info aria-hidden="true" />
-        <span>Collections update automatically when new photos are added</span>
+        <span>{t("gallery:autoUpdateHint")}</span>
       </footer>
     </div>
   )

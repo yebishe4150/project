@@ -1,0 +1,92 @@
+{
+  "header": {
+    "actions": "Actions",
+    "profileActions": "Profile actions",
+    "backToFeed": "Back to feed",
+    "openGallery": "Open gallery",
+    "searchComingSoon": "Search is coming soon",
+    "backToProfile": "Back to profile",
+    "shareProfileLink": "Share profile link",
+    "linkCopied": "Link copied",
+    "openProfileMenu": "Open profile menu",
+    "profileMenu": "Profile menu",
+    "contactInfo": "Contact info",
+    "settings": "Settings",
+    "deleteAccount": "Delete account",
+    "addNickname": "Add nickname",
+    "unknownUser": "Unknown user"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close settings",
+    "chooseTheme": "Choose Theme",
+    "switchToLightTheme": "Switch to light theme",
+    "switchToDarkTheme": "Switch to dark theme",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "language": "Language",
+    "applicationLanguage": "Application language",
+    "languages": {
+      "en": "English",
+      "ru": "Russian"
+    }
+  },
+  "tabs": {
+    "photos": "My Photos",
+    "aiGenerated": "AI Generated"
+  },
+  "content": {
+    "loadingImages": "Loading images...",
+    "imagesLoadFailed": "Could not load images. Please try again.",
+    "noPublicImages": "No public images yet.",
+    "loadingProfile": "Loading...",
+    "userNotFound": "User not found",
+    "profileUnavailable": "User profile is unavailable",
+    "profileDataUnavailableAlt": "Profile data is unavailable"
+  },
+  "contactInfo": {
+    "title": "Edit Profile",
+    "fields": {
+      "email": "Email",
+      "phoneNumber": "Phone Number",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "login": "Login",
+      "password": "Password"
+    },
+    "placeholders": {
+      "email": "your.email@example.com",
+      "phoneNumber": "+1 (555) 000-0000",
+      "firstName": "John",
+      "lastName": "Doe",
+      "login": "username",
+      "password": "********",
+      "currentPassword": "Current password",
+      "newPassword": "New password"
+    },
+    "password": {
+      "currentPrompt": "Enter your current password",
+      "newPrompt": "Set a new password",
+      "submit": "Submit",
+      "submitting": "Submitting...",
+      "showCurrent": "Show current password",
+      "hideCurrent": "Hide current password",
+      "showNew": "Show new password",
+      "hideNew": "Hide new password"
+    },
+    "social": {
+      "title": "Connect Social Media",
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "vk": "VK",
+      "youtube": "YouTube",
+      "facebook": "Facebook"
+    },
+    "save": "Save Changes",
+    "saving": "Saving..."
+  },
+  "syncError": {
+    "backToProfile": "Back to Profile",
+    "apiDataUnavailable": "Profile API data is unavailable"
+  }
+}

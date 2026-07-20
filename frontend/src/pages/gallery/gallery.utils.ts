@@ -1,10 +1,11 @@
 import type { GalleryImage } from "./gallery.api"
+import i18n from "@/shared/config/i18n"
 
 export function formatTagName(name: string) {
   const trimmed = name.trim()
 
   if (/^(untagged|without-tags|without tags|no-tags|no tags)$/i.test(trimmed)) {
-    return "Untagged"
+    return i18n.t("untagged", { ns: "gallery" })
   }
 
   return trimmed
@@ -15,7 +16,7 @@ export function formatTagName(name: string) {
 }
 
 export function pluralizePhotos(count: number) {
-  return `${count} ${count === 1 ? "photo" : "photos"}`
+  return i18n.t("photoCount", { ns: "gallery", count })
 }
 
 export function getStableRandomPreviewImages(images: GalleryImage[]) {

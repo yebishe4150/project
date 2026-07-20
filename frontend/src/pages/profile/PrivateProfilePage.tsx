@@ -12,6 +12,7 @@ import { isApiError } from "@/shared/api/errors/typeGuard"
 import { fetchCurrentUser, updateCurrentUserNickname, updateCurrentUserProfile } from "./profile.api"
 import type { ProfileUserResponse } from "./profile.api"
 import styles from "./ProfilePage.module.css"
+import { useTranslation } from "react-i18next"
 
 type HeaderUser = {
   nickname: string
@@ -19,7 +20,10 @@ type HeaderUser = {
 
 const CURRENT_USER_QUERY_KEY = ["current-user"]
 const CURRENT_PROFILE_FALLBACK_SLUG = "current"
-const PROFILE_SYNC_ERROR_IMAGE_SRC = "/profile-sync-error-background.jpg"
+const PROFILE_SYNC_ERROR_IMAGE_BY_LANGUAGE = {
+  en: "/profile-sync-error-background.jpg",
+  ru: "/profile-sync-error-background.ru.png",
+} as const
 
 function isNotFoundError(error: unknown): error is ApiError {
   return isApiError(error) && error.status === 404
@@ -44,6 +48,10 @@ function mapContactInfo(user: ProfileUserResponse): ContactInfoValues {
 }
 
 export const PrivateProfilePage = () => {
+  const { t, i18n } = useTranslation("profile")
+  const profileSyncErrorImageSrc = i18n.resolvedLanguage === "en"
+    ? PROFILE_SYNC_ERROR_IMAGE_BY_LANGUAGE.en
+    : PROFILE_SYNC_ERROR_IMAGE_BY_LANGUAGE.ru
   const { isAuth } = useAuth()
   const { nickname: routeNickname } = useParams<{ nickname: string }>()
   const navigate = useNavigate()
@@ -223,7 +231,7 @@ export const PrivateProfilePage = () => {
   }
 
   if (isAuth === null) {
-    return <div className={styles.loading}>Loading...</div>
+    return <div className={styles.loading}>{t("content.loadingProfile")}</div>
   }
 
   if (isAuth === false) {
@@ -231,7 +239,7 @@ export const PrivateProfilePage = () => {
   }
 
   if (isLoading) {
-    return <div className={styles.loading}>Loading...</div>
+    return <div className={styles.loading}>{t("content.loadingProfile")}</div>
   }
 
   if (isProfileSyncErrorBannerOpen) {
@@ -240,8 +248,8 @@ export const PrivateProfilePage = () => {
         <div className={styles.profileErrorFrame}>
           <img
             className={styles.profileErrorImage}
-            src={PROFILE_SYNC_ERROR_IMAGE_SRC}
-            alt="Profile data is unavailable"
+            src={profileSyncErrorImageSrc}
+            alt={t("content.profileDataUnavailableAlt")}
             onError={(event) => {
               event.currentTarget.style.display = "none"
             }}
@@ -253,7 +261,7 @@ export const PrivateProfilePage = () => {
               setIsProfileSyncErrorBannerOpen(false)
             }}
           >
-            Back to Profile
+            {t("syncError.backToProfile")}
           </button>
         </div>
       </div>
@@ -261,11 +269,11 @@ export const PrivateProfilePage = () => {
   }
 
   if (!headerUser || (isError && !isProfileSyncError)) {
-    return <div className={styles.loading}>{getApiErrorMessage(error, "Profile API data is unavailable")}</div>
+    return <div className={styles.loading}>{getApiErrorMessage(error, t("syncError.apiDataUnavailable"))}</div>
   }
 
   if (pendingNicknameUser) {
-    return <div className={styles.loading}>Loading...</div>
+    return <div className={styles.loading}>{t("content.loadingProfile")}</div>
   }
 
   if (isFallbackProfileRoute && currentUserSlug) {
