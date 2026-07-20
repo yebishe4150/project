@@ -10,6 +10,7 @@ import {
     type ProfileImageTab,
 } from "./profileContent.api"
 import styles from "./ProfileContent.module.css"
+import { useTranslation } from "react-i18next"
 
 const PUBLIC_PROFILE_IMAGES_QUERY_KEY = ["public-profile-images"]
 
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export const PublicProfileContent = ({ nickName }: Props) => {
+    const { t } = useTranslation("profile")
     const [searchParams, setSearchParams] = useSearchParams()
     const [activeTab, setActiveTab] = useState<ProfileImageTab>(
         searchParams.get("tab") === "ai" ? "ai" : "photos",
@@ -67,11 +69,11 @@ export const PublicProfileContent = ({ nickName }: Props) => {
             <ProfileTabs activeTab={activeTab} onChange={changeTab} />
 
             {isLoading ? (
-                <div className={styles.status}>Loading images...</div>
+                <div className={styles.status}>{t("content.loadingImages")}</div>
             ) : isError ? (
-                <div className={styles.status}>{getApiErrorMessage(error, "Could not load images. Please try again.")}</div>
+                <div className={styles.status}>{getApiErrorMessage(error, t("content.imagesLoadFailed"))}</div>
             ) : images.length === 0 ? (
-                <div className={styles.status}>No public images yet.</div>
+                <div className={styles.status}>{t("content.noPublicImages")}</div>
             ) : (
                 <div className={styles.grid}>
                     {images.map((image) => (

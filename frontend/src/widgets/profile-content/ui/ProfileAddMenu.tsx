@@ -7,6 +7,7 @@ import {
   mapUploadImageError,
 } from "@/shared/api/errors/errorMapper"
 import styles from "./ProfileAddMenu.module.css"
+import { useTranslation } from "react-i18next"
 
 type GeneratePayload = {
   prompt: string
@@ -20,6 +21,7 @@ type Props = {
 }
 
 export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
+  const { t } = useTranslation(["media", "common"])
   const [isOpen, setIsOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [description, setDescription] = useState("")
@@ -143,7 +145,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
       <button
         className={styles.trigger}
         type="button"
-        aria-label="Add image"
+        aria-label={t("media:actions.addImage")}
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
       >
@@ -155,11 +157,11 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
           {!selectedFile && !isGenerateFormOpen && (
             <div className={styles.actions}>
               <UploadImageButton className={styles.upload} onSelect={handleSelectFile}>
-                Upload Photo
+                {t("media:actions.uploadPhoto")}
               </UploadImageButton>
               <button className={styles.generate} type="button" onClick={openGenerateForm}>
                 <span className={styles.buttonIcon}>+</span>
-                Generate with AI
+                {t("media:actions.generateWithAi")}
               </button>
             </div>
           )}
@@ -171,14 +173,14 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
 
               <textarea
                 className={styles.textarea}
-                placeholder="Description"
+                placeholder={t("media:fields.description")}
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
               />
 
               <input
                 className={styles.input}
-                placeholder="Tags, separated by commas"
+                placeholder={t("media:fields.tags")}
                 value={tags}
                 onChange={(event) => setTags(event.target.value)}
               />
@@ -186,10 +188,10 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
               <div className={styles.formActions}>
                 <button className={styles.cancelButton} type="button" onClick={resetUploadForm}>
                   <span className={styles.backIcon}>←</span>
-                  Back
+                  {t("common:navigation.back")}
                 </button>
                 <button className={styles.submitButton} type="button" onClick={handleUploadSubmit}>
-                  {isUploading ? "Uploading..." : "Save photo"}
+                  {isUploading ? t("media:actions.uploading") : t("media:actions.savePhoto")}
                 </button>
               </div>
             </div>
@@ -201,21 +203,21 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
 
               <textarea
                 className={styles.textarea}
-                placeholder="Prompt"
+                placeholder={t("media:fields.prompt")}
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
               />
 
               <textarea
                 className={styles.textarea}
-                placeholder="Description"
+                placeholder={t("media:fields.description")}
                 value={generateDescription}
                 onChange={(event) => setGenerateDescription(event.target.value)}
               />
 
               <input
                 className={styles.input}
-                placeholder="Tags, separated by commas"
+                placeholder={t("media:fields.tags")}
                 value={generateTags}
                 onChange={(event) => setGenerateTags(event.target.value)}
               />
@@ -223,7 +225,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
               <div className={styles.formActions}>
                 <button className={styles.cancelButton} type="button" onClick={resetGenerateForm}>
                   <span className={styles.backIcon}>←</span>
-                  Back
+                  {t("common:navigation.back")}
                 </button>
                 <button
                   className={styles.submitButton}
@@ -231,7 +233,7 @@ export const ProfileAddMenu = ({ onUpload, onGenerate }: Props) => {
                   onClick={handleGenerateSubmit}
                   disabled={!prompt.trim() || isGenerating}
                 >
-                  {isGenerating ? "Generating..." : "Generate image"}
+                  {isGenerating ? t("media:actions.generating") : t("media:actions.generateImage")}
                 </button>
               </div>
             </div>

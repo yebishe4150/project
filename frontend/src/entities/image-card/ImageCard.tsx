@@ -5,6 +5,7 @@ import { formatLikesCount } from "./imageCard.utils"
 import { useImageLike } from "./useImageLike"
 import { useImagePreviewUrl } from "./useImagePreviewUrl"
 import styles from "./ImageCard.module.css"
+import { useTranslation } from "react-i18next"
 
 export type ImageCardData = {
   id: string
@@ -31,6 +32,7 @@ export const ImageCard = ({
   shareParams,
   onLikeChange,
 }: Props) => {
+  const { t } = useTranslation(["media", "notifications"])
   const { showToast } = useToast()
   const { likeState, toggleLike } = useImageLike({ image, onLikeChange })
   const { closePreview, getPhotoPageUrl, isPreviewOpen, openPreview } = useImagePreviewUrl({
@@ -45,13 +47,13 @@ export const ImageCard = ({
     try {
       await navigator.clipboard.writeText(getPhotoPageUrl())
       showToast({
-        title: "Link copied",
-        message: "Photo link is ready to share.",
+        title: t("notifications:link.copied.title"),
+        message: t("notifications:link.copied.message"),
       })
     } catch {
       showToast({
-        title: "Could not copy link",
-        message: "The browser did not allow clipboard access.",
+        title: t("notifications:link.copyFailed.title"),
+        message: t("notifications:link.copyFailed.message"),
       })
     }
   }
@@ -62,7 +64,7 @@ export const ImageCard = ({
         <button
           className={styles.previewTrigger}
           type="button"
-          aria-label="Open photo preview"
+          aria-label={t("media:card.openPreview")}
           onClick={openPreview}
         >
           <img
@@ -75,11 +77,11 @@ export const ImageCard = ({
         </button>
 
         <figcaption className={styles.caption}>
-          <div className={styles.actions} aria-label="Photo actions">
+          <div className={styles.actions} aria-label={t("media:card.photoActions")}>
             <button
               className={`${styles.actionButton} ${liked ? styles.liked : ""}`}
               type="button"
-              aria-label={liked ? "Remove like" : "Like photo"}
+              aria-label={liked ? t("media:card.removeLike") : t("media:card.like")}
               aria-pressed={liked}
               onClick={toggleLike}
             >
@@ -87,14 +89,14 @@ export const ImageCard = ({
               <span>{formatLikesCount(likesCount)}</span>
             </button>
 
-            <button className={styles.iconButton} type="button" aria-label="Open comments">
+            <button className={styles.iconButton} type="button" aria-label={t("media:card.openComments")}>
               <MessageCircle aria-hidden="true" />
             </button>
 
             <button
               className={styles.iconButton}
               type="button"
-              aria-label="Copy photo link"
+              aria-label={t("media:card.copyLink")}
               onClick={copyImageLink}
             >
               <Send aria-hidden="true" />

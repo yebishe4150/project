@@ -1,5 +1,8 @@
 import type { ApiError, ApiErrorField } from "./errorTypes";
 import { isApiError } from "./typeGuard";
+import i18n from "@/shared/config/i18n";
+
+const te = (key: string, options?: Record<string, unknown>) => i18n.t(key, { ns: "errors", ...options });
 
 type AuthAction = "login" | "signup";
 type LogLevel = "warn" | "error";
@@ -44,13 +47,13 @@ function retryAfterMessage(error: ApiError) {
   }
 
   if (error.retryAfter) {
-    return `Too many requests. Please try again in ${error.retryAfter} seconds.`;
+    return te("common.tooManyRequestsWithDelay", { seconds: error.retryAfter });
   }
 
-  return "Too many requests. Please try again later.";
+  return te("common.tooManyRequests");
 }
 
-export function normalizeApiError(error: unknown, fallbackMessage = "Request failed. Please try again."): ApiError {
+export function normalizeApiError(error: unknown, fallbackMessage = te("common.requestFailed")): ApiError {
   if (!isApiError(error)) {
     return {
       status: 0,
@@ -67,7 +70,7 @@ export function normalizeApiError(error: unknown, fallbackMessage = "Request fai
   };
 }
 
-export function getApiErrorMessage(error: unknown, fallbackMessage = "Request failed. Please try again.") {
+export function getApiErrorMessage(error: unknown, fallbackMessage = te("common.requestFailed")) {
   const apiError = normalizeApiError(error, fallbackMessage);
   const retryMessage = retryAfterMessage(apiError);
 
@@ -75,12 +78,28 @@ export function getApiErrorMessage(error: unknown, fallbackMessage = "Request fa
     return retryMessage;
   }
 
-  if (apiError.message) {
-    return apiError.message;
+  if (apiError.status === 0) {
+    return te("common.network");
+  }
+
+  if (apiError.status === 401) {
+    return te("common.sessionExpired");
+  }
+
+  if (apiError.status === 403) {
+    return te("common.forbidden");
+  }
+
+  if (apiError.status === 502) {
+    return te("common.serviceUnavailable");
   }
 
   if (apiError.status >= 500) {
-    return "Server error. Please try again later.";
+    return te("common.server");
+  }
+
+  if (apiError.message) {
+    return apiError.message;
   }
 
   return fallbackMessage;
@@ -113,21 +132,21 @@ function withCommonStatusMessages(error: ApiError, fallbackMessage: string): Api
   if (error.status === 0) {
     return {
       ...error,
-      message: "Network error. Please check your connection and try again.",
+      message: te("common.network"),
     };
   }
 
   if (error.status === 401) {
     return {
       ...error,
-      message: "Your session has expired. Please log in again.",
+      message: te("common.sessionExpired"),
     };
   }
 
   if (error.status === 403) {
     return {
       ...error,
-      message: "You do not have permission to perform this action.",
+      message: te("common.forbidden"),
     };
   }
 
@@ -135,8 +154,8 @@ function withCommonStatusMessages(error: ApiError, fallbackMessage: string): Api
     return {
       ...error,
       message: error.status === 502
-        ? "Service is temporarily unavailable. Please try again later."
-        : "Server error. Please try again later.",
+        ? te("common.serviceUnavailable")
+        : te("common.server"),
     };
   }
 
@@ -150,21 +169,21 @@ export function mapAuthError(
   error: unknown,
   action: AuthAction = "signup",
 ): ApiError {
-  const normalized = normalizeApiError(error, "Could not complete the request. Please try again.");
+  const normalized = normalizeApiError(error, te("auth.requestFailed"));
 
   if (normalized.status === 400) {
     return {
       ...normalized,
       field: normalized.field ?? "password",
       message: normalized.message ||
-        "Password must be at least 8 characters long and include at least one uppercase letter and one digit.",
+        te("validation.passwordRequirements"),
     };
   }
 
   if (normalized.status === 401 && action === "login") {
     return {
       ...normalized,
-      message: normalized.message || "Invalid login or password.",
+      message: normalized.message || te("auth.invalidCredentials"),
     };
   }
 
@@ -172,22 +191,22 @@ export function mapAuthError(
     return {
       ...normalized,
       field: normalized.field ?? "loginName",
-      message: normalized.message || "A user with this login already exists.",
+      message: normalized.message || te("auth.loginExists"),
     };
   }
 
-  return withCommonStatusMessages(normalized, "Unknown error.");
+  return withCommonStatusMessages(normalized, te("common.unknown"));
 }
 
 export function mapChangePasswordError(error: unknown): ApiError {
-  const normalized = normalizeApiError(error, "Could not change the password. Please try again.");
+  const normalized = normalizeApiError(error, te("profile.passwordChangeFailed"));
 
   if (normalized.status === 400) {
     return {
       ...normalized,
       field: normalized.field ?? "newPassword",
       message: normalized.message ||
-        "Password must be at least 8 characters long and include at least one uppercase letter and one digit.",
+        te("validation.passwordRequirements"),
     };
   }
 
@@ -195,20 +214,20 @@ export function mapChangePasswordError(error: unknown): ApiError {
     return {
       ...normalized,
       field: "currentPassword",
-      message: normalized.message || "Current password is incorrect.",
+      message: normalized.message || te("profile.currentPasswordIncorrect"),
     };
   }
 
-  return withCommonStatusMessages(normalized, "Could not change the password. Please try again.");
+  return withCommonStatusMessages(normalized, te("profile.passwordChangeFailed"));
 }
 
 export function mapProfileError(error: unknown): ApiError {
-  const normalized = normalizeApiError(error, "Could not update the profile. Please try again.");
+  const normalized = normalizeApiError(error, te("profile.updateFailed"));
 
   if (normalized.status === 400) {
     return {
       ...normalized,
-      message: normalized.message || "Please check the profile data and try again.",
+      message: normalized.message || te("profile.invalidData"),
     };
   }
 
@@ -216,28 +235,28 @@ export function mapProfileError(error: unknown): ApiError {
     return {
       ...normalized,
       field: normalized.field ?? "nickname",
-      message: normalized.message || "This nickname is already taken.",
+      message: normalized.message || te("profile.nicknameTaken"),
     };
   }
 
   if (normalized.status === 404) {
     return {
       ...normalized,
-      message: normalized.message || "Profile was not found.",
+      message: normalized.message || te("profile.notFound"),
     };
   }
 
-  return withCommonStatusMessages(normalized, "Could not update the profile. Please try again.");
+  return withCommonStatusMessages(normalized, te("profile.updateFailed"));
 }
 
 export function mapUploadImageError(error: unknown): ApiError {
-  const normalized = normalizeApiError(error, "Could not upload the image. Please try again.");
+  const normalized = normalizeApiError(error, te("media.uploadFailed"));
 
   if (normalized.status === 400) {
     return {
       ...normalized,
       field: normalized.field ?? "file",
-      message: normalized.message || "Please choose a valid image file.",
+      message: normalized.message || te("media.invalidFile"),
     };
   }
 
@@ -245,23 +264,23 @@ export function mapUploadImageError(error: unknown): ApiError {
     return {
       ...normalized,
       field: "file",
-      message: normalized.message || "File is too large.",
+      message: normalized.message || te("media.fileTooLarge"),
     };
   }
 
-  return withCommonStatusMessages(normalized, "Could not upload the image. Please try again.");
+  return withCommonStatusMessages(normalized, te("media.uploadFailed"));
 }
 
 export function mapGenerateImageError(error: unknown): ApiError {
-  const normalized = normalizeApiError(error, "Could not generate the image. Please try again.");
+  const normalized = normalizeApiError(error, te("media.generationFailed"));
 
   if (normalized.status === 400) {
     return {
       ...normalized,
       field: normalized.field ?? "prompt",
-      message: normalized.message || "Please enter a valid prompt.",
+      message: normalized.message || te("media.invalidPrompt"),
     };
   }
 
-  return withCommonStatusMessages(normalized, "Could not generate the image. Please try again.");
+  return withCommonStatusMessages(normalized, te("media.generationFailed"));
 }

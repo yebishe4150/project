@@ -6,10 +6,12 @@ import { PublicProfileContent } from "@/widgets/profile-content/PublicProfileCon
 import { getApiErrorMessage, logApiError, normalizeApiError } from "@/shared/api/errors/errorMapper"
 import { fetchPublicUser } from "./profile.api"
 import styles from "./ProfilePage.module.css"
+import { useTranslation } from "react-i18next"
 
 const PUBLIC_USER_QUERY_KEY = ["public-user"]
 
 export const PublicProfilePage = () => {
+  const { t } = useTranslation("profile")
   const { nickname } = useParams<{ nickname: string }>()
 
   const { data, isLoading, isError, error } = useQuery({
@@ -27,15 +29,15 @@ export const PublicProfilePage = () => {
   }, [error])
 
   if (isLoading) {
-    return <div className={styles.loading}>Loading...</div>
+    return <div className={styles.loading}>{t("content.loadingProfile")}</div>
   }
 
   if (!nickname || !data || isError) {
     return (
       <div className={styles.loading}>
         {normalizeApiError(error).status === 404
-          ? "User not found"
-          : getApiErrorMessage(error, "User profile is unavailable")}
+          ? t("content.userNotFound")
+          : getApiErrorMessage(error, t("content.profileUnavailable"))}
       </div>
     )
   }

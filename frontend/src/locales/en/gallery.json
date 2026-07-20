@@ -1,0 +1,26 @@
+{
+  "title": "Collections",
+  "subtitle": "Photos are grouped automatically by tags",
+  "navigation": {
+    "open": "Open gallery navigation",
+    "label": "Gallery navigation"
+  },
+  "searchPlaceholder": "Search collections",
+  "sort": {
+    "label": "Sort collections",
+    "byName": "Name",
+    "byPhotoCount": "Photo count"
+  },
+  "states": {
+    "loadingCollections": "Loading collections...",
+    "loadFailed": "Could not load gallery. Please try again.",
+    "noCollections": "No collections yet",
+    "loadingPhotos": "Loading photos...",
+    "noPhotosInCollection": "No photos in this collection yet"
+  },
+  "collectionsLabel": "Gallery collections",
+  "autoUpdateHint": "Collections update automatically when new photos are added",
+  "untagged": "Untagged",
+  "photoCount_one": "{{count}} photo",
+  "photoCount_other": "{{count}} photos"
+}

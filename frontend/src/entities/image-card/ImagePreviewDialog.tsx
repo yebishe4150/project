@@ -2,6 +2,7 @@ import { Heart, MessageCircle, Send, X } from "lucide-react"
 import type { ImageCardData } from "./ImageCard"
 import { formatLikesCount, type LikeState } from "./imageCard.utils"
 import styles from "./ImageCard.module.css"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   image: ImageCardData
@@ -22,6 +23,7 @@ export const ImagePreviewDialog = ({
   onCopyLink,
   onToggleLike,
 }: Props) => {
+  const { t } = useTranslation("media")
   const description = image.description?.trim()
   const { liked, likesCount } = likeState
 
@@ -30,14 +32,14 @@ export const ImagePreviewDialog = ({
       className={styles.previewOverlay}
       role="dialog"
       aria-modal="true"
-      aria-label="Photo preview"
+      aria-label={t("preview.label")}
       onClick={onClose}
     >
       <div className={styles.previewPanel} onClick={(event) => event.stopPropagation()}>
         <button
           className={styles.closeButton}
           type="button"
-          aria-label="Close photo preview"
+          aria-label={t("preview.close")}
           onClick={onClose}
         >
           <X aria-hidden="true" />
@@ -48,11 +50,11 @@ export const ImagePreviewDialog = ({
           </div>
 
           <div className={styles.previewDetails}>
-            <div className={styles.actions} aria-label="Preview photo actions">
+            <div className={styles.actions} aria-label={t("card.previewActions")}>
               <button
                 className={`${styles.actionButton} ${liked ? styles.liked : ""}`}
                 type="button"
-                aria-label={liked ? "Remove like" : "Like photo"}
+                aria-label={liked ? t("card.removeLike") : t("card.like")}
                 aria-pressed={liked}
                 onClick={onToggleLike}
               >
@@ -60,14 +62,14 @@ export const ImagePreviewDialog = ({
                 <span>{formatLikesCount(likesCount)}</span>
               </button>
 
-              <button className={styles.iconButton} type="button" aria-label="Open comments">
+              <button className={styles.iconButton} type="button" aria-label={t("card.openComments")}>
                 <MessageCircle aria-hidden="true" />
               </button>
 
               <button
                 className={styles.iconButton}
                 type="button"
-                aria-label="Copy photo link"
+                aria-label={t("card.copyLink")}
                 onClick={onCopyLink}
               >
                 <Send aria-hidden="true" />
@@ -76,14 +78,14 @@ export const ImagePreviewDialog = ({
 
             {description && (
               <section className={styles.previewSection}>
-                <h2>Description</h2>
+                <h2>{t("preview.description")}</h2>
                 <p className={styles.description}>{description}</p>
               </section>
             )}
 
             {previewTags.length > 0 && (
               <section className={styles.previewSection}>
-                <h2>Tags</h2>
+                <h2>{t("preview.tags")}</h2>
                 <div className={styles.tagList}>
                   {previewTags.map((tag) => (
                     <span className={styles.tag} key={tag}>

@@ -4,12 +4,14 @@ import { useAuth } from "../../../app/providers/useAuth";
 import { useToast } from "../../../app/providers/useToast";
 import { logApiError, mapAuthError } from "../../../shared/api/errors/errorMapper";
 import { useLoginModalForm } from "./useLoginModalForm";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   onClose: () => void;
 };
 
 export const LoginModal = ({ onClose }: Props) => {
+  const { t } = useTranslation(["auth", "notifications"]);
   const { login, register } = useAuth();
   const { showToast } = useToast();
   const {
@@ -46,15 +48,15 @@ export const LoginModal = ({ onClose }: Props) => {
         });
 
         showToast({
-          title: "Авторизация успешна",
-          message: "Вы успешно вошли в аккаунт.",
+          title: t("notifications:auth.loginSuccess.title"),
+          message: t("notifications:auth.loginSuccess.message"),
         });
       } else {
         await register(form);
 
         showToast({
-          title: "Регистрация успешна",
-          message: "Аккаунт создан, вы уже авторизованы.",
+          title: t("notifications:auth.signupSuccess.title"),
+          message: t("notifications:auth.signupSuccess.message"),
         });
       }
 
@@ -79,13 +81,13 @@ export const LoginModal = ({ onClose }: Props) => {
           x
         </button>
 
-        <h2>{mode === "login" ? "Login" : "Sign up"}</h2>
+        <h2>{mode === "login" ? t("auth:login.title") : t("auth:signup.title")}</h2>
 
         <div className={styles.form}>
           <div className={styles.field}>
             <input
               className={`${styles.input} ${loginNameError ? styles.inputError : ""}`}
-              placeholder="Login"
+              placeholder={t("auth:fields.login")}
               value={form.loginName}
               onChange={(e) => updateField("loginName", e.target.value)}
               onBlur={() => handleBlur("loginName")}
@@ -101,7 +103,7 @@ export const LoginModal = ({ onClose }: Props) => {
               <input
                 className={`${styles.input} ${styles.passwordInput} ${passwordError ? styles.inputError : ""}`}
                 type={showPassword ? "text" : "password"}
-                placeholder="Password"
+                placeholder={t("auth:fields.password")}
                 value={form.password}
                 onChange={(e) => updateField("password", e.target.value)}
                 onBlur={() => handleBlur("password")}
@@ -112,7 +114,7 @@ export const LoginModal = ({ onClose }: Props) => {
                 className={styles.passwordToggle}
                 onClick={() => setShowPassword((current) => !current)}
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? t("auth:passwordVisibility.hide") : t("auth:passwordVisibility.show")}
               </button>
             </div>
 
@@ -125,7 +127,7 @@ export const LoginModal = ({ onClose }: Props) => {
             <>
               <input
                 className={`${styles.input} ${emailError ? styles.inputError : ""}`}
-                placeholder="Email"
+                placeholder={t("auth:fields.email")}
                 value={form.email}
                 onChange={(e) => updateOptionalField("email", "email", e.target.value)}
               />
@@ -135,7 +137,7 @@ export const LoginModal = ({ onClose }: Props) => {
 
               <input
                 className={styles.input}
-                placeholder="Phone"
+                placeholder={t("auth:fields.phone")}
                 value={form.phone}
                 onChange={(e) => updateOptionalField("phone", "phoneNumber", e.target.value)}
               />
@@ -151,20 +153,20 @@ export const LoginModal = ({ onClose }: Props) => {
             onClick={handleSubmit}
             disabled={hasValidationErrors}
           >
-            {mode === "login" ? "Login" : "Sign up"}
+            {mode === "login" ? t("auth:login.submit") : t("auth:signup.submit")}
           </button>
         </div>
 
         <div className={styles.switch}>
           {mode === "login" ? (
             <p>
-              No account?{" "}
-              <span onClick={() => switchMode("signup")}>Sign up</span>
+              {t("auth:login.noAccount")}{" "}
+              <span onClick={() => switchMode("signup")}>{t("auth:login.signupLink")}</span>
             </p>
           ) : (
             <p>
-              Already have an account?{" "}
-              <span onClick={() => switchMode("login")}>Log in</span>
+              {t("auth:signup.hasAccount")}{" "}
+              <span onClick={() => switchMode("login")}>{t("auth:signup.loginLink")}</span>
             </p>
           )}
         </div>

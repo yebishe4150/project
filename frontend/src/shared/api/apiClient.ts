@@ -1,42 +1,43 @@
 import { refresh, getAccessToken, canRefreshAuth } from "@/features/auth/auth.ts";
 import type { ApiError } from "./errors/errorTypes";
+import i18n from "@/shared/config/i18n";
 
 const BASE_URL = "/api/v1";
 
 function fallbackMessageByStatus(status: number) {
   if (status === 0) {
-    return "Network error. Please check your connection and try again.";
+    return i18n.t("common.network", { ns: "errors" });
   }
 
   if (status === 401) {
-    return "Unauthorized";
+    return i18n.t("common.unauthorized", { ns: "errors" });
   }
 
   if (status === 403) {
-    return "Forbidden";
+    return i18n.t("common.forbidden", { ns: "errors" });
   }
 
   if (status === 404) {
-    return "Not found";
+    return i18n.t("common.notFound", { ns: "errors" });
   }
 
   if (status === 413) {
-    return "File is too large";
+    return i18n.t("media.fileTooLarge", { ns: "errors" });
   }
 
   if (status === 429) {
-    return "Too many requests";
+    return i18n.t("common.tooManyRequests", { ns: "errors" });
   }
 
   if (status === 502) {
-    return "Service is temporarily unavailable";
+    return i18n.t("common.serviceUnavailable", { ns: "errors" });
   }
 
   if (status >= 500) {
-    return "Internal server error";
+    return i18n.t("common.server", { ns: "errors" });
   }
 
-  return "Request failed";
+  return i18n.t("common.requestFailed", { ns: "errors" });
 }
 
 function parseRetryAfter(value: string | null) {

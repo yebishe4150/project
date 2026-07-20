@@ -8,11 +8,13 @@ import { useAuth } from "../../app/providers/useAuth";
 import { LoginModal } from "../../features/auth/ui/LoginModal";
 import { fetchCurrentUser } from "../../pages/profile/profile.api";
 import { logApiError } from "../../shared/api/errors/errorMapper";
+import { useTranslation } from "react-i18next";
 
 const CURRENT_USER_QUERY_KEY = ["current-user"];
 const CURRENT_PROFILE_FALLBACK_SLUG = "current";
 
 export const Header = () => {
+  const { t } = useTranslation("common");
   const { isAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,19 +60,19 @@ export const Header = () => {
 
   return (
     <header className={styles.header}>
-      <div className={styles.logo}>PinPet</div>
+      <div className={styles.logo}>{t("brand.name")}</div>
 
       <div className={styles.actions}>
         {isAuth === null && (
-          <div className={styles.authLoading} aria-live="polite" aria-label="Checking authorization">
+          <div className={styles.authLoading} aria-live="polite" aria-label={t("status.checkingAuthorization")}>
             <span className={styles.authLoadingDot} />
-            <span className={styles.authLoadingText}>Checking session</span>
+            <span className={styles.authLoadingText}>{t("status.checkingSession")}</span>
           </div>
         )}
 
         {isAuth === false && (
           <button onClick={() => setIsOpen(true)}>
-            Login
+            {t("actions.login")}
           </button>
         )}
 
@@ -84,13 +86,13 @@ export const Header = () => {
                 onClick={() => setIsSearchOpen((current) => !current)}
               >
                 <Search aria-hidden="true" />
-                <span>Search</span>
+                <span>{t("navigation.search")}</span>
               </button>
 
               {isSearchOpen && (
                 <TagSearchBox
                   variant="header"
-                  placeholder="Search"
+                  placeholder={t("search.placeholder")}
                   autoFocus
                   onComplete={() => setIsSearchOpen(false)}
                 />
@@ -103,7 +105,7 @@ export const Header = () => {
               onClick={handleOpenProfile}
             >
               <UserRound aria-hidden="true" />
-              <span>Profile</span>
+              <span>{t("navigation.profile")}</span>
             </button>
 
             <button
@@ -112,7 +114,7 @@ export const Header = () => {
               onClick={() => navigate("/gallery")}
             >
               <Image aria-hidden="true" />
-              <span>Gallery</span>
+              <span>{t("navigation.gallery")}</span>
             </button>
           </>
         )}

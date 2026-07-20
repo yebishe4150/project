@@ -5,6 +5,7 @@ import { useAuth } from "@/app/providers/useAuth"
 import { getApiErrorMessage, logApiError } from "@/shared/api/errors/errorMapper"
 import { SettingsModal } from "./SettingsModal"
 import styles from "./ProfileHeader.module.css"
+import { useTranslation } from "react-i18next"
 
 type HeaderUser = {
   nickname: string
@@ -44,6 +45,7 @@ export const ProfileHeader = ({
   isSecondaryView = false,
   onBackToProfile,
 }: Props) => {
+  const { t } = useTranslation(["profile", "common", "errors"])
   const isPrivate = profileMode === "private"
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -149,7 +151,7 @@ export const ProfileHeader = ({
       setIsEditingNickname(false)
     } catch (error) {
       logApiError("Could not update nickname", error, "warn")
-      setNicknameError(getApiErrorMessage(error, "Could not update nickname. Please try again."))
+      setNicknameError(getApiErrorMessage(error, t("errors:profile.nicknameUpdateFailed")))
     }
   }
 
@@ -187,7 +189,7 @@ export const ProfileHeader = ({
           <button
             className={styles.actionsButton}
             type="button"
-            aria-label="Actions"
+            aria-label={t("profile:header.actions")}
             aria-expanded={isActionsOpen}
             aria-haspopup="menu"
             onClick={(event) => {
@@ -197,27 +199,27 @@ export const ProfileHeader = ({
           >
             <Ellipsis aria-hidden="true" />
           </button>
-          <span className={styles.actionTooltip}>Actions</span>
+          <span className={styles.actionTooltip}>{t("profile:header.actions")}</span>
 
           {isActionsOpen && (
-            <div className={styles.actionsMenu} role="menu" aria-label="Profile actions">
+            <div className={styles.actionsMenu} role="menu" aria-label={t("profile:header.profileActions")}>
               <div className={styles.navItemWrap}>
                 <button
                   className={styles.navButton}
                   type="button"
                   role="menuitem"
-                  aria-label="Back to feed"
+                  aria-label={t("profile:header.backToFeed")}
                   onClick={() => navigate("/")}
                 >
                   <Home aria-hidden="true" />
                 </button>
-                <span className={styles.actionTooltip}>Back to feed</span>
+                <span className={styles.actionTooltip}>{t("profile:header.backToFeed")}</span>
               </div>
               <button
                 className={styles.navButton}
                 type="button"
                 role="menuitem"
-                aria-label="Open gallery"
+                aria-label={t("profile:header.openGallery")}
                 onClick={() => navigate("/gallery")}
               >
                 <Image aria-hidden="true" />
@@ -226,8 +228,8 @@ export const ProfileHeader = ({
                 className={styles.navButton}
                 type="button"
                 role="menuitem"
-                aria-label="Search is coming soon"
-                title="Search is coming soon"
+                aria-label={t("profile:header.searchComingSoon")}
+                title={t("profile:header.searchComingSoon")}
                 disabled
               >
                 <Search aria-hidden="true" />
@@ -242,7 +244,7 @@ export const ProfileHeader = ({
               <button
                 className={styles.backButton}
                 type="button"
-                aria-label="Back to profile"
+                aria-label={t("profile:header.backToProfile")}
                 onClick={onBackToProfile}
               >
                 <ArrowLeft aria-hidden="true" />
@@ -253,7 +255,7 @@ export const ProfileHeader = ({
               <button
                 className={styles.shareButton}
                 type="button"
-                aria-label="Share profile link"
+                aria-label={t("profile:header.shareProfileLink")}
                 onPointerEnter={handleSharePointerEnter}
                 onFocus={handleSharePointerEnter}
                 onClick={handleShareProfile}
@@ -266,14 +268,14 @@ export const ProfileHeader = ({
                   }`}
                 role="status"
               >
-                {isLinkCopied ? "Link copied" : "Share profile link"}
+                {isLinkCopied ? t("profile:header.linkCopied") : t("profile:header.shareProfileLink")}
               </span>
             </div>
 
             <button
               className={styles.menu}
               type="button"
-              aria-label="Open profile menu"
+              aria-label={t("profile:header.openProfileMenu")}
               aria-expanded={isMenuOpen}
               aria-haspopup="menu"
               onClick={() => setIsMenuOpen((current) => !current)}
@@ -284,7 +286,7 @@ export const ProfileHeader = ({
             </button>
 
             {isMenuOpen && (
-              <div className={styles.dropdown} role="menu" aria-label="Profile menu">
+              <div className={styles.dropdown} role="menu" aria-label={t("profile:header.profileMenu")}>
                 <button
                   className={styles.menuItem}
                   type="button"
@@ -297,7 +299,7 @@ export const ProfileHeader = ({
                   <span className={styles.menuItemIcon}>
                     <CircleUserRound aria-hidden="true" />
                   </span>
-                  <span className={styles.menuLabel}>Contact info</span>
+                  <span className={styles.menuLabel}>{t("profile:header.contactInfo")}</span>
                 </button>
                 <button
                   className={styles.menuItem}
@@ -311,7 +313,7 @@ export const ProfileHeader = ({
                   <span className={styles.menuItemIcon}>
                     <Settings aria-hidden="true" />
                   </span>
-                  <span className={styles.menuLabel}>Settings</span>
+                  <span className={styles.menuLabel}>{t("profile:header.settings")}</span>
                 </button>
 
                 <div className={styles.menuDivider} />
@@ -321,10 +323,10 @@ export const ProfileHeader = ({
                     <span className={styles.actionIcon}>
                       <LogOut aria-hidden="true" />
                     </span>
-                    Log out
+                    {t("common:actions.logout")}
                   </button>
                   <button className={styles.dangerAction} type="button" role="menuitem">
-                    Delete account
+                    {t("profile:header.deleteAccount")}
                   </button>
                 </div>
               </div>
@@ -339,7 +341,7 @@ export const ProfileHeader = ({
               autoFocus
               className={styles.nicknameInput}
               value={nickname}
-              placeholder="Add nickname"
+              placeholder={t("profile:header.addNickname")}
               onBlur={handleSaveNickname}
               onChange={(event) => {
                 setNicknameError(null)
@@ -368,10 +370,10 @@ export const ProfileHeader = ({
               setIsEditingNickname(true)
             }}
           >
-            {displayNickname || "Add nickname"}
+            {displayNickname || t("profile:header.addNickname")}
           </button>
         ) : (
-          <div className={`${styles.username} ${styles.publicUsername}`}>{displayNickname || "Unknown user"}</div>
+          <div className={`${styles.username} ${styles.publicUsername}`}>{displayNickname || t("profile:header.unknownUser")}</div>
         )}
 
       </div>

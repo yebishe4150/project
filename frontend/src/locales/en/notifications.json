@@ -1,0 +1,28 @@
+{
+  "auth": {
+    "loginSuccess": {
+      "title": "Login successful",
+      "message": "You have successfully logged in."
+    },
+    "signupSuccess": {
+      "title": "Registration successful",
+      "message": "Your account has been created and you are now logged in."
+    }
+  },
+  "link": {
+    "copied": {
+      "title": "Link copied",
+      "message": "Photo link is ready to share."
+    },
+    "copyFailed": {
+      "title": "Could not copy link",
+      "message": "The browser did not allow clipboard access."
+    }
+  },
+  "like": {
+    "saveFailed": {
+      "title": "Like was not saved",
+      "message": "Please try again in a moment."
+    }
+  }
+}

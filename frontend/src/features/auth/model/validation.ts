@@ -1,5 +1,6 @@
 import type { LoginRequest, RegisterRequest } from "./request.types";
 import type { AuthValidationErrors } from "./validation.types";
+import i18n from "@/shared/config/i18n";
 
 function hasUppercase(value: string) {
   return /[A-ZА-Я]/.test(value);
@@ -11,19 +12,19 @@ function hasDigit(value: string) {
 
 export function validatePasswordRules(password: string): string | undefined {
   if (!password) {
-    return "Password is required.";
+    return i18n.t("validation.passwordRequired", { ns: "errors" });
   }
 
   if (password.length < 8) {
-    return "Password must be at least 8 characters long.";
+    return i18n.t("validation.passwordMinLength", { ns: "errors" });
   }
 
   if (!hasUppercase(password)) {
-    return "Password must contain at least one uppercase letter.";
+    return i18n.t("validation.passwordUppercase", { ns: "errors" });
   }
 
   if (!hasDigit(password)) {
-    return "Password must contain at least one digit.";
+    return i18n.t("validation.passwordDigit", { ns: "errors" });
   }
 
   return undefined;
@@ -33,7 +34,7 @@ export function validateLoginForm(values: LoginRequest): AuthValidationErrors {
   const errors: AuthValidationErrors = {};
 
   if (!values.loginName.trim()) {
-    errors.loginName = "Поле логина обязательно.";
+    errors.loginName = i18n.t("validation.loginRequired", { ns: "errors" });
   }
 
   const passwordError = validatePasswordRules(values.password);

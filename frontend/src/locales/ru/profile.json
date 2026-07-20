@@ -1,0 +1,92 @@
+{
+  "header": {
+    "actions": "Действия",
+    "profileActions": "Действия с профилем",
+    "backToFeed": "Вернуться в ленту",
+    "openGallery": "Открыть галерею",
+    "searchComingSoon": "Поиск скоро появится",
+    "backToProfile": "Вернуться в профиль",
+    "shareProfileLink": "Поделиться ссылкой на профиль",
+    "linkCopied": "Ссылка скопирована",
+    "openProfileMenu": "Открыть меню профиля",
+    "profileMenu": "Меню профиля",
+    "contactInfo": "Контактная информация",
+    "settings": "Настройки",
+    "deleteAccount": "Удалить аккаунт",
+    "addNickname": "Добавить никнейм",
+    "unknownUser": "Неизвестный пользователь"
+  },
+  "settings": {
+    "title": "Настройки",
+    "close": "Закрыть настройки",
+    "chooseTheme": "Выберите тему",
+    "switchToLightTheme": "Переключить на светлую тему",
+    "switchToDarkTheme": "Переключить на тёмную тему",
+    "lightTheme": "Светлая тема",
+    "darkTheme": "Тёмная тема",
+    "language": "Язык",
+    "applicationLanguage": "Язык приложения",
+    "languages": {
+      "en": "Английский",
+      "ru": "Русский"
+    }
+  },
+  "tabs": {
+    "photos": "Мои фотографии",
+    "aiGenerated": "Созданные ИИ"
+  },
+  "content": {
+    "loadingImages": "Загрузка изображений...",
+    "imagesLoadFailed": "Не удалось загрузить изображения. Повторите попытку.",
+    "noPublicImages": "Публичных изображений пока нет.",
+    "loadingProfile": "Загрузка...",
+    "userNotFound": "Пользователь не найден",
+    "profileUnavailable": "Профиль пользователя недоступен",
+    "profileDataUnavailableAlt": "Данные профиля недоступны"
+  },
+  "contactInfo": {
+    "title": "Редактирование профиля",
+    "fields": {
+      "email": "Электронная почта",
+      "phoneNumber": "Номер телефона",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "login": "Логин",
+      "password": "Пароль"
+    },
+    "placeholders": {
+      "email": "your.email@example.com",
+      "phoneNumber": "+1 (555) 000-0000",
+      "firstName": "Иван",
+      "lastName": "Иванов",
+      "login": "имя_пользователя",
+      "password": "********",
+      "currentPassword": "Текущий пароль",
+      "newPassword": "Новый пароль"
+    },
+    "password": {
+      "currentPrompt": "Введите текущий пароль",
+      "newPrompt": "Задайте новый пароль",
+      "submit": "Подтвердить",
+      "submitting": "Отправка...",
+      "showCurrent": "Показать текущий пароль",
+      "hideCurrent": "Скрыть текущий пароль",
+      "showNew": "Показать новый пароль",
+      "hideNew": "Скрыть новый пароль"
+    },
+    "social": {
+      "title": "Подключите социальные сети",
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "vk": "VK",
+      "youtube": "YouTube",
+      "facebook": "Facebook"
+    },
+    "save": "Сохранить изменения",
+    "saving": "Сохранение..."
+  },
+  "syncError": {
+    "backToProfile": "Вернуться в профиль",
+    "apiDataUnavailable": "Данные профиля из API недоступны"
+  }
+}

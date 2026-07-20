@@ -7,11 +7,13 @@ import { TagSearchBox } from "@/features/tag-search/TagSearchBox"
 import { fetchCurrentUser } from "@/pages/profile/profile.api"
 import { logApiError } from "@/shared/api/errors/errorMapper"
 import styles from "./DesktopSideNav.module.css"
+import { useTranslation } from "react-i18next"
 
 const CURRENT_USER_QUERY_KEY = ["current-user"]
 const CURRENT_PROFILE_FALLBACK_SLUG = "current"
 
 export const DesktopSideNav = () => {
+  const { t } = useTranslation("common")
   const { isAuth } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -57,7 +59,7 @@ export const DesktopSideNav = () => {
   }
 
   return (
-    <aside className={styles.sideNav} aria-label="Desktop navigation">
+    <aside className={styles.sideNav} aria-label={t("accessibility.desktopNavigation")}>
       <div className={styles.navList}>
         <button
           className={styles.navItem}
@@ -65,7 +67,7 @@ export const DesktopSideNav = () => {
           onClick={() => navigate("/")}
         >
           <Home aria-hidden="true" />
-          <span>Feed</span>
+          <span>{t("navigation.feed")}</span>
         </button>
 
         {!isGalleryRoute && (
@@ -78,13 +80,13 @@ export const DesktopSideNav = () => {
                 onClick={() => setIsSearchOpen((current) => !current)}
               >
                 <Search aria-hidden="true" />
-                <span>Search</span>
+          <span>{t("navigation.search")}</span>
               </button>
 
               {isSearchOpen && (
                 <TagSearchBox
                   variant="sideNav"
-                  placeholder="Search"
+              placeholder={t("search.placeholder")}
                   autoFocus
                   onComplete={() => setIsSearchOpen(false)}
                 />
@@ -97,7 +99,7 @@ export const DesktopSideNav = () => {
               onClick={() => navigate("/gallery")}
             >
               <Image aria-hidden="true" />
-              <span>Gallery</span>
+          <span>{t("navigation.gallery")}</span>
             </button>
           </>
         )}
@@ -109,7 +111,7 @@ export const DesktopSideNav = () => {
             onClick={openMyProfile}
           >
             <UserRound aria-hidden="true" />
-            <span>Profile</span>
+          <span>{t("navigation.profile")}</span>
           </button>
         )}
       </div>

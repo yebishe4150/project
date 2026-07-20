@@ -1,4 +1,5 @@
 import styles from "./ProfileTabs.module.css"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   activeTab: "photos" | "ai"
@@ -7,13 +8,14 @@ type Props = {
 }
 
 export const ProfileTabs = ({ activeTab, onChange, centerSlot }: Props) => {
+  const { t } = useTranslation("profile")
   return (
     <div className={styles.tabs}>
       <button
         className={`${styles.tabButton} ${activeTab === "photos" ? styles.active : ""}`}
         onClick={() => onChange("photos")}
       >
-        My Photos
+        {t("tabs.photos")}
       </button>
 
       {centerSlot && <div className={styles.centerSlot}>{centerSlot}</div>}
@@ -22,7 +24,7 @@ export const ProfileTabs = ({ activeTab, onChange, centerSlot }: Props) => {
         className={`${styles.tabButton} ${activeTab === "ai" ? styles.active : ""}`}
         onClick={() => onChange("ai")}
       >
-        AI Generated
+        {t("tabs.aiGenerated")}
       </button>
     </div>
   )
